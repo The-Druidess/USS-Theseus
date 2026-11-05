@@ -522,6 +522,33 @@ body.theme-green { --brand-art-filter: hue-rotate(100deg); }
 .refit-canvas,
 #stage { display: block; width: 100%; height: 100%; image-rendering: pixelated; filter: saturate(1.14) contrast(1.08) brightness(0.94); }
 
+#hull-tabs {
+  position: absolute; top: 38px; left: 16px; right: 16px; z-index: 5;
+  display: flex; gap: 4px; padding: 4px; max-width: 540px; margin: 0 auto;
+  background: var(--bg); border: 1px solid var(--ph-dim); border-radius: 5px;
+}
+#hull-tabs button {
+  flex: 1; min-width: 0; padding: 7px 3px; border: 1px solid transparent;
+  background: transparent; color: var(--ph-dim); font: inherit; font-size: 14px; cursor: pointer;
+}
+#hull-tabs small { display: block; font-size: 11px; letter-spacing: 1px; }
+#hull-tabs button[aria-selected="true"] { border-color: var(--ph); color: var(--ph); background: var(--bg2); }
+#hull-tabs button:hover, #hull-tabs button:focus-visible { color: var(--ph); outline: 1px solid var(--ph); }
+#hull-shell { position: absolute; inset: 0; z-index: 2; background: var(--bg); }
+#hull-shell[hidden] { display: none; }
+#hull-canvas { display: block; width: 100%; height: 100%; image-rendering: pixelated; }
+.hull-shell-copy { position: absolute; bottom: 28px; left: 16px; right: 16px; text-align: center; color: var(--ph); }
+.hull-shell-copy span { color: var(--ph-dim); text-transform: uppercase; letter-spacing: 2px; }
+.hull-shell-copy h2 { margin: 4px 0; font-size: 26px; text-transform: uppercase; }
+.hull-shell-copy p { margin: 0; font-size: 14px; color: var(--ph-dim); }
+#stage-wrap[data-hull]:not([data-hull="bridge"]) #stage { visibility: hidden; pointer-events: none; }
+#stage-wrap[data-hull]:not([data-hull="bridge"]) .cam-hud { visibility: hidden; }
+@media (max-width: 600px) {
+  #hull-tabs { left: 8px; right: 8px; }
+  #hull-tabs button { font-size: 11px; }
+  #hull-tabs small { font-size: 10px; letter-spacing: 0; }
+}
+
 /* KEYLESS-BRAIN CTA — the honest standing banner shown after an awakening that finished with no key.
    Sits low-center over the feed, above the cam HUD (z3) so it reads clearly; the world stays visible behind
    it. Only the banner itself takes pointer events. Rendered/hidden purely from Harness.hasStoredCredential. */

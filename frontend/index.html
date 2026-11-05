@@ -623,6 +623,17 @@
   <div id="stage-wrap">
     <canvas id="stage" role="img" aria-label="Live view of your agent station" aria-describedby="stage-summary"></canvas>
     <div id="stage-summary" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="hull-tabs" role="tablist" aria-label="USS Theseus hulls">
+      <button id="hull-tab-bridge" type="button" role="tab" data-hull="bridge" aria-selected="true" aria-controls="stage" tabindex="0"><small>UPPER</small>BRIDGE</button>
+      <button id="hull-tab-promenade" type="button" role="tab" data-hull="promenade" aria-selected="false" aria-controls="hull-shell" tabindex="-1"><small>MID</small>PROMENADE</button>
+      <button id="hull-tab-engineering" type="button" role="tab" data-hull="engineering" aria-selected="false" aria-controls="hull-shell" tabindex="-1"><small>LOWER</small>ENGINEERING</button>
+      <button id="hull-tab-jefferies" type="button" role="tab" data-hull="jefferies" aria-selected="false" aria-controls="hull-shell" tabindex="-1"><small>SERVICE</small>JEFFERIES</button>
+    </div>
+    <section id="hull-shell" role="tabpanel" aria-labelledby="hull-tab-promenade" tabindex="0" hidden>
+      <canvas id="hull-canvas" aria-hidden="true"></canvas>
+      <div class="hull-shell-copy"><span id="hull-level"></span><h2 id="hull-title"></h2><p>Blank hull shell. Purpose and layout to be defined.</p></div>
+    </section>
+    <div id="hull-status" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
     <div class="cam-hud">
       <span class="cam-c cam-tl">┌</span><span class="cam-c cam-tr">┐</span>
       <span class="cam-c cam-bl">└</span><span class="cam-c cam-br">┘</span>
@@ -910,6 +921,7 @@
 <script src="app/worldrenderer.js"></script>
 <script src="app/arrival.js"></script>
 <script src="app/world.js"></script>
+<script src="app/hulls.js"></script>
 <script src="app/testapi.js"></script><!-- DEV-only: window.__SKYNET_TEST__ (inert unless __STARNET_DEV__) -->
 <script src="app/classify.js"></script>
 <script src="app/codexsignin.js"></script><!-- the ONE ChatGPT device-code sign-in engine (DOM-free); the brain screen (app.js) and Settings PROVIDERS RE-SIGN-IN (stationui.js) both drive it -->

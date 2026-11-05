@@ -965,6 +965,7 @@ test/openai-formats.test.js
 test/request-auth-rotation.test.js
 test/world-seat-recovery.test.js
 test/world-lifecycle.test.js
+test/hulls.test.js
 test/world-crew-approval.test.js
 test/world-movement-continuity.test.js
 test/save-concurrency.test.js

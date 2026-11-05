@@ -86,6 +86,14 @@ console, Build mode, HUD, and window chrome. Starnet remains the backend name:
 API routes, storage keys, provider IDs, account/credit services, update names,
 and the public marketing/documentation site are unchanged.
 
+The camera's hull switcher exposes four tiers: **Bridge** (upper hull),
+**Promenade** (mid hull), **Engineering** (lower hull), and **Jefferies**
+(service hull). The Bridge retains the current saved ship and live crew. The
+other three are blank, render-only shells pending their purpose and layout;
+Jefferies has a narrower service-hull silhouette. Click a tier or use the arrow,
+Home, and End keys while its tab is focused. Switching hulls does not alter the
+saved station or interrupt crew work. Build mode returns to the Bridge.
+
 The crew manifest shows each officer's assigned room above their title. Bridge
 crew sort first, then other rooms by name, then officer titles alphabetically
 within each room. Assignment follows the officer's dedicated computer, falling

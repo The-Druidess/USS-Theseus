@@ -3440,6 +3440,7 @@ const App = (() => {
     for (const a of liveAgents()) if (a.id !== agent.id && typeof World.spawnAgent === 'function') World.spawnAgent(a);
     if (typeof TreasurerPortal !== 'undefined') TreasurerPortal.init(station);
     World.start();   // first frame now paints the fresh floor + crew, never a stale frame of the prior world
+    Hulls.init();
     if (World.resumeBridge) World.resumeBridge();   // re-arm the channel SSE + connector poll if a prior disconnect released them (no-op on first entry)
     if (typeof Build !== 'undefined') {
       // agents: the live multi-agent roster the BAY agent-picker / builder offer. The bay->agent binding

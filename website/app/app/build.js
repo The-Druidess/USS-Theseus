@@ -249,6 +249,7 @@ const Build = (() => {
   function init(o) { opts = o; }
 
   function open() {
+    if (typeof Hulls !== 'undefined') Hulls.select('bridge');
     makeResumed = false;   // a fresh BUILD MODE session picks up a made-prop job still running in the station
     makeMsg = null; if (makeJob && (makeJob.status === 'done' || makeJob.status === 'failed')) makeJob = null;   // and never greets with an old message
     makeCreditsAsked = false;   // and re-reads the credit state (the player may have just linked or topped up)
