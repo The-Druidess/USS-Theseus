@@ -5,7 +5,7 @@ let Canvas;try{Canvas=require('@napi-rs/canvas');}catch{Canvas=require('C:/Users
 const fx=require('../../frontend/app/projection-prop-effects.js'),manifest=require('../../frontend/assets/industrial/projection-correction/manifest.json');
 global.OffscreenCanvas=class{constructor(w,h){return Canvas.createCanvas(w,h);}};
 const dir='docs/station-remaster/projection-effects';
-const active={now:2100,work:true,occupied:true,scanning:true,live:true,bound:true,state:'online',fired:.75,bad:false,pins:3,trophies:2,crates:2,door:'open'};
+const active={now:2100,work:true,occupied:true,scanning:true,live:true,bound:true,state:'online',fired:.75,bad:false,pins:3,trophies:6,crates:2,door:'open'};
 const inactive={now:2100,work:false,occupied:false,scanning:false,live:false,bound:false,state:'offline',fired:0,pins:0,trophies:0,crates:0,door:'closed'};
 (async()=>{
  const receipts=[],images=new Map();

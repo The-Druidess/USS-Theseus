@@ -6,6 +6,7 @@ const base='frontend/assets/industrial/approved-sheet/',candidate='frontend/asse
 const old=json(base+'manifest.json'),next=json(candidate+'manifest.json'),receipt=json('docs/station-remaster/projection-correction/exports.json');
 const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 (async()=>{
+ for(const manifest of [old,next])assert.deepEqual(manifest.props.bridge_dispatch_pylon,manifest.props.plugin_terminal,'dispatch pylon and plugin terminal share their sprite and placement geometry');
  const changed=new Set(receipt.records.map(r=>r.id+':'+(r.view||'s')));
  assert.equal(changed.size,receipt.records.length);assert.ok(changed.size>=8);assert.deepEqual(Object.keys(next.props),Object.keys(old.props));
  // Owner accepted these corrected designs; later batches must not replace them.
@@ -25,9 +26,13 @@ const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
   const v=next.props[r.id].views[r.view||'s'];
   assert.equal(output.info.width,v.sourceWidth);assert.equal(output.info.height,v.sourceHeight);
   assert.equal(v.contact.y,r.contact.y);assert.ok(v.contact.y>0&&v.contact.y<=1);
+  const pixelScale=r.pixelScale||1;
+  assert(Number.isInteger(pixelScale)&&pixelScale>=1,r.id+' pixel scale');
+  assert.equal(output.info.width,r.sourceCrop.width*pixelScale,r.id+' scaled crop width');
+  assert.equal(output.info.height,r.sourceCrop.height*pixelScale,r.id+' scaled crop height');
   let retained=0;
   for(let y=0;y<output.info.height;y++)for(let x=0;x<output.info.width;x++){
-   const i=(y*output.info.width+x)*4,j=((y+r.sourceCrop.top)*source.info.width+x+r.sourceCrop.left)*4;
+   const i=(y*output.info.width+x)*4,j=((r.sourceCrop.top+Math.floor(y/pixelScale))*source.info.width+r.sourceCrop.left+Math.floor(x/pixelScale))*4;
    if(output.data[i+3]){retained++;assert.deepEqual(output.data.subarray(i,i+4),source.data.subarray(j,j+4),r.id+' retained RGBA preserved');}
   }
   assert.equal(retained,r.retained);

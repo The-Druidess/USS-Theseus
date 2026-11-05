@@ -509,8 +509,8 @@ const Build = (() => {
   const CAT_LABEL = () => (typeof PropSprites !== 'undefined' && PropSprites.CAT_LABEL) || {};
   // the agent-assignable workstation types — the 'computer' props the agent walks to + sits at (matches
   // world.js isWorkstationProp / deskPropFor seating + the CATALOG seat:true set). These open the picker on place/click.
-  const WORKSTATION_TYPES = { desk: 1, desk2: 1, console: 1, consoleL: 1, pixelrig: 1, bench: 1 };
-  const catalog = () => (typeof PropSprites !== 'undefined') ? PropSprites.CATALOG : [];
+  const WORKSTATION_TYPES = { desk: 1, desk2: 1, console: 1, laptop: 1, consoleL: 1, pixelrig: 1, bench: 1 };
+  const catalog = () => (typeof PropSprites !== 'undefined') ? PropSprites.CATALOG.filter(c => !c.retired) : [];
   // the ordered list of category ids that belong to a tier (first-appearance order in the catalog)
   function catsForTier(tier) {
     const out = [], seen = {};
@@ -2496,7 +2496,7 @@ const Build = (() => {
          belt under its own tile, and dropping one onto an existing lane is how every ready-made line is built — the old
          'clear deck tile' copy steered people to empty floor and three hand-wired belts. */
       const JUNC = { splitter: 1, joiner: 1, filter: 1, merger: 1, loop: 1 };
-      if (WORKSTATION_TYPES[propType]) verb = (spec ? spec.label + ' · ' : '') + 'click a clear deck tile to place ' + (deskOwner ? agentLabel(deskOwner) + '’s desk' : 'it, then pick who sits there');
+      if (WORKSTATION_TYPES[propType]) verb = (spec ? spec.label + ' · ' : '') + (spec?.mount === 'surface' ? 'click a free tabletop tile to place ' : 'click a clear deck tile to place ') + (deskOwner ? agentLabel(deskOwner) + '’s desk' : 'it, then pick who sits there');
       else verb = (spec ? spec.label + ' · ' : '') + (JUNC[propType] ? 'drop it ON a belt to put it on that line, or on clear floor' : 'click a clear deck tile to place' + (rowable(propType) ? ' · drag for a row' : ''));
       const bits = [];
       if (canTurn(propType)) bits.push('R turn (facing ' + FACE_WORD[propFacing(propType)] + ')');
@@ -2998,11 +2998,11 @@ const Build = (() => {
     for (const r of rm.rects)
       for (let y = r.y1; y <= r.y2; y++)
         for (let x = r.x1; x <= r.x2; x++) {
-          if (!(station.canPlaceProp('desk', x, y, 2, 1) || {}).ok) continue;
-          const res = station.addProp({ t: 'desk', x, y, w: 2, h: 1, agentId: p.agentId });
+          if (!(station.canPlaceProp('console', x, y, 2, 1) || {}).ok) continue;
+          const res = station.addProp({ t: 'console', x, y, w: 2, h: 1, agentId: p.agentId });
           if (!res || !res.ok) continue;
           pushFlash([{ x1: x, y1: y, x2: x + 1, y2: y }], false);
-          if (typeof Tutorial !== 'undefined' && Tutorial.onPropPlaced) Tutorial.onPropPlaced('desk');
+          if (typeof Tutorial !== 'undefined' && Tutorial.onPropPlaced) Tutorial.onPropPlaced('console');
           return { ok: true, id: res.id, tile: { tx: x, ty: y } };
         }
     return { ok: false, reason: 'no-room-for-a-desk' };
@@ -3270,7 +3270,7 @@ const Build = (() => {
     if (!running) open();
     if (!station) return false;
     deskOwner = String(agentId || '') || null;
-    if (!WORKSTATION_TYPES[propType]) propType = 'desk';
+    if (!WORKSTATION_TYPES[propType] || !catalog().some(c => c.id === propType)) propType = 'console';
     const spec = catalog().find(c => c.id === propType);
     if (spec) { propSection = sectionOf(spec); propAbility = propSection === 'abilities' ? capOf(spec) : ''; }
     propCat = 'all'; propQuery = '';

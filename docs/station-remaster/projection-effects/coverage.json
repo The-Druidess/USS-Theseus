@@ -1,10 +1,10 @@
 {
   "version": 1,
   "coordinateSpace": "full-export-normalized",
-  "catalogTypes": 160,
-  "views": 184,
-  "effectTypes": 88,
-  "quietTypes": 72,
+  "catalogTypes": 166,
+  "views": 211,
+  "effectTypes": 90,
+  "quietTypes": 78,
   "records": [
     {
       "id": "industrial_locker",
@@ -18,7 +18,7 @@
       "sha256": "f0fc82eceb252214514cab0e0f8a7cae98e2034c06a9b9d99d6df4c2efadcac2",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10536",
+        "frontend/app/propsprites.js:10549",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -36,7 +36,7 @@
       "sha256": "08a63725cd07518d2a361d9e9685338c53d8a6301049a71d7e846dfd16efff52",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10552",
+        "frontend/app/propsprites.js:10565",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -54,7 +54,7 @@
       "sha256": "6a8ce03fab3f30500646a190490f4f13d8a60666f809d1489d757abcd57106f5",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10559",
+        "frontend/app/propsprites.js:10572",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -72,7 +72,7 @@
       "sha256": "fcb4942d0b6f95d1efcab6c94232474381e458032d14edb29d89aebc088e065c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10569",
+        "frontend/app/propsprites.js:10582",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -90,7 +90,7 @@
       "sha256": "7a6750513a004087da2f9a73bf61598c6222ecf031beb0c08a21f3b900d86a76",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10575",
+        "frontend/app/propsprites.js:10588",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -108,7 +108,7 @@
       "sha256": "0324da4693382cef5699f7cf406240e89f33e935aff15b60448c0f4fc07b99d8",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10584",
+        "frontend/app/propsprites.js:10597",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -126,7 +126,7 @@
       "sha256": "a2d731f1a2d76ed98706d6d9097b0e2cad588fe0a0f712ed5a5fbe08d338c2bb",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10584",
+        "frontend/app/propsprites.js:10597",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -144,7 +144,7 @@
       "sha256": "b24d0e04f2e21a8631910ef8f3a8453c62a72720c4ca57e316352a633d93a08e",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10584",
+        "frontend/app/propsprites.js:10597",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -162,7 +162,7 @@
       "sha256": "9fce4522d701e77c81a7feb8993c1b0901772958d2ffc05db1ec45792be17a8e",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10609",
+        "frontend/app/propsprites.js:10622",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -180,7 +180,7 @@
       "sha256": "d3dbac6f8c95df5f3db87b8ba327c427a33d1953560315bfe4e40a2b0aaccfce",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10623",
+        "frontend/app/propsprites.js:10636",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -226,7 +226,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10638",
+        "frontend/app/propsprites.js:10651",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -249,7 +249,7 @@
       "sha256": "54ed31b46af45244c3421df9d0b948c2c392c935cda2c44af6462ce3c1010e1c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10646",
+        "frontend/app/propsprites.js:10659",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -267,7 +267,7 @@
       "sha256": "1f2ed30538c55eaaa1b76df0212c4588dacf26baf9c80f25f16fee2ce8103efe",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10653",
+        "frontend/app/propsprites.js:10666",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -285,7 +285,7 @@
       "sha256": "68fa45018c20c5a71a3ae8f3566ca7f52b2fe8ac4af913ed42f0e7608e4f304b",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10658",
+        "frontend/app/propsprites.js:10671",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -441,38 +441,38 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/console.png",
-      "sourceWidth": 1009,
-      "sourceHeight": 833,
-      "sha256": "bba19eba3657d61ad0f3cd8f615a72163607d35f770c08b34bf902790cb34206",
+      "image": "frontend/assets/industrial/projection-correction/console-s-9f5f3f957919.png",
+      "sourceWidth": 582,
+      "sourceHeight": 396,
+      "sha256": "9f5f3f957919ffe8579402b3f237d721497cb3106ea30f23c71b612fe2349891",
       "regions": [
         {
           "kind": "screen",
           "region": [
             [
-              0.27,
-              0.16
+              0.04,
+              0.06
             ],
             [
-              0.73,
-              0.16
+              0.9600000000000001,
+              0.06
             ],
             [
-              0.73,
-              0.37
+              0.9600000000000001,
+              0.41
             ],
             [
-              0.27,
-              0.37
+              0.04,
+              0.41
             ]
           ],
           "gate": "occupied",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ],
-          "idleOpacity": 0.88
+          "idleOpacity": 0
         }
       ],
       "evidence": [
@@ -573,38 +573,37 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/pixelrig.png",
-      "sourceWidth": 403,
-      "sourceHeight": 338,
-      "sha256": "fcd094212eb3aeb69d3ed6d00189b1aa0c8810c4927a6ca33e15272d9d088743",
+      "image": "frontend/assets/industrial/projection-correction/pixelrig-s-e575a02eac65.png",
+      "sourceWidth": 462,
+      "sourceHeight": 258,
+      "sha256": "e575a02eac65228e9c1a7c6be6bdf832263dee2a4c4e3d5f75c2e7a19b718c5f",
       "regions": [
         {
-          "kind": "screen",
+          "kind": "lamp",
           "region": [
             [
-              0.19,
-              0.09
+              0.065,
+              0.395
             ],
             [
-              0.8200000000000001,
-              0.09
+              0.885,
+              0.395
             ],
             [
-              0.8200000000000001,
-              0.28
+              0.885,
+              0.45
             ],
             [
-              0.19,
-              0.28
+              0.065,
+              0.45
             ]
           ],
           "gate": "occupied",
           "colour": [
-            78,
-            206,
-            221
-          ],
-          "idleOpacity": 0.88
+            144,
+            224,
+            81
+          ]
         }
       ],
       "evidence": [
@@ -625,66 +624,94 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/bench.png",
-      "sourceWidth": 1534,
-      "sourceHeight": 673,
-      "sha256": "ee09f18b7313c4cf3812757873652ffe6fba352d9ce8d0a48814c135e8d1a106",
+      "image": "frontend/assets/industrial/projection-correction/bench-s-7c665ada2175.png",
+      "sourceWidth": 888,
+      "sourceHeight": 378,
+      "sha256": "7c665ada2175fb07312e0413af5c583ff4693ccb9b80afae70be2ce8164112d3",
       "regions": [
         {
           "kind": "screen",
           "region": [
             [
-              0.1,
-              0.145
+              0.095,
+              0.143
             ],
             [
-              0.245,
-              0.145
+              0.25,
+              0.143
             ],
             [
-              0.245,
-              0.308
+              0.25,
+              0.31799999999999995
             ],
             [
-              0.1,
-              0.308
+              0.095,
+              0.31799999999999995
             ]
           ],
           "gate": "occupied",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ],
-          "idleOpacity": 0.88
+          "idleOpacity": 0
         },
         {
           "kind": "screen",
           "region": [
             [
-              0.804,
-              0.25
+              0.79,
+              0.079
             ],
             [
-              0.879,
-              0.25
+              0.891,
+              0.079
             ],
             [
-              0.879,
-              0.33799999999999997
+              0.891,
+              0.174
             ],
             [
-              0.804,
-              0.33799999999999997
+              0.79,
+              0.174
             ]
           ],
           "gate": "occupied",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ],
-          "idleOpacity": 0.88
+          "idleOpacity": 0
+        },
+        {
+          "kind": "screen",
+          "region": [
+            [
+              0.79,
+              0.286
+            ],
+            [
+              0.898,
+              0.286
+            ],
+            [
+              0.898,
+              0.381
+            ],
+            [
+              0.79,
+              0.381
+            ]
+          ],
+          "gate": "occupied",
+          "colour": [
+            144,
+            224,
+            81
+          ],
+          "idleOpacity": 0
         }
       ],
       "evidence": [
@@ -767,7 +794,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7691",
+        "frontend/app/propsprites.js:7704",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -896,7 +923,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3612",
+        "frontend/app/propsprites.js:3618",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -947,7 +974,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3440",
+        "frontend/app/propsprites.js:3446",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1052,7 +1079,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3483",
+        "frontend/app/propsprites.js:3489",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1157,7 +1184,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3404",
+        "frontend/app/propsprites.js:3410",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1262,7 +1289,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3525",
+        "frontend/app/propsprites.js:3531",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1340,7 +1367,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3569",
+        "frontend/app/propsprites.js:3575",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1436,42 +1463,42 @@
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
       "image": "frontend/assets/industrial/projection-correction/connector_portal.png",
-      "sourceWidth": 924,
-      "sourceHeight": 1626,
-      "sha256": "e47660cc0ebf30136c467e31ffa8ddf27c8e07bab876b961284cc40bfbb24fa2",
+      "sourceWidth": 170,
+      "sourceHeight": 322,
+      "sha256": "fe1dadd7123a6b16a40890c42f12b0bed4afe7cc7ba6053cbc95eaa49c085b29",
       "regions": [
         {
           "kind": "connector",
           "region": [
             [
-              0.27,
-              0.31
+              0.18,
+              0.24
             ],
             [
-              0.42000000000000004,
-              0.31
+              0.64,
+              0.24
             ],
             [
-              0.42000000000000004,
-              0.8200000000000001
+              0.64,
+              0.84
             ],
             [
-              0.27,
-              0.8200000000000001
+              0.18,
+              0.84
             ]
           ],
           "centres": [
             [
-              0.292,
-              0.338
+              0.42,
+              0.38
             ],
             [
-              0.292,
-              0.56
+              0.42,
+              0.59
             ],
             [
-              0.292,
-              0.783
+              0.42,
+              0.79
             ]
           ],
           "gate": "bound",
@@ -1485,20 +1512,20 @@
           "kind": "result",
           "region": [
             [
-              0.856,
-              0.09
+              0.84,
+              0.08
             ],
             [
-              0.868,
-              0.09
+              0.9199999999999999,
+              0.08
             ],
             [
-              0.868,
-              0.145
+              0.9199999999999999,
+              0.18
             ],
             [
-              0.856,
-              0.145
+              0.84,
+              0.18
             ]
           ],
           "gate": "fired",
@@ -1510,7 +1537,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7666",
+        "frontend/app/propsprites.js:7675",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1562,7 +1589,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7397",
+        "frontend/app/propsprites.js:7406",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1641,7 +1668,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7547",
+        "frontend/app/propsprites.js:7556",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1692,7 +1719,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7612",
+        "frontend/app/propsprites.js:7621",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1744,7 +1771,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8521",
+        "frontend/app/propsprites.js:8534",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1767,7 +1794,7 @@
       "sha256": "dfd6210a38a37761b813147a0aa1cb9605fc224b240048ad19c97e8fde98b0d7",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4074",
+        "frontend/app/propsprites.js:4080",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1785,7 +1812,7 @@
       "sha256": "c2a75370627461a72ce0c20427da75c85bd33a4710996c48180eb6b8362c5f9c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:3913",
+        "frontend/app/propsprites.js:3919",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1797,90 +1824,279 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/rack.png",
-      "sourceWidth": 342,
-      "sourceHeight": 306,
-      "sha256": "9321efaf4fc8992bfd73a390e0958a99fd078f0110ad87420a9292e5ff491e0f",
+      "image": "frontend/assets/industrial/projection-correction/rack-s-e2e47b49dc94.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
+      "sha256": "e2e47b49dc944181121189537d5eaa6815c7cc02d3370b1513efc52ac16ebab5",
       "regions": [
         {
           "kind": "lamp",
           "region": [
             [
-              0.145,
-              0.35
+              0.6388888888888888,
+              0.2619047619047619
             ],
             [
-              0.16999999999999998,
-              0.35
+              0.6666666666666666,
+              0.2619047619047619
             ],
             [
-              0.16999999999999998,
-              0.375
+              0.6666666666666666,
+              0.2857142857142857
             ],
             [
-              0.145,
-              0.375
+              0.6388888888888888,
+              0.2857142857142857
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.145,
-              0.55
+              0.6944444444444444,
+              0.23809523809523808
             ],
             [
-              0.16999999999999998,
-              0.55
+              0.7222222222222222,
+              0.23809523809523808
             ],
             [
-              0.16999999999999998,
-              0.5750000000000001
+              0.7222222222222222,
+              0.2857142857142857
             ],
             [
-              0.145,
-              0.5750000000000001
+              0.6944444444444444,
+              0.2857142857142857
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            238,
+            177,
+            62
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.145,
-              0.75
+              0.6388888888888888,
+              0.38095238095238093
             ],
             [
-              0.16999999999999998,
-              0.75
+              0.6666666666666666,
+              0.38095238095238093
             ],
             [
-              0.16999999999999998,
-              0.775
+              0.6666666666666666,
+              0.40476190476190477
             ],
             [
-              0.145,
-              0.775
+              0.6388888888888888,
+              0.40476190476190477
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6944444444444444,
+              0.35714285714285715
+            ],
+            [
+              0.7222222222222222,
+              0.35714285714285715
+            ],
+            [
+              0.7222222222222222,
+              0.40476190476190477
+            ],
+            [
+              0.6944444444444444,
+              0.40476190476190477
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6388888888888888,
+              0.5238095238095238
+            ],
+            [
+              0.6666666666666666,
+              0.5238095238095238
+            ],
+            [
+              0.6666666666666666,
+              0.5476190476190477
+            ],
+            [
+              0.6388888888888888,
+              0.5476190476190477
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6944444444444444,
+              0.5
+            ],
+            [
+              0.7222222222222222,
+              0.5
+            ],
+            [
+              0.7222222222222222,
+              0.5476190476190477
+            ],
+            [
+              0.6944444444444444,
+              0.5476190476190477
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6388888888888888,
+              0.6666666666666666
+            ],
+            [
+              0.6666666666666666,
+              0.6666666666666666
+            ],
+            [
+              0.6666666666666666,
+              0.6904761904761905
+            ],
+            [
+              0.6388888888888888,
+              0.6904761904761905
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6944444444444444,
+              0.6428571428571429
+            ],
+            [
+              0.7222222222222222,
+              0.6428571428571429
+            ],
+            [
+              0.7222222222222222,
+              0.6904761904761905
+            ],
+            [
+              0.6944444444444444,
+              0.6904761904761905
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6388888888888888,
+              0.8095238095238095
+            ],
+            [
+              0.6666666666666666,
+              0.8095238095238095
+            ],
+            [
+              0.6666666666666666,
+              0.8333333333333334
+            ],
+            [
+              0.6388888888888888,
+              0.8333333333333334
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6944444444444444,
+              0.7857142857142857
+            ],
+            [
+              0.7222222222222222,
+              0.7857142857142857
+            ],
+            [
+              0.7222222222222222,
+              0.8333333333333333
+            ],
+            [
+              0.6944444444444444,
+              0.8333333333333333
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
           ]
         }
       ],
@@ -1908,7 +2124,7 @@
       "sha256": "8dd277c093df622440d84c2a43073d0886f29210e297eb55a90828b21d42e2b7",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4617",
+        "frontend/app/propsprites.js:4623",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -1981,7 +2197,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4590",
+        "frontend/app/propsprites.js:4596",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2088,7 +2304,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8100",
+        "frontend/app/propsprites.js:8113",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2247,7 +2463,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:6974",
+        "frontend/app/propsprites.js:6983",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2381,7 +2597,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9463",
+        "frontend/app/propsprites.js:9476",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2399,28 +2615,90 @@
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
       "image": "frontend/assets/industrial/projection-correction/missionboard.png",
-      "sourceWidth": 393,
-      "sourceHeight": 229,
-      "sha256": "23666085cfe75c12762b0c316ff368b3270d8cbcb3a69b0501b45e6851d427a0",
+      "sourceWidth": 1116,
+      "sourceHeight": 984,
+      "sha256": "452af75f2454fc0a91b30744550400ef3ed073c53a1976904236bfd76102aed9",
       "regions": [
         {
           "kind": "pins",
           "region": [
             [
-              0.1,
+              0.29,
               0.17
             ],
             [
-              0.87,
+              0.71,
               0.17
             ],
             [
-              0.87,
-              0.64
+              0.71,
+              0.44000000000000006
             ],
             [
-              0.1,
-              0.64
+              0.29,
+              0.44000000000000006
+            ]
+          ],
+          "slots": [
+            [
+              0.32796,
+              0.20732
+            ],
+            [
+              0.41398,
+              0.20732
+            ],
+            [
+              0.5,
+              0.20732
+            ],
+            [
+              0.58602,
+              0.20732
+            ],
+            [
+              0.67204,
+              0.20732
+            ],
+            [
+              0.32796,
+              0.30488
+            ],
+            [
+              0.41398,
+              0.30488
+            ],
+            [
+              0.5,
+              0.30488
+            ],
+            [
+              0.58602,
+              0.30488
+            ],
+            [
+              0.67204,
+              0.30488
+            ],
+            [
+              0.32796,
+              0.40244
+            ],
+            [
+              0.41398,
+              0.40244
+            ],
+            [
+              0.5,
+              0.40244
+            ],
+            [
+              0.58602,
+              0.40244
+            ],
+            [
+              0.67204,
+              0.40244
             ]
           ],
           "gate": "pins",
@@ -2444,34 +2722,114 @@
       }
     },
     {
+      "id": "missionboard",
+      "view": "w",
+      "classification": "none",
+      "reason": "North and side views show the board frame; live quest-pin markers belong to the south/front display only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/missionboard-w.png",
+      "sourceWidth": 510,
+      "sourceHeight": 1062,
+      "sha256": "536ec81b1d81211970508cb41ad3a00e8cfccff6c7e8412b4bf33db8bdbdc5fb",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3204",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "missionboard",
+      "view": "n",
+      "classification": "none",
+      "reason": "North and side views show the board frame; live quest-pin markers belong to the south/front display only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/missionboard-n.png",
+      "sourceWidth": 1080,
+      "sourceHeight": 984,
+      "sha256": "e47073d2f59e3a6cacea389b9ce3c35abc8c660ec477567e503b41148dce6d72",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3204",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "missionboard",
+      "view": "e",
+      "classification": "none",
+      "reason": "North and side views show the board frame; live quest-pin markers belong to the south/front display only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/missionboard-e.png",
+      "sourceWidth": 492,
+      "sourceHeight": 1068,
+      "sha256": "14e6b5b6a1dbb24cb9099f6df1ac484cc31f497ca6719974d9c8f602c964bc8d",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3204",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
       "id": "trophycase",
       "view": "s",
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
       "image": "frontend/assets/industrial/projection-correction/trophycase.png",
-      "sourceWidth": 307,
-      "sourceHeight": 345,
-      "sha256": "f94bbe031f81b0cc5c6074016185e8ad84024d43426b8e80812907b3ab47a955",
+      "sourceWidth": 174,
+      "sourceHeight": 216,
+      "sha256": "6784031af24bb1b786d6031ba6111788306594efb671c5e1f6ac8f0dc3c776fe",
       "regions": [
         {
           "kind": "awards",
           "region": [
             [
               0.2,
-              0.36
+              0.24
             ],
             [
-              0.8200000000000001,
-              0.36
+              0.8,
+              0.24
             ],
             [
-              0.8200000000000001,
-              0.81
+              0.8,
+              0.76
             ],
             [
               0.2,
-              0.81
+              0.76
+            ]
+          ],
+          "slots": [
+            [
+              0.28,
+              0.375
+            ],
+            [
+              0.5,
+              0.375
+            ],
+            [
+              0.72,
+              0.375
+            ],
+            [
+              0.28,
+              0.66
+            ],
+            [
+              0.5,
+              0.66
+            ],
+            [
+              0.72,
+              0.66
             ]
           ],
           "gate": "trophies",
@@ -2483,7 +2841,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3315",
+        "frontend/app/propsprites.js:3318",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2493,6 +2851,60 @@
         "width": 1,
         "height": 1
       }
+    },
+    {
+      "id": "trophycase",
+      "view": "w",
+      "classification": "none",
+      "reason": "North and side views show the cabinet body; earned-award markers belong to the south/front glass only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/trophycase-w.png",
+      "sourceWidth": 168,
+      "sourceHeight": 222,
+      "sha256": "774ac4ffb6cc333ef8ffbba21a438d4e19457856dc1d839362107113aeb09456",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3318",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "trophycase",
+      "view": "n",
+      "classification": "none",
+      "reason": "North and side views show the cabinet body; earned-award markers belong to the south/front glass only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/trophycase-n.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "sha256": "9623b2dabc5d82f629d51690b7a98a01005a476b863a6260d619838d3d43834c",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3318",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "trophycase",
+      "view": "e",
+      "classification": "none",
+      "reason": "North and side views show the cabinet body; earned-award markers belong to the south/front glass only.",
+      "inCurrentDemo": false,
+      "image": "frontend/assets/industrial/projection-correction/trophycase-e.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "sha256": "e18ed9e0ed55ebcf2dc84f8c359b296efd417f1335dc6e1223f6aff829699435",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:3318",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
     },
     {
       "id": "bridge_consolebank",
@@ -2591,7 +3003,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10681",
+        "frontend/app/propsprites.js:10694",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2659,7 +3071,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10682",
+        "frontend/app/propsprites.js:10695",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2710,7 +3122,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10683",
+        "frontend/app/propsprites.js:10696",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -2733,7 +3145,7 @@
       "sha256": "911d1ba2e047c25ccbd52c112c337691c048fdbd868a629a592cff03c0f46651",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10684",
+        "frontend/app/propsprites.js:10697",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3069,7 +3481,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4014",
+        "frontend/app/propsprites.js:4020",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3177,7 +3589,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4252",
+        "frontend/app/propsprites.js:4258",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3229,7 +3641,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4336",
+        "frontend/app/propsprites.js:4342",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3252,7 +3664,7 @@
       "sha256": "6fe303ec73c92c37d0536e606c1beb5b58386e283f6b5ebff585f1dbb548add6",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4434",
+        "frontend/app/propsprites.js:4440",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3299,7 +3711,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:6903",
+        "frontend/app/propsprites.js:6912",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3316,41 +3728,41 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/bridge_dispatch_pylon.png",
-      "sourceWidth": 302,
-      "sourceHeight": 573,
-      "sha256": "1dedd24c99f02c3503fa0efee2a826b508da301170e7a28315c208cccfa9ac30",
+      "image": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "sourceWidth": 348,
+      "sourceHeight": 696,
+      "sha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
       "regions": [
         {
           "kind": "scan",
           "region": [
             [
-              0.395,
+              0.32,
               0.38
             ],
             [
-              0.555,
+              0.66,
               0.38
             ],
             [
-              0.555,
-              0.63
+              0.66,
+              0.64
             ],
             [
-              0.395,
-              0.63
+              0.32,
+              0.64
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ]
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7042",
+        "frontend/app/propsprites.js:7051",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3458,7 +3870,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7102",
+        "frontend/app/propsprites.js:7111",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3509,7 +3921,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8447",
+        "frontend/app/propsprites.js:8460",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3560,7 +3972,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8597",
+        "frontend/app/propsprites.js:8610",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3739,7 +4151,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4497",
+        "frontend/app/propsprites.js:4503",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3817,7 +4229,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7185",
+        "frontend/app/propsprites.js:7194",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3869,7 +4281,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7242",
+        "frontend/app/propsprites.js:7251",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3920,7 +4332,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7306",
+        "frontend/app/propsprites.js:7315",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3943,7 +4355,7 @@
       "sha256": "6ad820ce2adeb21a10dd3dd6d5da83894b306f294b1ae9180600a2b4224485ea",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:7353",
+        "frontend/app/propsprites.js:7362",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -3989,7 +4401,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7765",
+        "frontend/app/propsprites.js:7778",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4048,7 +4460,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7816",
+        "frontend/app/propsprites.js:7829",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4099,7 +4511,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7887",
+        "frontend/app/propsprites.js:7900",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4177,7 +4589,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7962",
+        "frontend/app/propsprites.js:7975",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4194,144 +4606,657 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": false,
-      "image": "frontend/assets/industrial/projection-correction/rackV.png",
-      "sourceWidth": 182,
-      "sourceHeight": 453,
-      "sha256": "b3133a3d31c76f615c809ee57a2f8b1b10570d6e65977704226af827f1447e3e",
+      "image": "frontend/assets/industrial/projection-correction/rackV-s-547438d6c97b.png",
+      "sourceWidth": 204,
+      "sourceHeight": 504,
+      "sha256": "547438d6c97bd19b94575843f277e39a7952156e480a09bebacfdb0c9c9b2159",
       "regions": [
         {
           "kind": "lamp",
           "region": [
             [
-              0.32,
-              0.3
+              0.6470588235294118,
+              0.13095238095238096
             ],
             [
-              0.39,
-              0.3
+              0.6764705882352942,
+              0.13095238095238096
             ],
             [
-              0.39,
-              0.315
+              0.6764705882352942,
+              0.14285714285714285
             ],
             [
-              0.32,
-              0.315
+              0.6470588235294118,
+              0.14285714285714285
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.32,
-              0.405
+              0.7058823529411765,
+              0.11904761904761904
             ],
             [
-              0.39,
-              0.405
+              0.7352941176470589,
+              0.11904761904761904
             ],
             [
-              0.39,
-              0.42000000000000004
+              0.7352941176470589,
+              0.14285714285714285
             ],
             [
-              0.32,
-              0.42000000000000004
+              0.7058823529411765,
+              0.14285714285714285
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            238,
+            177,
+            62
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.32,
-              0.515
+              0.6470588235294118,
+              0.19047619047619047
             ],
             [
-              0.39,
-              0.515
+              0.6764705882352942,
+              0.19047619047619047
             ],
             [
-              0.39,
-              0.53
+              0.6764705882352942,
+              0.20238095238095238
             ],
             [
-              0.32,
-              0.53
+              0.6470588235294118,
+              0.20238095238095238
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.32,
-              0.625
+              0.7058823529411765,
+              0.17857142857142858
             ],
             [
-              0.39,
-              0.625
+              0.7352941176470589,
+              0.17857142857142858
             ],
             [
-              0.39,
-              0.64
+              0.7352941176470589,
+              0.20238095238095238
             ],
             [
-              0.32,
-              0.64
+              0.7058823529411765,
+              0.20238095238095238
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            238,
+            177,
+            62
           ]
         },
         {
           "kind": "lamp",
           "region": [
             [
-              0.44,
-              0.84
+              0.6470588235294118,
+              0.2619047619047619
             ],
             [
-              0.64,
-              0.84
+              0.6764705882352942,
+              0.2619047619047619
             ],
             [
-              0.64,
-              0.853
+              0.6764705882352942,
+              0.27380952380952384
             ],
             [
-              0.44,
-              0.853
+              0.6470588235294118,
+              0.27380952380952384
             ]
           ],
           "gate": "work",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.25
+            ],
+            [
+              0.7352941176470589,
+              0.25
+            ],
+            [
+              0.7352941176470589,
+              0.27380952380952384
+            ],
+            [
+              0.7058823529411765,
+              0.27380952380952384
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.3333333333333333
+            ],
+            [
+              0.6764705882352942,
+              0.3333333333333333
+            ],
+            [
+              0.6764705882352942,
+              0.34523809523809523
+            ],
+            [
+              0.6470588235294118,
+              0.34523809523809523
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.32142857142857145
+            ],
+            [
+              0.7352941176470589,
+              0.32142857142857145
+            ],
+            [
+              0.7352941176470589,
+              0.34523809523809523
+            ],
+            [
+              0.7058823529411765,
+              0.34523809523809523
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.40476190476190477
+            ],
+            [
+              0.6764705882352942,
+              0.40476190476190477
+            ],
+            [
+              0.6764705882352942,
+              0.4166666666666667
+            ],
+            [
+              0.6470588235294118,
+              0.4166666666666667
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.39285714285714285
+            ],
+            [
+              0.7352941176470589,
+              0.39285714285714285
+            ],
+            [
+              0.7352941176470589,
+              0.41666666666666663
+            ],
+            [
+              0.7058823529411765,
+              0.41666666666666663
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.47619047619047616
+            ],
+            [
+              0.6764705882352942,
+              0.47619047619047616
+            ],
+            [
+              0.6764705882352942,
+              0.4880952380952381
+            ],
+            [
+              0.6470588235294118,
+              0.4880952380952381
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.4642857142857143
+            ],
+            [
+              0.7352941176470589,
+              0.4642857142857143
+            ],
+            [
+              0.7352941176470589,
+              0.48809523809523814
+            ],
+            [
+              0.7058823529411765,
+              0.48809523809523814
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.5476190476190477
+            ],
+            [
+              0.6764705882352942,
+              0.5476190476190477
+            ],
+            [
+              0.6764705882352942,
+              0.5595238095238095
+            ],
+            [
+              0.6470588235294118,
+              0.5595238095238095
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.5357142857142857
+            ],
+            [
+              0.7352941176470589,
+              0.5357142857142857
+            ],
+            [
+              0.7352941176470589,
+              0.5595238095238095
+            ],
+            [
+              0.7058823529411765,
+              0.5595238095238095
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.6190476190476191
+            ],
+            [
+              0.6764705882352942,
+              0.6190476190476191
+            ],
+            [
+              0.6764705882352942,
+              0.6309523809523809
+            ],
+            [
+              0.6470588235294118,
+              0.6309523809523809
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.6071428571428571
+            ],
+            [
+              0.7352941176470589,
+              0.6071428571428571
+            ],
+            [
+              0.7352941176470589,
+              0.6309523809523809
+            ],
+            [
+              0.7058823529411765,
+              0.6309523809523809
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.6904761904761905
+            ],
+            [
+              0.6764705882352942,
+              0.6904761904761905
+            ],
+            [
+              0.6764705882352942,
+              0.7023809523809523
+            ],
+            [
+              0.6470588235294118,
+              0.7023809523809523
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.6785714285714286
+            ],
+            [
+              0.7352941176470589,
+              0.6785714285714286
+            ],
+            [
+              0.7352941176470589,
+              0.7023809523809524
+            ],
+            [
+              0.7058823529411765,
+              0.7023809523809524
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.7619047619047619
+            ],
+            [
+              0.6764705882352942,
+              0.7619047619047619
+            ],
+            [
+              0.6764705882352942,
+              0.7738095238095237
+            ],
+            [
+              0.6470588235294118,
+              0.7738095238095237
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.75
+            ],
+            [
+              0.7352941176470589,
+              0.75
+            ],
+            [
+              0.7352941176470589,
+              0.7738095238095238
+            ],
+            [
+              0.7058823529411765,
+              0.7738095238095238
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.8333333333333334
+            ],
+            [
+              0.6764705882352942,
+              0.8333333333333334
+            ],
+            [
+              0.6764705882352942,
+              0.8452380952380952
+            ],
+            [
+              0.6470588235294118,
+              0.8452380952380952
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.8214285714285714
+            ],
+            [
+              0.7352941176470589,
+              0.8214285714285714
+            ],
+            [
+              0.7352941176470589,
+              0.8452380952380952
+            ],
+            [
+              0.7058823529411765,
+              0.8452380952380952
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.6470588235294118,
+              0.9047619047619048
+            ],
+            [
+              0.6764705882352942,
+              0.9047619047619048
+            ],
+            [
+              0.6764705882352942,
+              0.9166666666666666
+            ],
+            [
+              0.6470588235294118,
+              0.9166666666666666
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.7058823529411765,
+              0.8928571428571429
+            ],
+            [
+              0.7352941176470589,
+              0.8928571428571429
+            ],
+            [
+              0.7352941176470589,
+              0.9166666666666667
+            ],
+            [
+              0.7058823529411765,
+              0.9166666666666667
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            238,
+            177,
+            62
           ]
         }
       ],
@@ -4377,7 +5302,7 @@
       "sha256": "7782bddbfb84ac0878a98516698a13d231d554e6ee8330d00abacccdb7deacb3",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:3740",
+        "frontend/app/propsprites.js:3746",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4395,7 +5320,7 @@
       "sha256": "fb3e10ed65d6f5e5b0315349f8e43c39b31038240b09dfd3bfc782c452648320",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4181",
+        "frontend/app/propsprites.js:4187",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4413,7 +5338,7 @@
       "sha256": "3cecb553e23d27870d7db21936407bedd6c14986911b2be5aa40b8278f00649b",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:8143",
+        "frontend/app/propsprites.js:8156",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4460,7 +5385,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8261",
+        "frontend/app/propsprites.js:8274",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4511,7 +5436,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8323",
+        "frontend/app/propsprites.js:8336",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4727,7 +5652,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:7476",
+        "frontend/app/propsprites.js:7485",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4835,7 +5760,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8042",
+        "frontend/app/propsprites.js:8055",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4886,7 +5811,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8203",
+        "frontend/app/propsprites.js:8216",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4937,7 +5862,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8679",
+        "frontend/app/propsprites.js:8692",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -4988,7 +5913,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8768",
+        "frontend/app/propsprites.js:8781",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5066,7 +5991,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8834",
+        "frontend/app/propsprites.js:8847",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5089,7 +6014,7 @@
       "sha256": "569055b8af4063a3f1c69a512919300d931a7459a91ca6072a887982dac08333",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:8903",
+        "frontend/app/propsprites.js:8916",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5136,7 +6061,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8975",
+        "frontend/app/propsprites.js:8988",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5188,7 +6113,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3784",
+        "frontend/app/propsprites.js:3790",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5239,7 +6164,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:3876",
+        "frontend/app/propsprites.js:3882",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5262,7 +6187,7 @@
       "sha256": "01c68e030bc796dc9575531e589f238d5ac1845717ab718bd32e55819d68f49c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4741",
+        "frontend/app/propsprites.js:4747",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5309,7 +6234,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:4893",
+        "frontend/app/propsprites.js:4899",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5332,7 +6257,7 @@
       "sha256": "c802cfc380ee9b173e0a1be75c17dd01471bd4cfed4071fab8369cae3ae0fd97",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4964",
+        "frontend/app/propsprites.js:4970",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5406,7 +6331,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:5131",
+        "frontend/app/propsprites.js:5137",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5485,7 +6410,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:5227",
+        "frontend/app/propsprites.js:5233",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5502,36 +6427,36 @@
       "classification": "effects",
       "reason": "Source-specific local state or decorative mechanism.",
       "inCurrentDemo": true,
-      "image": "frontend/assets/industrial/projection-correction/jukebox.png",
-      "sourceWidth": 287,
-      "sourceHeight": 383,
-      "sha256": "787cd6c617c9c20c1a15acc15d1fad7eeea009b7c164865e20d658e8c8bd357e",
+      "image": "frontend/assets/industrial/projection-correction/jukebox-s-37720212de9f.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
+      "sha256": "37720212de9f7a443f181f6cbfd57c1bcde29206b0e2332890320624e8df90a5",
       "regions": [
         {
           "kind": "screen",
           "region": [
             [
-              0.3,
-              0.44
+              0.375,
+              0.4375
             ],
             [
-              0.72,
-              0.44
+              0.625,
+              0.4375
             ],
             [
-              0.72,
-              0.6
+              0.625,
+              0.5625
             ],
             [
-              0.3,
-              0.6
+              0.375,
+              0.5625
             ]
           ],
           "gate": "connected",
           "colour": [
-            78,
-            206,
-            221
+            144,
+            224,
+            81
           ],
           "idleOpacity": 0.88
         },
@@ -5539,27 +6464,54 @@
           "kind": "lamp",
           "region": [
             [
-              0.36,
+              0.22,
+              0.23
+            ],
+            [
+              0.33999999999999997,
+              0.23
+            ],
+            [
+              0.33999999999999997,
               0.67
             ],
             [
-              0.435,
+              0.22,
               0.67
-            ],
-            [
-              0.435,
-              0.685
-            ],
-            [
-              0.36,
-              0.685
             ]
           ],
           "gate": "connected",
           "colour": [
-            238,
-            177,
-            62
+            233,
+            103,
+            134
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.64,
+              0.23
+            ],
+            [
+              0.76,
+              0.23
+            ],
+            [
+              0.76,
+              0.67
+            ],
+            [
+              0.64,
+              0.67
+            ]
+          ],
+          "gate": "connected",
+          "colour": [
+            233,
+            103,
+            134
           ]
         },
         {
@@ -5591,7 +6543,189 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:5305",
+        "frontend/app/propsprites.js:5311",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "jukebox",
+      "view": "w",
+      "classification": "effects",
+      "reason": "Source-specific local state or decorative mechanism.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/jukebox-w-6667183f8f9e.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "sha256": "6667183f8f9ec9190f64b1b2cd39d5f6ab57b34a43f1b645902c12efa1e5c223",
+      "regions": [
+        {
+          "kind": "screen",
+          "region": [
+            [
+              0.43,
+              0.39
+            ],
+            [
+              0.54,
+              0.39
+            ],
+            [
+              0.54,
+              0.61
+            ],
+            [
+              0.43,
+              0.61
+            ]
+          ],
+          "gate": "connected",
+          "colour": [
+            144,
+            224,
+            81
+          ],
+          "idleOpacity": 0.88
+        }
+      ],
+      "evidence": [
+        "frontend/app/propsprites.js:5311",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "jukebox",
+      "view": "n",
+      "classification": "effects",
+      "reason": "Source-specific local state or decorative mechanism.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/jukebox-n-023705609109.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
+      "sha256": "0237056091097ee9f723addfb221dacc9464fe3c2b7e20a9438bc98bff47c97a",
+      "regions": [
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.23,
+              0.22
+            ],
+            [
+              0.35,
+              0.22
+            ],
+            [
+              0.35,
+              0.72
+            ],
+            [
+              0.23,
+              0.72
+            ]
+          ],
+          "gate": "connected",
+          "colour": [
+            233,
+            103,
+            134
+          ]
+        },
+        {
+          "kind": "lamp",
+          "region": [
+            [
+              0.65,
+              0.22
+            ],
+            [
+              0.77,
+              0.22
+            ],
+            [
+              0.77,
+              0.72
+            ],
+            [
+              0.65,
+              0.72
+            ]
+          ],
+          "gate": "connected",
+          "colour": [
+            233,
+            103,
+            134
+          ]
+        }
+      ],
+      "evidence": [
+        "frontend/app/propsprites.js:5311",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "jukebox",
+      "view": "e",
+      "classification": "effects",
+      "reason": "Source-specific local state or decorative mechanism.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/jukebox-e-ecedf70b21d7.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "sha256": "ecedf70b21d756eff69a191731b9476a608c8cb90cea6d23f12583f5cc232e96",
+      "regions": [
+        {
+          "kind": "screen",
+          "region": [
+            [
+              0.45,
+              0.39
+            ],
+            [
+              0.5700000000000001,
+              0.39
+            ],
+            [
+              0.5700000000000001,
+              0.61
+            ],
+            [
+              0.45,
+              0.61
+            ]
+          ],
+          "gate": "connected",
+          "colour": [
+            144,
+            224,
+            81
+          ],
+          "idleOpacity": 0.88
+        }
+      ],
+      "evidence": [
+        "frontend/app/propsprites.js:5311",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5614,7 +6748,7 @@
       "sha256": "f74a4246d439d09837daac1f23571cb65027a14987aae2bf4123a4a47c01d185",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5427",
+        "frontend/app/propsprites.js:5436",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5632,7 +6766,7 @@
       "sha256": "6fca3b889d28186dc4cc20bd7634628d3fa06cb4bfb1db226f5d68f8adab872d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9122",
+        "frontend/app/propsprites.js:9135",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5678,7 +6812,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9232",
+        "frontend/app/propsprites.js:9245",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5701,7 +6835,7 @@
       "sha256": "ee94e36598847f9ef394b0571f47bc8f1bfc9278dc242ea9d24bf925af38be8c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9317",
+        "frontend/app/propsprites.js:9330",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5747,7 +6881,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9409",
+        "frontend/app/propsprites.js:9422",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5844,7 +6978,7 @@
       "sha256": "0d0acf0d0b733bf51df5f00aaf45148ee1a64a5d7e7c3742da99d7a0f2eb76ad",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5513",
+        "frontend/app/propsprites.js:5522",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5862,7 +6996,7 @@
       "sha256": "b8d1e86b67b547b92d9e5f9c8efa4496095ec89eee373468838317da4905a398",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5574",
+        "frontend/app/propsprites.js:5583",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5880,7 +7014,7 @@
       "sha256": "a01f54025662613c7d1e9adc0bb21d88a21700aa8e24288eb85d959a7cbcf6f8",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5637",
+        "frontend/app/propsprites.js:5646",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5931,7 +7065,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:8390",
+        "frontend/app/propsprites.js:8403",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -5990,7 +7124,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9053",
+        "frontend/app/propsprites.js:9066",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6013,7 +7147,7 @@
       "sha256": "5d543cbbd15eb062099f71a914b1a0f5929473974c3b3e44d0a5ec6b589cca60",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9084",
+        "frontend/app/propsprites.js:9097",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6031,7 +7165,7 @@
       "sha256": "83b51f81da85db8ce4d0b35f2d0e1942734f087c77d1f85abe5cbc450b65e050",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:4859",
+        "frontend/app/propsprites.js:4865",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6049,7 +7183,7 @@
       "sha256": "865ff5517c06c037b6ead2e7a76ac9c990849a9738768b5acfacef261086e072",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5740",
+        "frontend/app/propsprites.js:5749",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6067,7 +7201,7 @@
       "sha256": "9d3914b87a9c4f416b428c09ce805ff1ac4c39cc16a29a998e91b99928f2d614",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5740",
+        "frontend/app/propsprites.js:5749",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6085,7 +7219,7 @@
       "sha256": "3e6c87bc7d18e82b013203664fd970fdc584101edfcaf29673af65f4c739c832",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5740",
+        "frontend/app/propsprites.js:5749",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6103,7 +7237,7 @@
       "sha256": "9ee819732cc08490975cc2335f1eb3379f5201d70589ca0b17d89dba0656bb6d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5740",
+        "frontend/app/propsprites.js:5749",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6121,7 +7255,7 @@
       "sha256": "521647f8007b07f0b3d8898ed4cadc371bb6a9a430a35f5261a529b65bc13616",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5943",
+        "frontend/app/propsprites.js:5952",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6139,7 +7273,7 @@
       "sha256": "3e57d6b5616290b256b8bd0f84eaffe5b3bd6dab13a15e3ccb939b4458738402",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6166",
+        "frontend/app/propsprites.js:6175",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6157,7 +7291,7 @@
       "sha256": "5f9f9f47e802e02ff697625dee3136f556793672113ea40c8c98a4ab1b9c559c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6166",
+        "frontend/app/propsprites.js:6175",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6175,7 +7309,7 @@
       "sha256": "50560a0302b315f5b20be73527289c8625140843996efeb54437cadc5c955a7d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6265",
+        "frontend/app/propsprites.js:6274",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6193,7 +7327,7 @@
       "sha256": "d654a7882d3576a721393d15156b6ec6c6f94e97ae72de9fce95d534a8476903",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6265",
+        "frontend/app/propsprites.js:6274",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6211,7 +7345,7 @@
       "sha256": "362375703cea48e3dfad67015b64767b39fbac4409e3756308ed269a1e8ce007",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6430",
+        "frontend/app/propsprites.js:6439",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6229,7 +7363,7 @@
       "sha256": "14c374b59da0f9dd71e6ee29611ea02e581c772d437ac0d92953c511b875fe85",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6430",
+        "frontend/app/propsprites.js:6439",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6247,7 +7381,7 @@
       "sha256": "ea691650d04e6f82593a82fc4c39fad0269b190e9bda46424b8020e0d377d625",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6835",
+        "frontend/app/propsprites.js:6844",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6265,7 +7399,7 @@
       "sha256": "357b75e172ae7e7fb8cf46c5e00bc276f2949c5c66aea010f9ad79c60a7d4cef",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6732",
+        "frontend/app/propsprites.js:6741",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6283,7 +7417,7 @@
       "sha256": "bb7afdb1978254c1bb059f83b3a5e5ed58f2affb87cc3b04e00563e5ee87aa92",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6732",
+        "frontend/app/propsprites.js:6741",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6301,7 +7435,7 @@
       "sha256": "3fc3d0d83a7203ca55b5f61abfc50cfecf03ce98d169997c5d28ecfe90fe5e71",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6732",
+        "frontend/app/propsprites.js:6741",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6319,7 +7453,7 @@
       "sha256": "aaed440b4f9e3eec27ab2a22315e57c517639dd67858be632631344157c97e11",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6498",
+        "frontend/app/propsprites.js:6507",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6337,7 +7471,7 @@
       "sha256": "83f592249092cb694cb0ec1abd000bc59e90df71f649f0172c37d34d55c9feb8",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6498",
+        "frontend/app/propsprites.js:6507",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6355,7 +7489,7 @@
       "sha256": "78aa189e9907408bd7383110a8d4e2edf4a8874337baeb3ad0d6dfe34a218f5e",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6498",
+        "frontend/app/propsprites.js:6507",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6373,7 +7507,7 @@
       "sha256": "9103e5f07187377da58478c180ced662a185f2c31a1e0ced5f63e36de6756abf",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6498",
+        "frontend/app/propsprites.js:6507",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6391,7 +7525,7 @@
       "sha256": "706927fb51caaf597e79fbd95d2ac872c118e7e08873b571ea00ed8ccc6590a3",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6619",
+        "frontend/app/propsprites.js:6628",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6409,7 +7543,7 @@
       "sha256": "0b15c34125f3cb6645828920eb133f6b5f3160870aba2b1c30c42fe9229ceb6f",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6619",
+        "frontend/app/propsprites.js:6628",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6427,7 +7561,7 @@
       "sha256": "55696264d747b83de6248233388704f5465dd77aa268808a9a5bb5e87b3a4c69",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6619",
+        "frontend/app/propsprites.js:6628",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6445,7 +7579,7 @@
       "sha256": "97d288fe7d695a482dbce1fe8598a147ecb285fc5d548fc1a77f6c6a8d5609cd",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6619",
+        "frontend/app/propsprites.js:6628",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6463,7 +7597,7 @@
       "sha256": "2104dd6a98ecb975013c27cb2769d8ecf51c34d83515686f296b325f42bdb304",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5975",
+        "frontend/app/propsprites.js:5984",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6481,7 +7615,7 @@
       "sha256": "dfc0e872bfd9106d12ead90f28660e1dd71cc3020a3fb40e352573099fcdadea",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5975",
+        "frontend/app/propsprites.js:5984",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6499,7 +7633,7 @@
       "sha256": "eecab611ec1f48ede26e0acba7b47b55f982fdc756ad19bd8900dc15c6a34acb",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6015",
+        "frontend/app/propsprites.js:6024",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6517,7 +7651,7 @@
       "sha256": "f36d4e137d8f68318958a25c1beb45db28ceda5079abfb5976dc07d76fc1927f",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:6015",
+        "frontend/app/propsprites.js:6024",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6922,7 +8056,7 @@
       "sha256": "cc9bfb852adf47e8af6192de7b61f9c91ef731ec22aaac1d6708bc56fab40b2c",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9538",
+        "frontend/app/propsprites.js:9551",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6940,7 +8074,7 @@
       "sha256": "4bd337b6527a80c7620aee89d2ba85f1655d4c3f13d8816b3f6607bbf6a56bdf",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9563",
+        "frontend/app/propsprites.js:9576",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -6990,7 +8124,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9582",
+        "frontend/app/propsprites.js:9595",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7041,7 +8175,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9607",
+        "frontend/app/propsprites.js:9620",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7064,7 +8198,7 @@
       "sha256": "e384c75cce8ce56139256a8f1ccd4f36b69599efa6879bfc00a6c180be0c622d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9628",
+        "frontend/app/propsprites.js:9641",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7082,7 +8216,7 @@
       "sha256": "e69a5da955ddfc32793411f3532f71d70a6fda6487efb3eacc63e54a170e29fc",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9649",
+        "frontend/app/propsprites.js:9662",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7129,7 +8263,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9668",
+        "frontend/app/propsprites.js:9681",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7152,7 +8286,7 @@
       "sha256": "b58b1ec847aa770718dcc3fe387fd7764a343a3ef30398fbe67335fd9e510421",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9692",
+        "frontend/app/propsprites.js:9705",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7203,7 +8337,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10501",
+        "frontend/app/propsprites.js:10514",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7359,7 +8493,7 @@
       "sha256": "3503eaa38f6b606bf82b15dedc3c894f6d1abc3b25a70e36514d46dba2949aa7",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9731",
+        "frontend/app/propsprites.js:9744",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7377,7 +8511,7 @@
       "sha256": "d1413f0f35659effcc7d56c36a491732996b18c62653c2ac3cec2be279a65f2d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:9844",
+        "frontend/app/propsprites.js:9857",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7451,7 +8585,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10418",
+        "frontend/app/propsprites.js:10431",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7502,7 +8636,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9892",
+        "frontend/app/propsprites.js:9905",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7571,7 +8705,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:9945",
+        "frontend/app/propsprites.js:9958",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7594,7 +8728,7 @@
       "sha256": "7c5d3c5df92c09015b4be5e0ca40f983ab3364305cdc085e0444bd52fd9ef290",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10043",
+        "frontend/app/propsprites.js:10056",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7612,7 +8746,7 @@
       "sha256": "8056a91ccaf95812463c7bd1144fe28de6e962ae31262c7167f490a40ba04d33",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10105",
+        "frontend/app/propsprites.js:10118",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7658,7 +8792,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10107",
+        "frontend/app/propsprites.js:10120",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7709,7 +8843,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10162",
+        "frontend/app/propsprites.js:10175",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7732,7 +8866,7 @@
       "sha256": "1e1de681322449c53cabf53a9f4203faae8370772e30ec55a634bc5ebe231e84",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10277",
+        "frontend/app/propsprites.js:10290",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7750,7 +8884,7 @@
       "sha256": "6fbcb30b5647c8337722cad4599c3f2fe647c727839f1e168e44f0a94f1020dc",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10386",
+        "frontend/app/propsprites.js:10399",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7768,7 +8902,7 @@
       "sha256": "253310ae004a8a5d942cbdad8a98ec42d7ee788a5401dc9233c1d068275995e1",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10164",
+        "frontend/app/propsprites.js:10177",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7786,7 +8920,7 @@
       "sha256": "c7a97d2106af6e1d2880d78fbaf46cb7ae76101a4f960caa95f9cc7b75cf0159",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10216",
+        "frontend/app/propsprites.js:10229",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7804,7 +8938,7 @@
       "sha256": "46e9d93e54e34178502a6dd81c55c51a1437542b51be690734ae409bcb3be28d",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10218",
+        "frontend/app/propsprites.js:10231",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7822,7 +8956,7 @@
       "sha256": "ff8e5e79a32b921091e57bb1e26ef6ba2c0e0ed0c5e00e5c971fd837966a0c1e",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10275",
+        "frontend/app/propsprites.js:10288",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7840,7 +8974,7 @@
       "sha256": "0f7e7d44ff021cb05b59f9079ffdc0b2fb0adc150c3e93a8c739101b5fcf24d1",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5050",
+        "frontend/app/propsprites.js:5056",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -7858,11 +8992,402 @@
       "sha256": "fd08e3155b6958eddf2279ec6d2abcf5903f69ec7237a805e742019c7c7f73f5",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:5124",
+        "frontend/app/propsprites.js:5130",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
       "frameBounds": null
+    },
+    {
+      "id": "plugin_terminal",
+      "view": "s",
+      "classification": "effects",
+      "reason": "Source-specific local state or decorative mechanism.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "sourceWidth": 348,
+      "sourceHeight": 696,
+      "sha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
+      "regions": [
+        {
+          "kind": "scan",
+          "region": [
+            [
+              0.32,
+              0.38
+            ],
+            [
+              0.66,
+              0.38
+            ],
+            [
+              0.66,
+              0.64
+            ],
+            [
+              0.32,
+              0.64
+            ]
+          ],
+          "gate": "work",
+          "colour": [
+            144,
+            224,
+            81
+          ]
+        }
+      ],
+      "evidence": [
+        "frontend/app/propsprites.js:7703",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "s",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-s-91aaf8cf9bce.png",
+      "sourceWidth": 288,
+      "sourceHeight": 480,
+      "sha256": "91aaf8cf9bce17dcd3d52fea029f198cdf344ba804399192847fdbefa92ed8d6",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "w",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-w-0a5c9343a88f.png",
+      "sourceWidth": 294,
+      "sourceHeight": 474,
+      "sha256": "0a5c9343a88f59986bc468388b694d42aba3530e10ac20af3e16a44e95d76a05",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "n",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-n-ec4097d6e053.png",
+      "sourceWidth": 312,
+      "sourceHeight": 462,
+      "sha256": "ec4097d6e053fd14218d65a0aac4b496d9cfd041bff2f58ec4b2d255b9350df5",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "e",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-e-a54a6586c2f7.png",
+      "sourceWidth": 294,
+      "sourceHeight": 480,
+      "sha256": "a54a6586c2f78601b969b2c9dbd89fb21a555beae9be2ac35fbfde53c8cb6a6b",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "s",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-s-3e9ffdc38c64.png",
+      "sourceWidth": 276,
+      "sourceHeight": 450,
+      "sha256": "3e9ffdc38c646df826856ea2e9ff76909e93efa303315a241fd01c0bb17ebcab",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "w",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-w-7733126a9ba3.png",
+      "sourceWidth": 246,
+      "sourceHeight": 438,
+      "sha256": "7733126a9ba30d94c1c4758e339eece5777fdcb2b08173acb50e7976b4a2fd96",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "n",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-n-5ed31d422977.png",
+      "sourceWidth": 252,
+      "sourceHeight": 384,
+      "sha256": "5ed31d42297758d87348aad476858b8cf6982a838506823184b91dfda5aaebf4",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "e",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-e-9f59dc6081a8.png",
+      "sourceWidth": 240,
+      "sourceHeight": 432,
+      "sha256": "9f59dc6081a8d187dba9f63ab01d8d9afa1cbf49c437da91ab9c22a8309d82a2",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "s",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-s-4def3258d076.png",
+      "sourceWidth": 318,
+      "sourceHeight": 414,
+      "sha256": "4def3258d076cbf0634ab708eef197075fa6139897561e5a3026416a7ccf7ad9",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "w",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-w-874a3d34c005.png",
+      "sourceWidth": 300,
+      "sourceHeight": 426,
+      "sha256": "874a3d34c0051d6f2611675713df0a60bbaf88ae5d3687827845ab9876f74074",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "n",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "sourceWidth": 312,
+      "sourceHeight": 426,
+      "sha256": "e3bbc34100d61e73c3d989a7bde00adb079a9539783a88f38d64f290fbb66696",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "e",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-e-60c67969e536.png",
+      "sourceWidth": 264,
+      "sourceHeight": 420,
+      "sha256": "60c67969e536074c1d07e541681eaa02df55f86077087b1be08811c84ca66bc2",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "furniture_desk",
+      "view": "s",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-s-0f98311fb7a8.png",
+      "sourceWidth": 630,
+      "sourceHeight": 258,
+      "sha256": "0f98311fb7a86f1586addec896a74134bae13ecdecafdd5f52a80283b84a35ff",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "furniture_desk",
+      "view": "w",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-w-f661e14deda1.png",
+      "sourceWidth": 228,
+      "sourceHeight": 384,
+      "sha256": "f661e14deda1d1a09059b21ddc4b9256c8e5db4c9ff075534a7e7ac7df22ff44",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "furniture_desk",
+      "view": "n",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-n-f5ad07744c51.png",
+      "sourceWidth": 570,
+      "sourceHeight": 246,
+      "sha256": "f5ad07744c51e3ccd24743fefae5e3b2fc82b7904e6abd3b2d25f71941bb329b",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "furniture_desk",
+      "view": "e",
+      "classification": "none",
+      "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-e-07076a59f19a.png",
+      "sourceWidth": 216,
+      "sourceHeight": 384,
+      "sha256": "07076a59f19a30d6ea44ca4733e9e32436d3ed8b908755f259743f94a28edcbe",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "laptop",
+      "view": "s",
+      "classification": "effects",
+      "reason": "Source-specific local state or decorative mechanism.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/laptop-s-e68e4f7f650d.png",
+      "sourceWidth": 276,
+      "sourceHeight": 276,
+      "sha256": "e68e4f7f650d1f5b0bdcc942bfe7b489d0cc6df4ff4c55c8306af1d1a6d65de7",
+      "regions": [
+        {
+          "kind": "screen",
+          "region": [
+            [
+              0.18,
+              0.09
+            ],
+            [
+              0.8200000000000001,
+              0.09
+            ],
+            [
+              0.8200000000000001,
+              0.5
+            ],
+            [
+              0.18,
+              0.5
+            ]
+          ],
+          "gate": "occupied",
+          "colour": [
+            144,
+            224,
+            81
+          ],
+          "idleOpacity": 0
+        }
+      ],
+      "evidence": [
+        "frontend/app/propsprites.js:10749",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1,
+        "height": 1
+      }
     }
   ]
 }

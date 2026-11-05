@@ -334,8 +334,8 @@ const WorkflowsWindow = (() => {
     if (!has()) {
       const p = st.propById(step.id), rid = p && st.roomAt(p.x, p.y), rm = rid && st.roomById(rid);
       outer: for (const rc of ((rm && rm.rects) || [])) for (let y = rc.y1; y <= rc.y2; y++) for (let x = rc.x1; x <= rc.x2; x++) {
-        if (!(st.canPlaceProp('desk', x, y, 2, 1) || {}).ok) continue;
-        const res = st.addProp({ t: 'desk', x, y, w: 2, h: 1, agentId: step.agentId });
+        if (!(st.canPlaceProp('console', x, y, 2, 1) || {}).ok) continue;
+        const res = st.addProp({ t: 'console', x, y, w: 2, h: 1, agentId: step.agentId });
         if (res && res.ok) { r = res; break outer; }
       }
     }

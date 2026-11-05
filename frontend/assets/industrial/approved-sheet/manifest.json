@@ -469,22 +469,27 @@
     "console": {
       "views": {
         "s": {
-          "image": "console.png",
-          "sourceWidth": 88,
-          "sourceHeight": 59,
+          "image": "console-s-9f5f3f957919.png",
+          "sourceWidth": 582,
+          "sourceHeight": 396,
           "footprint": {
             "w": 2,
             "h": 1
           },
           "bounds": {
             "x": -3,
-            "y": -6.7727,
+            "y": -11,
             "width": 28,
-            "height": 18.7727
+            "height": 23
           },
           "mode": "approved",
           "exposure": 1,
-          "screenPower": "occupied"
+          "screenPower": "occupied",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -513,44 +518,54 @@
     "pixelrig": {
       "views": {
         "s": {
-          "image": "pixelrig.png",
-          "sourceWidth": 74,
-          "sourceHeight": 89,
+          "image": "pixelrig-s-e575a02eac65.png",
+          "sourceWidth": 462,
+          "sourceHeight": 258,
           "footprint": {
             "w": 2,
             "h": 1
           },
           "bounds": {
             "x": -1,
-            "y": -24.0811,
+            "y": -14,
             "width": 30,
-            "height": 36.0811
+            "height": 26
           },
           "mode": "approved",
           "exposure": 1,
-          "screenPower": "occupied"
+          "screenPower": "occupied",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
     "bench": {
       "views": {
         "s": {
-          "image": "bench.png",
-          "sourceWidth": 87,
-          "sourceHeight": 66,
+          "image": "bench-s-7c665ada2175.png",
+          "sourceWidth": 888,
+          "sourceHeight": 378,
           "footprint": {
             "w": 4,
             "h": 1
           },
           "bounds": {
             "x": -1,
-            "y": -28.9655,
+            "y": -14,
             "width": 54,
-            "height": 40.9655
+            "height": 26
           },
           "mode": "approved",
           "exposure": 1,
-          "screenPower": "occupied"
+          "screenPower": "occupied",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -755,17 +770,21 @@
       "views": {
         "s": {
           "image": "connector_portal.png",
-          "sourceWidth": 76,
-          "sourceHeight": 84,
+          "sourceWidth": 170,
+          "sourceHeight": 322,
           "footprint": {
             "w": 1,
             "h": 2
           },
           "bounds": {
             "x": 0,
-            "y": 5.2105,
+            "y": -7,
             "width": 17,
-            "height": 18.7895
+            "height": 31
+          },
+          "contact": {
+            "x": 0.5,
+            "y": 1
           },
           "mode": "approved",
           "exposure": 1,
@@ -907,22 +926,27 @@
     "rack": {
       "views": {
         "s": {
-          "image": "rack.png",
-          "sourceWidth": 68,
-          "sourceHeight": 92,
+          "image": "rack-s-e2e47b49dc94.png",
+          "sourceWidth": 216,
+          "sourceHeight": 252,
           "footprint": {
             "w": 2,
             "h": 1
           },
           "bounds": {
             "x": 0,
-            "y": -27.2353,
+            "y": -14,
             "width": 29,
-            "height": 39.2353
+            "height": 26
           },
           "mode": "approved",
           "exposure": 1,
-          "activity": "work"
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -1059,20 +1083,91 @@
       "views": {
         "s": {
           "image": "missionboard.png",
-          "sourceWidth": 84,
-          "sourceHeight": 70,
+          "sourceWidth": 1116,
+          "sourceHeight": 984,
           "footprint": {
             "w": 3,
             "h": 1
           },
           "bounds": {
             "x": -1,
-            "y": -19.6667,
+            "y": -13,
             "width": 38,
-            "height": 31.6667
+            "height": 25
           },
           "mode": "approved",
-          "exposure": 1
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "missionboard-w.png",
+          "sourceWidth": 510,
+          "sourceHeight": 1062,
+          "footprint": {
+            "w": 3,
+            "h": 1
+          },
+          "bounds": {
+            "x": -1,
+            "y": -13,
+            "width": 38,
+            "height": 25
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "missionboard-n.png",
+          "sourceWidth": 1080,
+          "sourceHeight": 984,
+          "footprint": {
+            "w": 3,
+            "h": 1
+          },
+          "bounds": {
+            "x": -1,
+            "y": -13,
+            "width": 38,
+            "height": 25
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "missionboard-e.png",
+          "sourceWidth": 492,
+          "sourceHeight": 1068,
+          "footprint": {
+            "w": 3,
+            "h": 1
+          },
+          "bounds": {
+            "x": -1,
+            "y": -13,
+            "width": 38,
+            "height": 25
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -1080,20 +1175,91 @@
       "views": {
         "s": {
           "image": "trophycase.png",
-          "sourceWidth": 75,
-          "sourceHeight": 85,
+          "sourceWidth": 174,
+          "sourceHeight": 216,
           "footprint": {
             "w": 2,
             "h": 2
           },
           "bounds": {
             "x": -1,
-            "y": -5.4667,
+            "y": -6,
             "width": 26,
-            "height": 29.4667
+            "height": 30
           },
           "mode": "approved",
-          "exposure": 1
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "trophycase-w.png",
+          "sourceWidth": 168,
+          "sourceHeight": 222,
+          "footprint": {
+            "w": 2,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -6,
+            "width": 26,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "trophycase-n.png",
+          "sourceWidth": 174,
+          "sourceHeight": 222,
+          "footprint": {
+            "w": 2,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -6,
+            "width": 26,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "trophycase-e.png",
+          "sourceWidth": 174,
+          "sourceHeight": 222,
+          "footprint": {
+            "w": 2,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -6,
+            "width": 26,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -1402,21 +1568,27 @@
     "bridge_dispatch_pylon": {
       "views": {
         "s": {
-          "image": "bridge_dispatch_pylon.png",
-          "sourceWidth": 48,
-          "sourceHeight": 96,
+          "image": "plugin_terminal-s-4859253042c3.png",
+          "sourceWidth": 348,
+          "sourceHeight": 696,
           "footprint": {
             "w": 1,
             "h": 2
           },
           "bounds": {
             "x": -2,
-            "y": -14,
+            "y": -11,
             "width": 19,
-            "height": 38
+            "height": 35
           },
           "mode": "approved",
-          "exposure": 1
+          "exposure": 1,
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -1744,22 +1916,27 @@
     "rackV": {
       "views": {
         "s": {
-          "image": "rackV.png",
-          "sourceWidth": 72,
-          "sourceHeight": 82,
+          "image": "rackV-s-547438d6c97b.png",
+          "sourceWidth": 204,
+          "sourceHeight": 504,
           "footprint": {
             "w": 1,
             "h": 2
           },
           "bounds": {
             "x": -1,
-            "y": 8.0556,
+            "y": -12,
             "width": 14,
-            "height": 15.9444
+            "height": 36
           },
           "mode": "approved",
           "exposure": 1,
-          "activity": "work"
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -2235,23 +2412,100 @@
     "jukebox": {
       "views": {
         "s": {
-          "image": "jukebox.png",
-          "sourceWidth": 66,
-          "sourceHeight": 90,
+          "image": "jukebox-s-37720212de9f.png",
+          "sourceWidth": 216,
+          "sourceHeight": 252,
           "footprint": {
             "w": 1,
             "h": 2
           },
           "bounds": {
             "x": -1,
-            "y": -0.5455,
+            "y": -3,
             "width": 18,
-            "height": 24.5455
+            "height": 27
           },
           "mode": "approved",
           "exposure": 1,
           "screenPower": "connected",
-          "activity": "work"
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "jukebox-w-6667183f8f9e.png",
+          "sourceWidth": 168,
+          "sourceHeight": 288,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -3,
+            "width": 18,
+            "height": 27
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "screenPower": "connected",
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "jukebox-n-023705609109.png",
+          "sourceWidth": 216,
+          "sourceHeight": 252,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -3,
+            "width": 18,
+            "height": 27
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "screenPower": "connected",
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "jukebox-e-ecedf70b21d7.png",
+          "sourceWidth": 168,
+          "sourceHeight": 288,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -3,
+            "width": 18,
+            "height": 27
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "screenPower": "connected",
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
         }
       }
     },
@@ -4042,6 +4296,428 @@
           },
           "mode": "approved",
           "exposure": 1
+        }
+      }
+    },
+    "plugin_terminal": {
+      "views": {
+        "s": {
+          "image": "plugin_terminal-s-4859253042c3.png",
+          "sourceWidth": 348,
+          "sourceHeight": 696,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -2,
+            "y": -11,
+            "width": 19,
+            "height": 35
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "activity": "work",
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        }
+      }
+    },
+    "red_cushion_chair": {
+      "views": {
+        "s": {
+          "image": "red_cushion_chair-s-91aaf8cf9bce.png",
+          "sourceWidth": 288,
+          "sourceHeight": 480,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "red_cushion_chair-w-0a5c9343a88f.png",
+          "sourceWidth": 294,
+          "sourceHeight": 474,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "red_cushion_chair-n-ec4097d6e053.png",
+          "sourceWidth": 312,
+          "sourceHeight": 462,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "red_cushion_chair-e-a54a6586c2f7.png",
+          "sourceWidth": 294,
+          "sourceHeight": 480,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        }
+      }
+    },
+    "red_captains_chair": {
+      "views": {
+        "s": {
+          "image": "red_captains_chair-s-3e9ffdc38c64.png",
+          "sourceWidth": 276,
+          "sourceHeight": 450,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "red_captains_chair-w-7733126a9ba3.png",
+          "sourceWidth": 246,
+          "sourceHeight": 438,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "red_captains_chair-n-5ed31d422977.png",
+          "sourceWidth": 252,
+          "sourceHeight": 384,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "red_captains_chair-e-9f59dc6081a8.png",
+          "sourceWidth": 240,
+          "sourceHeight": 432,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        }
+      }
+    },
+    "simple_red_cushion_chair": {
+      "views": {
+        "s": {
+          "image": "simple_red_cushion_chair-s-4def3258d076.png",
+          "sourceWidth": 318,
+          "sourceHeight": 414,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "simple_red_cushion_chair-w-874a3d34c005.png",
+          "sourceWidth": 300,
+          "sourceHeight": 426,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
+          "sourceWidth": 312,
+          "sourceHeight": 426,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "simple_red_cushion_chair-e-60c67969e536.png",
+          "sourceWidth": 264,
+          "sourceHeight": 420,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -5,
+            "width": 12,
+            "height": 17
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        }
+      }
+    },
+    "furniture_desk": {
+      "views": {
+        "s": {
+          "image": "furniture_desk-s-0f98311fb7a8.png",
+          "sourceWidth": 630,
+          "sourceHeight": 258,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": -1,
+            "y": -7,
+            "width": 26,
+            "height": 19
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "furniture_desk-w-f661e14deda1.png",
+          "sourceWidth": 228,
+          "sourceHeight": 384,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -5,
+            "width": 14,
+            "height": 29
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "furniture_desk-n-f5ad07744c51.png",
+          "sourceWidth": 570,
+          "sourceHeight": 246,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": -1,
+            "y": -7,
+            "width": 26,
+            "height": 19
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "furniture_desk-e-07076a59f19a.png",
+          "sourceWidth": 216,
+          "sourceHeight": 384,
+          "footprint": {
+            "w": 1,
+            "h": 2
+          },
+          "bounds": {
+            "x": -1,
+            "y": -5,
+            "width": 14,
+            "height": 29
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          },
+          "effects": false
+        }
+      }
+    },
+    "laptop": {
+      "views": {
+        "s": {
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 1,
+            "y": 1,
+            "width": 10,
+            "height": 11
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "screenPower": "occupied",
+          "effects": false,
+          "image": "laptop-s-e68e4f7f650d.png",
+          "sourceWidth": 276,
+          "sourceHeight": 276,
+          "contact": {
+            "x": 0.5,
+            "y": 1
+          }
         }
       }
     }

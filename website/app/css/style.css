@@ -441,9 +441,11 @@ body:has(#screen-game.active):not(.refit-on) #logo { display: flex; }
   font-size: 11px; line-height: 1.2; letter-spacing: 1.2px; color: var(--ph-dim);
   text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.crew-name { font-size: 17px; letter-spacing: 1px; display: flex; align-items: baseline; }
+.crew-name { width: 100%; min-width: 0; font-size: 17px; letter-spacing: 1px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 8px; }
+.crew-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .crew-id, .ag-name-id { margin-left:6px; color:var(--ph-dim); font-size:.72em; letter-spacing:.5px; }
-.crew-room { font-size: 10.5px; color: var(--ph-dim); margin-left: auto; letter-spacing: 1px; padding-left: 8px; }
+.crew-room { grid-column: 2; grid-row: 1; width: 2.8em; box-sizing: border-box; justify-self: end; font-size: 10.5px; color: var(--ph-dim); letter-spacing: 1px; text-align: right; white-space: nowrap; }
+.crew-clock { grid-column: 2; grid-row: 1; justify-self: end; }
 .crew-status {
   font-size: 12px; color: var(--text); opacity: 0.7;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 198px;

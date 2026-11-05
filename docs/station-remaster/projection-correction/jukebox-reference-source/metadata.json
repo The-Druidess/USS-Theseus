@@ -1,0 +1,29 @@
+{
+  "group_id": "dcf09516-41ca-47de-b1df-9c21273b6e46",
+  "objects": [
+    {
+      "id": "37c034ae-656c-4cdd-9e97-1089e014ae9f",
+      "name": "base",
+      "prompt": "white jukebox with red tubes, green screen and grille, top-down view",
+      "size": {
+        "width": 64,
+        "height": 64
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-04T17:33:53.328122"
+}

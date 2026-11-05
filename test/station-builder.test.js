@@ -577,12 +577,12 @@ for (const c of T.catalog) {
     const R = Object.assign({}, E, { canRecruit: true, recruit: role => { const id = 'zr' + (made.length + 1); if (!st.ensureWorkstation(id).ok) return null; made.push(id); return { id, name: role }; } });
     const r = SB.planRoom(st.serialize(), { zones: [{ area: 'left', style: 'desks' }, { area: 'right', line: 'build_test', staff: [{ step: 1, agent: 'lead' }, { step: 2, agent: 'new' }] }] }, R);
     A.ok(r.ok && /It will be ready to run\. It adds 1 crew member: TESTER, with a desk in DESKS\. UNDO does not remove agents/.test(r.plan.summary) && made.length === 0, 'a zone line recruits on the card, nobody yet, its desk by its line: ' + (r.error || r.plan.summary.slice(-160)));
-    const homeDesks = st.props().filter(p => p.t === 'desk' && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length;
+    const homeDesks = st.props().filter(p => M.capForProp(p.t) === 'computer' && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length;
     const a = SB.apply(st, r.plan, R);
     A.ok(a.ok && a.recruited.length === 1 && a.lines[0].ready, 'the build recruits the Tester and the line is ready');
     const mine = st.props().filter(p => p.agentId === 'zr1'), den = st.rooms().find(x => x.name === 'DESKS');
-    A.ok(mine.filter(p => /^desk/.test(p.t)).length === 1 && mine.some(p => p.t === 'desk' && st.roomAt(p.x, p.y) === den.id), 'the recruit owns ONE desk, by its line');
-    A.eq(st.props().filter(p => p.t === 'desk' && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length, homeDesks, 'and none was left behind in the bridge');
+    A.ok(mine.filter(p => M.capForProp(p.t) === 'computer').length === 1 && mine.some(p => M.capForProp(p.t) === 'computer' && st.roomAt(p.x, p.y) === den.id), 'the recruit owns ONE desk, by its line');
+    A.eq(st.props().filter(p => M.capForProp(p.t) === 'computer' && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length, homeDesks, 'and none was left behind in the bridge');
     A.ok(st.undo().ok); A.eq(snap(st), before, 'one undo takes back the room, the line, the desk and the seat');
   }
   // refusals, in plain words, changing nothing
@@ -859,12 +859,12 @@ for (const c of T.catalog) {
     if (three.ok) {
       const a = SB.apply(st, three.plan, R), works = st.rooms().find(x => x.name === 'WORKS');
       A.ok(a.ok && a.recruited.length === 3, 'it builds and recruits the three (' + (a.error || '') + ')');
-      const desks = made.map(id => st.props().filter(p => p.agentId === id && /^desk/.test(p.t)));
+      const desks = made.map(id => st.props().filter(p => p.agentId === id && M.capForProp(p.t) === 'computer'));
       A.ok(desks.every(d => d.length === 1 && st.roomAt(d[0].x, d[0].y) === works.id), 'each recruit owns one desk, in the hall');
       const row = desks.map(d => d[0]).sort((p, q) => p.x - q.x);
       A.ok(row.every((p, i) => !i || p.x - (row[i - 1].x + row[i - 1].w) >= 1), 'the desks stand in a row with a clear tile between them, never shoulder to shoulder');
       A.ok(row.every(p => p.y === row[0].y), 'all three on ONE row, never split across the room');
-      A.eq(st.props().filter(p => /^desk/.test(p.t) && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length, 2, 'the bridge keeps just the crew\'s own two desks: no recruit desk was piled into it');
+      A.eq(st.props().filter(p => M.capForProp(p.t) === 'computer' && st.roomAt(p.x, p.y) === st.rooms().find(x => x.name === 'HOME').id).length, 2, 'the bridge keeps just the crew\'s own two desks: no recruit desk was piled into it');
       A.ok(st.undo().ok); A.eq(snap(st).length > 0, true);
     }
     const line4 = SB.plan(fresh().serialize(), { shape: ['RESEARCHER', { together: ['WRITER', 'ANALYST'] }, 'REVIEWER'], steps: [1, 2, 3, 4].map(step => ({ step, agent: 'new' })) }, R);
@@ -1119,7 +1119,7 @@ for (const c of T.catalog) {
   {
     const st = busy();
     for (let i = 1; i <= 7; i++) A.ok(st.ensureWorkstation('pile' + i).ok, 'fixture: a summon ' + i + ' seeds its desk');
-    const home = st.rooms().find(x => x.name === 'HOME'), before = snap(st), deskIn = id => st.props().filter(p => p.agentId && /^(desk|desk2)$/.test(p.t) && st.roomAt(p.x, p.y) === id);
+    const home = st.rooms().find(x => x.name === 'HOME'), before = snap(st), deskIn = id => st.props().filter(p => p.agentId && M.capForProp(p.t) === 'computer' && st.roomAt(p.x, p.y) === id);
     A.ok(deskIn(home.id).length >= 8, 'fixture: the bridge holds a pile of desks (' + deskIn(home.id).length + ')');
     const r = SB.planBuild(st.serialize(), { layout: { pattern: 'diamond', rooms: ['lounge', 'lab', 'library', 'desks', 'works'].map(style => ({ style })) }, replace: true }, E);
     A.ok(r.ok && /every agent keeps a desk \(8 desks move to OFFICE, LAB, LIBRARY, CONVEYOR HALL\)\./.test(r.plan.summary), 'the card says where the desks go: ' + (r.error || r.plan.summary.slice(-200)));
@@ -1129,7 +1129,7 @@ for (const c of T.catalog) {
       A.ok(onBridge.length === 1 && onBridge[0].agentId === 'agent', 'the bridge keeps just the lead\'s desk');
       const others = st.rooms().filter(x => x.kind !== 'corridor' && x.name !== 'HOME');
       A.ok(others.every(x => deskIn(x.id).length <= 2), 'no room holds more than two of them: ' + others.map(x => x.name + ' ' + deskIn(x.id).length).join(', '));
-      A.ok(['agent', 'rex'].concat([1, 2, 3, 4, 5, 6, 7].map(i => 'pile' + i)).every(id => st.props().filter(p => p.agentId === id && /^(desk|desk2)$/.test(p.t)).length === 1), 'every agent keeps exactly one desk');
+      A.ok(['agent', 'rex'].concat([1, 2, 3, 4, 5, 6, 7].map(i => 'pile' + i)).every(id => st.props().filter(p => p.agentId === id && M.capForProp(p.t) === 'computer').length === 1), 'every agent keeps exactly one desk');
       for (const x of others) {
         const d = deskIn(x.id).sort((p, q) => p.y - q.y || p.x - q.x);
         A.ok(d.every((p, i) => !i || p.y !== d[i - 1].y || p.x - (d[i - 1].x + d[i - 1].w) >= 1), x.name + ': its desks stand apart, never shoulder to shoulder');
@@ -1217,8 +1217,8 @@ for (const c of T.catalog) {
     const lay = SB.planBuild(st.serialize(), { layout: { pattern: 'diamond', rooms: styles.map(style => ({ style })).concat([{ name: 'Conveyor Hall', style: 'works', lines: [{ line: 'build_test' }] }]) } }, E);
     A.ok(lay.ok && SB.apply(st, lay.plan, E).ok, 'fixture: a diamond of nine with a line (' + (lay.error || '') + ')');
     const room = n => st.rooms().find(x => x.name === n), inRoom = (n, p) => room(n) && st.roomAt(p.x, p.y) === room(n).id;
-    const labDesk = st.props().find(p => p.t === 'desk' && inRoom('LAB', p)); A.ok(!!labDesk && st.assignPropAgent(labDesk.id, 'rex').ok, 'fixture: REX sits in the LAB');
-    const rexOld = st.props().filter(p => p.agentId === 'rex' && !inRoom('LAB', p) && /^(desk|desk2)$/.test(p.t));
+    const labDesk = st.props().find(p => M.capForProp(p.t) === 'computer' && inRoom('LAB', p)); A.ok(!!labDesk && st.assignPropAgent(labDesk.id, 'rex').ok, 'fixture: REX sits in the LAB');
+    const rexOld = st.props().filter(p => p.agentId === 'rex' && !inRoom('LAB', p) && M.capForProp(p.t) === 'computer');
     for (const p of rexOld) st.removeProp(p.id);   // the LAB desk is his only one
     const homeLine = () => JSON.stringify(st.props().filter(p => /^(intake|bay|outbox)$/.test(p.t)).map(p => [p.t, p.x, p.y]).sort());
     const halls = () => st.rooms().filter(x => x.kind === 'corridor').length, snapOf = () => snap(st);
@@ -1239,7 +1239,7 @@ for (const c of T.catalog) {
       A.ok(r.ok && /^Remove CONVEYOR HALL \(36 × 20\) and LAB \(18 × 11\), with the 2 hallways that joined them\./.test(r.plan.summary) && /A workflow line goes too: BUILD \+ TEST\./.test(r.plan.summary) && /REX gets a new desk in /.test(r.plan.summary), 'the card names the line and the agent re-seated: ' + (r.error || r.plan.summary));
       if (r.ok) {
         A.ok(SB.apply(st, r.plan, E).ok && !room('LAB') && !room('CONVEYOR HALL'), 'both go');
-        const rex = st.props().filter(p => p.agentId === 'rex' && /^(desk|desk2)$/.test(p.t));
+        const rex = st.props().filter(p => p.agentId === 'rex' && M.capForProp(p.t) === 'computer');
         A.ok(rex.length === 1 && st.roomAt(rex[0].x, rex[0].y), 'REX owns exactly one desk, on a room that stands');
         A.ok(!st.props().some(p => /^(intake|bay|outbox)$/.test(p.t)), 'the hall\'s line went with it');
         A.ok(st.undo().ok); A.eq(snapOf(), before, 'one undo brings both rooms, the line and REX\'s desk back exactly');
@@ -1350,7 +1350,7 @@ for (const c of T.catalog) {
     A.ok(!nol.ok && /^There is no line called "nope"\. Lines: BUILD \+ TEST, RESEARCH \+ WRITE\./.test(nol.error), 'an unknown line lists the lines');
     // an agent seated in a room: exactly one desk, there
     tryEdit({ seat: { agent: 'rex', room: 'library' } }, /^REX's desk moves from HOME to LIBRARY, in a tidy spot against its wall\./, 'seat an agent', () => {
-      const d = st.props().filter(p => p.agentId === 'rex' && /^(desk|desk2)$/.test(p.t));
+      const d = st.props().filter(p => p.agentId === 'rex' && M.capForProp(p.t) === 'computer');
       A.ok(d.length === 1 && inR('LIBRARY', d[0]), 'REX has one desk, in the LIBRARY');
     });
     // a room moved with everything in it; its old hallway goes, a new one joins it
@@ -1568,13 +1568,13 @@ for (const c of T.catalog) {
   // places left chair and right chair its always backwards")
   {
     const st = fresh(), before = snap(st);
-    const room = SB.planEdit(st.serialize(), { refit: [{ op: 'hall', x: 18, y: 4, w: 6, h: 3 }, { op: 'room', name: 'Den', kind: 'hab', x: 24, y: 0, w: 18, h: 11 }, { op: 'place', t: 'desk', x: 34, y: 1, as: 'D' }, { op: 'place', t: 'longtable', x: 27, y: 5, as: 'T' }] }, E);
+    const room = SB.planEdit(st.serialize(), { refit: [{ op: 'hall', x: 18, y: 4, w: 6, h: 3 }, { op: 'room', name: 'Den', kind: 'hab', x: 24, y: 0, w: 18, h: 11 }, { op: 'place', t: 'console', x: 34, y: 1, as: 'D' }, { op: 'place', t: 'longtable', x: 27, y: 5, as: 'T' }] }, E);
     A.ok(room.ok && SB.apply(st, room.plan, E).ok, 'a room with a desk and a table (' + (room.error || 'ok') + ')');
-    const desk = st.props().find(p => p.t === 'desk' && p.x === 34), table = st.props().find(p => p.t === 'longtable');
+    const desk = st.props().find(p => M.capForProp(p.t) === 'computer' && p.x === 34), table = st.props().find(p => p.t === 'longtable');
     const TW = table.w || 1, TH = table.h || 1;
     // a chair on the desk's seat is refused, whoever would sit there
     const onSeat = SB.planEdit(st.serialize(), { refit: [{ op: 'place', t: 'chair', x: desk.x, y: desk.y + (desk.h || 1) }] }, E);
-    A.ok(!onSeat.ok && /^The chair at \(\d+, \d+\) would stand on the seat of the desk at \(34, 1\): a desk draws its own chair when an agent works it, so its seat row stays clear\. Never place a chair at a desk/.test(onSeat.error), 'a chair on a desk\'s seat is refused: ' + (onSeat.error || 'NOT REFUSED').slice(0, 140));
+    A.ok(!onSeat.ok && /^The chair at \(\d+, \d+\) would stand on the seat of the console at \(34, 1\): a desk draws its own chair when an agent works it, so its seat row stays clear\. Never place a chair at a desk/.test(onSeat.error), 'a chair on a desk\'s seat is refused: ' + (onSeat.error || 'NOT REFUSED').slice(0, 140));
     // toward: the builder turns a chair to face its table from every side (west of it faces east, east faces west …)
     const around = [['W', table.x - 1, table.y, 3], ['E', table.x + TW, table.y, 1], ['N', table.x, table.y - 1, 0], ['S', table.x, table.y + TH, 2]];
     const faced = SB.planEdit(st.serialize(), { refit: around.map(([k, x, y]) => ({ op: 'place', t: 'chair', x, y, toward: table.id, as: 'c' + k })) }, E);
@@ -1590,7 +1590,7 @@ for (const c of T.catalog) {
     // a chair that already stood on a desk's seat (an old office) goes when the desk gets its agent
     A.ok(st.addProp({ t: 'chair', x: desk.x, y: desk.y + (desk.h || 1), w: 1, h: 1, block: true }).ok, 'an old office chair on the desk\'s seat');
     const det2 = SB.mapOf(st.serialize(), E, { room: 'Den' });
-    A.ok(det2.ok && det2.map.issues.some(s => /^the chair at \(\d+, \d+\) stands on the seat of the desk at \(34, 1\): a desk draws its own chair when an agent works it, so that makes two chairs\. Take it up\.$/.test(s)), 'station.map { room } sees the chair on the desk\'s seat');
+    A.ok(det2.ok && det2.map.issues.some(s => /^the chair at \(\d+, \d+\) stands on the seat of the console at \(34, 1\): a desk draws its own chair when an agent works it, so that makes two chairs\. Take it up\.$/.test(s)), 'station.map { room } sees the chair on the desk\'s seat');
     const seat = SB.planEdit(st.serialize(), { refit: [{ op: 'agent', prop: desk.id, agent: 'rex' }] }, E);
     A.ok(seat.ok && /is REX's \(the chair at \(\d+, \d+\) removed: the desk brings its own chair\)/.test(seat.plan.summary) && SB.apply(st, seat.plan, E).ok && !st.props().some(p => p.t === 'chair' && p.x === desk.x && p.y === desk.y + (desk.h || 1)), 'staffing the desk takes the extra chair away: ' + (seat.ok ? seat.plan.summary.slice(0, 160) : seat.error));
     // the office style leaves every desk's seat clear, and automatic placement never takes one
@@ -1598,7 +1598,7 @@ for (const c of T.catalog) {
     A.ok(office.ok && SB.apply(st, office.plan, E).ok, 'the den furnished as an office (' + (office.error || 'ok') + ')');
     const den = st.rooms().find(r => r.name === 'DEN' || r.name === 'Den'.toUpperCase()) || st.rooms().find(r => /OFFICE|DEN/.test(r.name));
     const seats = [];
-    for (const p of st.props()) if (st.roomAt(p.x, p.y) === den.id && /^(desk|desk2)$/.test(p.t)) for (let x = p.x; x < p.x + (p.w || 1); x++) seats.push([x, p.y + (p.h || 1)]);
+    for (const p of st.props()) if (st.roomAt(p.x, p.y) === den.id && M.capForProp(p.t) === 'computer') for (let x = p.x; x < p.x + (p.w || 1); x++) seats.push([x, p.y + (p.h || 1)]);
     A.ok(seats.length > 0 && seats.every(([x, y]) => { const id = st.propAt(x, y), q = id && st.propById(id); return !q || q.block === false; }), 'every office desk keeps its seat clear (' + seats.length + ' seat tiles)');
     const more = SB.planEdit(st.serialize(), { add: { room: den.name, pieces: ['six chairs'] } }, E);
     A.ok(!more.ok || (SB.apply(st, more.plan, E).ok && seats.every(([x, y]) => { const id = st.propAt(x, y), q = id && st.propById(id); return !q || q.t !== 'chair'; })), 'chairs added to the room never land on a desk\'s seat');
@@ -2265,7 +2265,7 @@ for (const c of T.catalog) {
     const desk = b.s.addProp({ t: 'desk', x: 23, y: 4, w: 2, h: 1 }); b.s.assignPropAgent(desk.id, 'agent');   // straddles the hallway and Den
     const hall = b.s.rooms().find(r => r.kind === 'corridor');
     const del = SB.planEdit(b.s.serialize(), { refit: [{ op: 'delete', hall: hall.name }, { op: 'hall', x: 18, y: 7, w: 6, h: 3 }] }, E3);
-    A.ok(del.ok && /with the 2 pieces in or reaching into it \(the outbox, NOVA's desk\)/.test(del.plan.summary), 'a hallway delete counts AND names the desk and machine reaching into it: ' + (del.ok ? del.plan.summary.slice(0, 220) : del.error));
+    A.ok(del.ok && /with the 2 pieces in or reaching into it \(the outbox, NOVA's console\)/.test(del.plan.summary), 'a hallway delete counts AND names the desk and machine reaching into it: ' + (del.ok ? del.plan.summary.slice(0, 220) : del.error));
   }
   A.report('station-builder');
 })();

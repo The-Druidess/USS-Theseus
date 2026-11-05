@@ -165,7 +165,7 @@
     },
     {
       "id": "connector_portal",
-      "changedPixels": 48,
+      "changedPixels": 253,
       "escapedPixels": 0,
       "outsideSourceAlpha": 0,
       "activeIdleDifferent": true,
@@ -253,7 +253,7 @@
     },
     {
       "id": "missionboard",
-      "changedPixels": 600,
+      "changedPixels": 144,
       "escapedPixels": 0,
       "outsideSourceAlpha": 0,
       "activeIdleDifferent": true,
@@ -261,7 +261,7 @@
     },
     {
       "id": "trophycase",
-      "changedPixels": 260,
+      "changedPixels": 769,
       "escapedPixels": 0,
       "outsideSourceAlpha": 0,
       "activeIdleDifferent": true,
@@ -549,7 +549,7 @@
     },
     {
       "id": "jukebox",
-      "changedPixels": 262,
+      "changedPixels": 4855,
       "escapedPixels": 0,
       "outsideSourceAlpha": 0,
       "activeIdleDifferent": true,

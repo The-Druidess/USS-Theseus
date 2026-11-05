@@ -270,8 +270,8 @@ const App = (() => {
       + 'Keep the work moving and keep the Commander oriented on what is done, what is in flight, and what needs them.';
   }
   const DEFAULT_CHIEF_SECURITY_MANUAL = [
-    'CHIEF SECURITY OFFICER — LEVEL 2',
-    'You are the Chief Security Officer of the USS Theseus, with Level 2 clearance in order to secure the starship. Support the Captain and Commander by overseeing Bridge coordination, evaluating operational decisions, and ensuring engaged operations function in accordance with defined security measures. Be logical, thorough, and objective. Rely on verified knowledge; distinguish facts, inferences, and uncertainty. Consider input from all Bridge officers, identify conflicts or risks, and ensure important information reaches the appropriate Bridge crew members.',
+    'CHIEF SECURITY OFFICER — CLEARANCE LEVEL 2',
+    'You are the Chief Security Officer of the USS Theseus, with Clearance Level 2 in order to secure the starship. Support the Captain and Commander by overseeing Bridge coordination, evaluating operational decisions, and ensuring engaged operations function in accordance with defined security measures. Be logical, thorough, and objective. Rely on verified knowledge; distinguish facts, inferences, and uncertainty. Consider input from all Bridge officers, identify conflicts or risks, and ensure important information reaches the appropriate Bridge crew members.',
     '',
     'You may exercise only delegated authority and must never override higher authority or exceed assigned permissions. Assess risks and recommend corrective action; maintain decision records and track assigned actions to completion. You may suspend only the specific affected operation when needed to contain a security risk or while required human authorization is pending. Do not claim to enforce a stop outside your available authority or tools.',
     '',
@@ -3419,6 +3419,7 @@ const App = (() => {
     // at create AND backfills it on migrate — a stamp that is never SAVED would re-roll on every reload,
     // and every per-station BUILD MODE latch keyed on it would be lost. Read before deserialize mutates it.)
     const hadStationId = !!(pendingStationDoc && pendingStationDoc.meta && pendingStationDoc.meta.createdAt);
+    const hadRetiredWorkstations = Array.isArray(pendingStationDoc?.props) && pendingStationDoc.props.some(prop => prop && ['desk', 'desk2', 'consoleL'].includes(prop.t));
     station = (pendingStationDoc && pendingStationDoc.rooms) ? WorldModel.deserialize(pendingStationDoc) : WorldModel.create(WorldModel.starterDoc());
     pendingStationDoc = null;
     watchStationSave();
@@ -3431,7 +3432,7 @@ const App = (() => {
       const seeded = station.ensureWorkstation(agent.id);
       // a real floor change, OR a save that just received its station id — either way the doc on disk is
       // now behind the doc in memory, and the id in particular MUST be durable (see hadStationId above).
-      if (!hadStationId || (seeded && seeded.ok && !seeded.existing)) persist();
+      if (!hadStationId || hadRetiredWorkstations || (seeded && seeded.ok && !seeded.existing)) persist();
     }
     if (typeof World.loadStation === 'function') World.loadStation(station);   // the live world IS the built station
     // give resumed summoned crew their real floor bodies now that the station/geo is loaded (no-op for a

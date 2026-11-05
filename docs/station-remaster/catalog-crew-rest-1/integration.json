@@ -230,8 +230,8 @@
       "id": "trophycase",
       "view": "s",
       "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase.png",
-      "sourceWidth": 307,
-      "sourceHeight": 345,
+      "sourceWidth": 174,
+      "sourceHeight": 216,
       "bounds": {
         "x": -1,
         "y": -6,
@@ -244,13 +244,131 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9927536231884058,
+        "y": 1,
         "space": "exported-image-normalized",
         "targetWorld": {
           "x": 12,
           "y": 24
         }
-      }
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/south.png",
+      "sourceSha256": "26c63d0d8260895497a260e9237a8fe5babc58967dd25b03280f6dae9e438f3c",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 16,
+        "width": 29,
+        "height": 36
+      },
+      "outputSha256": "6784031af24bb1b786d6031ba6111788306594efb671c5e1f6ac8f0dc3c776fe"
+    },
+    {
+      "id": "trophycase",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-w.png",
+      "sourceWidth": 168,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 12,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/west.png",
+      "sourceSha256": "2bdbbba56a073d4c409de02aedbad8cc15b2021577bcc567a1f911b1e89245e3",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 15,
+        "width": 28,
+        "height": 37
+      },
+      "outputSha256": "774ac4ffb6cc333ef8ffbba21a438d4e19457856dc1d839362107113aeb09456"
+    },
+    {
+      "id": "trophycase",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-n.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 12,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/north.png",
+      "sourceSha256": "ba916aa543543ad76c10a3704a2e7c8843810c1e475424b1fcd5f03ac9f1237a",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 15,
+        "width": 29,
+        "height": 37
+      },
+      "outputSha256": "9623b2dabc5d82f629d51690b7a98a01005a476b863a6260d619838d3d43834c"
+    },
+    {
+      "id": "trophycase",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-e.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 12,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/east.png",
+      "sourceSha256": "6b81eeae21f7027ac4044c5f0ec9559a487776c3dc3feb83d24c26eb6101798d",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 17,
+        "top": 15,
+        "width": 29,
+        "height": 37
+      },
+      "outputSha256": "e18ed9e0ed55ebcf2dc84f8c359b296efd417f1335dc6e1223f6aff829699435"
     }
   ]
 }

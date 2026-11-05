@@ -51,6 +51,7 @@ A.eq(deriveCustomTheme(NaN, undefined, 'x')['--ph'], deriveCustomTheme(136, 100,
 
 /* ---- persistence + the theme-bezel-var TRAP (source-lock) ---- */
 A.ok(/theme:\s*'green',\s*themeHue:\s*136,\s*themeSat:\s*100,\s*themeGlow:\s*100/.test(uiSrc), 'defaults() seeds green phosphor and matching custom sliders');
+A.ok(/crtGlass:\s*'full',\s*staticLevel:\s*0/.test(uiSrc), 'new stations default to a clear, static-free feed');
 A.ok(/function save\(\)[\s\S]{0,120}localStorage\.setItem\(KEY/.test(uiSrc), 'settings persist to localStorage (survive reload)');
 // applySettings re-derives on load and writes the vars on document.body (NOT :root) — the bezel trap
 A.ok(/s\.theme === 'custom'[\s\S]{0,200}deriveCustomTheme\(s\.themeHue, s\.themeSat, s\.themeGlow\)/.test(uiSrc), 'applySettings re-derives the custom palette from the persisted hue/sat/glow');
@@ -80,11 +81,23 @@ const loadSettings = new Function('KEY', 'localStorage', 'defaults', 'notifyDefa
   A.fnBody(uiSrc, 'function load()') + '\nreturn load;')(
   'settings',
   { getItem: () => JSON.stringify({ v: 1, settings: { theme: 'amber', themeHue: 35, themeSat: 100 } }) },
-  () => ({ theme: 'green', themeHue: 136, themeSat: 100, notifyPrefs: {} }),
+  () => ({ theme: 'green', themeHue: 136, themeSat: 100, staticLevel: 0, notifyPrefs: {} }),
   () => ({})
 );
 A.eq([loadSettings().settings.theme, loadSettings().settings.themeHue, loadSettings().settings.themeSat], ['green', 136, 100],
   'loading an older amber save actually applies the green preference and hue');
+let storedSettings = JSON.stringify({ v: 1, settings: { staticLevel: 100 } });
+const staticStorage = { getItem: () => storedSettings, setItem: (_key, value) => { storedSettings = value; } };
+const loadStaticSettings = new Function('KEY', 'localStorage', 'defaults', 'notifyDefaults',
+  A.fnBody(uiSrc, 'function load()') + '\nreturn load;')(
+  'settings', staticStorage, () => ({ staticLevel: 0, notifyPrefs: {} }), () => ({})
+);
+A.eq(loadStaticSettings().settings.staticLevel, 0, 'an existing installation migrates to the requested static-free setting');
+A.eq(JSON.parse(storedSettings).staticLevelRevision, 1, 'the migration is written to storage once');
+const savedChoice = JSON.parse(storedSettings);
+savedChoice.settings.staticLevel = 35;
+storedSettings = JSON.stringify(savedChoice);
+A.eq(loadStaticSettings().settings.staticLevel, 35, 'a later slider choice survives the next boot');
 for (const file of ['frontend/index.html', 'frontend/agent-station-demo.html']) {
   A.ok(/<body class="theme-green glass-demo">/.test(read(file)), file + ' starts green before settings load');
 }

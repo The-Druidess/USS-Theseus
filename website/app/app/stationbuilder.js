@@ -836,7 +836,7 @@
      Rooms do not move or resize: the refusal says to remove one and build it again where it should be. */
   const EDIT_KEYS = ['remove', 'refurnish', 'clear', 'add', 'seat', 'move', 'staff', 'refit', 'rearrange'];
   const EDIT_HOW = 'An edit is one of: { remove: a room or [rooms] }, { remove: { room, pieces } }, { remove: { line } }, { refurnish: { room, style, name } }, { clear: a room }, { add: { room, pieces } }, { seat: { agent, room } }, { move: { room, beside, side } }, { staff: { line, steps } }. Rooms do not resize: remove one and build it again the size it should be.';
-  const SEAT_T = /^(desk|desk2|console|consoleL|pixelrig|bench|workbench)$/, KEEP_T = /^(airlock)$/;
+  const SEAT_T = /^(desk|desk2|console|laptop|consoleL|pixelrig|bench|workbench)$/, KEEP_T = /^(airlock)$/;
   // the zones a room or hallway opens onto
   function zoneNeighbours(st, id) {
     const g = st.projectGeometry(), ox = g.origin.tx, oy = g.origin.ty, out = new Set();
@@ -909,7 +909,7 @@
     tree: 'tallplant', 'potted plant': 'plant', flower: 'plant', flowers: 'plant', palm: 'monstera', bookcase: 'bookshelf', books: 'bookstack', armchair: 'recliner', 'bean bag': 'beanbag',
     'arcade machine': 'arcade', 'arcade cabinet': 'arcade', 'arcade game': 'arcade', 'pinball machine': 'pinball', 'coffee machine': 'coffee', espresso: 'coffee', carpet: 'rug', 'big rug': 'rug_large', 'large rug': 'rug_large', 'small rug': 'rug_small',
     speakers: 'speaker', 'dj booth': 'djbooth', dj: 'djbooth', 'punching bag': 'punchbag', 'heavy bag': 'punchbag', 'bench press': 'benchpress', weights: 'benchpress', 'weapon rack': 'weaponrack',
-    'big screen': 'bigscreen', projector: 'bigscreen', monitor: 'screens', monitors: 'screens', computer: 'desk', pc: 'desk', workstation: 'desk', 'poker table': 'pokertable', 'card table': 'pokertable',
+    'big screen': 'bigscreen', projector: 'bigscreen', monitor: 'screens', monitors: 'screens', computer: 'console', pc: 'console', workstation: 'console', 'computer desk': 'console', 'poker table': 'pokertable', 'card table': 'pokertable',
     'bar stool': 'stool', 'hologram pet': 'holopet', pet: 'holopet', globe: 'plasmaglobe', 'plasma ball': 'plasmaglobe', 'server rack': 'rack', server: 'gigs_servercart', board: 'whiteboard',
     box: 'boxes', 'tool box': 'toolbox', vent: 'industrial_floorvent', partition: 'industrial_partition', 'room divider': 'industrial_partition', divider: 'industrial_partition', planter: 'industrial_planter',
     bench: 'industrial_bench', 'park bench': 'industrial_bench', 'office chair': 'chair', counter: 'bar', 'cryo pod': 'cryopod', 'model ship': 'modelship', 'mission board': 'missionboard', 'trophy case': 'trophycase' };
@@ -918,7 +918,7 @@
   function pieceIndex(env) {
     const S = env.PropSprites, idx = {};
     for (const c of (S && S.CATALOG) || []) {
-      if (!c || !c.id || NOT_PIECE.test(c.id) || /_r$/.test(c.id)) continue;
+      if (!c || !c.id || c.retired || NOT_PIECE.test(c.id) || /_r$/.test(c.id)) continue;
       const lab = norm(String(c.label || '').replace(/[\u2039\u203a]/g, ' ').replace(/\b(LEFT|RIGHT)\b/g, ' '));
       for (const k of [c.id, c.id.replace(/_/g, ' '), lab, norm(pieceName(env, c.id))]) if (k && !idx[k]) idx[k] = c.id;
     }
@@ -1271,7 +1271,7 @@
       case 'place': {
         const t = String(o.t || o.piece || '');
         const sp = S && S.spec ? S.spec(t) : null;
-        let tt = sp ? t : resolvePiece(env, t, pieceIndex(env));
+        let tt = sp && !sp.retired ? t : resolvePiece(env, t, pieceIndex(env));
         if (!tt && MACHINE_T.test(t)) tt = t;
         if (!tt || !S.spec(tt)) return refuse('there is no piece "' + t.slice(0, 40) + '" (station.map with { catalog: true } lists every piece and its size)');
         const q = tileOf(o); if (!q) return refuse('place needs x and y: the piece\'s top-left tile');
@@ -1877,7 +1877,7 @@
      could find (fewer than asked when the room is full: those recruits get the usual desk in the main room). */
   const MAX_RECRUITS = 12;
   function recruitDesks(probe, env, roomId, n) {
-    const S = env.PropSprites, sp = S && S.spec('desk'); if (!sp || n < 1) return [];
+    const S = env.PropSprites, sp = S && S.spec('console'); if (!sp || n < 1) return [];
     const rm = probe.rooms().find(r => r.id === roomId); if (!rm) return [];
     const R = rm.rects[0], g = probe.projectGeometry(), belts = probe.serialize().belts || {}, lane = new Set();
     for (const d of doorTiles(probe, g, roomId)) for (let k = 0; k < 3; k++) lane.add((d.x + d.dx * k) + ',' + (d.y + d.dy * k));
@@ -1895,9 +1895,9 @@
         if (!xs.every(x => deskOk(x, y))) continue;
         const ids = [];
         let ok = true;
-        for (const x of xs) { const a = probe.addProp({ t: 'desk', x, y, w: sp.w, h: sp.h, r: 0, block: true }); if (!a || !a.ok) { ok = false; break; } ids.push(a.id); }
+        for (const x of xs) { const a = probe.addProp({ t: 'console', x, y, w: sp.w, h: sp.h, r: 0, block: true }); if (!a || !a.ok) { ok = false; break; } ids.push(a.id); }
         if (ok) { const g2 = probe.projectGeometry(), o = spawnTile(probe.serialize(), g2); ok = xs.every(x => sideReachable(g2, o, { x, y, w: sp.w, h: sp.h })); }
-        if (ok) return xs.map(x => ({ t: 'desk', x, y, w: sp.w, h: sp.h, r: 0, block: true }));
+        if (ok) return xs.map(x => ({ t: 'console', x, y, w: sp.w, h: sp.h, r: 0, block: true }));
         for (const id of ids) probe.removeProp(id);
       }
     }
@@ -1906,11 +1906,11 @@
     for (const y of [R.y1, R.y2 - 1]) {
       for (let x = R.x1 + 1; x + sp.w - 1 <= R.x2 - 1 && out.length < n; x++) {
         if (!deskOk(x, y)) continue;
-        const a = probe.addProp({ t: 'desk', x, y, w: sp.w, h: sp.h, r: 0, block: true });
+        const a = probe.addProp({ t: 'console', x, y, w: sp.w, h: sp.h, r: 0, block: true });
         if (!a || !a.ok) continue;
         const g2 = probe.projectGeometry();
         if (!sideReachable(g2, spawnTile(probe.serialize(), g2), { x, y, w: sp.w, h: sp.h })) { probe.removeProp(a.id); continue; }
-        out.push({ t: 'desk', x, y, w: sp.w, h: sp.h, r: 0, block: true });
+        out.push({ t: 'console', x, y, w: sp.w, h: sp.h, r: 0, block: true });
         x += sp.w + 1;
       }
       if (out.length >= n) break;
@@ -3447,9 +3447,9 @@
        stays as it was. station.build makes the same moves after the build. */
     const moves = [], reseated = [];
     if (replace) {
-      const DESK = /^(desk|desk2)$/, was = new Map();
-      for (const p of live0.props()) if (p.agentId && DESK.test(p.t)) was.set(p.agentId, live0.roomAt(p.x, p.y));
-      const onBridge = fp.props().filter(p => p.agentId && DESK.test(p.t) && fp.roomAt(p.x, p.y) === hub.id), pile = onBridge.length > 3;
+      const isWorkstation = p => WM.capForProp(p.t) === 'computer', was = new Map();
+      for (const p of live0.props()) if (p.agentId && isWorkstation(p)) was.set(p.agentId, live0.roomAt(p.x, p.y));
+      const onBridge = fp.props().filter(p => p.agentId && isWorkstation(p) && fp.roomAt(p.x, p.y) === hub.id), pile = onBridge.length > 3;
       const moved = onBridge.filter(p => p.agentId !== env.heroId && (pile || (was.has(p.agentId) && was.get(p.agentId) !== hub.id)));
       if (moved.length) {
         const PREFER = ['desks', 'lab', 'library', 'comms', 'workshop', 'meeting', 'works', 'cafe', 'lounge', 'cozy', 'storage', 'quarters', 'garden', 'games', 'gym'];
@@ -3528,7 +3528,7 @@
   // everything a BUILD MODE edit can name: every piece (its type, size and rules), room types, floors, walls, bay roles, lines, line edits
   function catalogOf(env) {
     const WM = env.WorldModel, S = env.PropSprites, RS = env.RoomStyles;
-    const pieces = ((S && S.CATALOG) || []).map(c => { const sp = S.spec(c.id) || {}, rule = (S.ruleFor && S.ruleFor(c.id)) || {}; const o = { t: c.id, name: String(c.label || c.id).toLowerCase(), w: c.w, h: c.h, cat: c.cat };
+    const pieces = ((S && S.CATALOG) || []).filter(c => !c.retired).map(c => { const sp = S.spec(c.id) || {}, rule = (S.ruleFor && S.ruleFor(c.id)) || {}; const o = { t: c.id, name: String(c.label || c.id).toLowerCase(), w: c.w, h: c.h, cat: c.cat };
       if (rule.mount) o.mount = rule.mount; if (sp.flat) o.flat = true; if (sp.stack) o.onTables = true; if (sp.surface) o.table = true; if (S.canRotate && S.canRotate(c.id)) o.turns = true; if (S.canMirror && S.canMirror(c.id)) o.flips = true; { const sf = sideFacing(S, c.id); if (sf != null) o.faces = sf === 1 ? 'west' : 'east'; } if (c.user) o.yours = true; if (MACHINE_T.test(c.id)) o.machine = true; return o; });
     const K = WM.ROOM_KINDS || {};
     return { pieces, roomTypes: Object.keys(K).filter(k => k !== 'corridor'), floorStyles: Object.keys(WM.FLOOR_STYLES || {}), floorMats: Object.keys(WM.FLOOR_MATERIALS || {}), wallMats: Object.keys(WM.WALL_MATERIALS || {}), hullMats: Object.keys(WM.HULL_MATERIALS || {}),
@@ -3624,8 +3624,8 @@
         recruited.push({ id: a.id, name: a.name || a.id, role: rc.role });
         if (rc.desk) {
           const slot = st.propAt(rc.desk.x, rc.desk.y), sp = slot ? st.propById(slot) : null;
-          if (sp && sp.t === 'desk' && !sp.agentId) {
-            const own = st.props().find(p => p.agentId === a.id && p.id !== slot && !before.has(p.id) && /^(desk|desk2)$/.test(p.t));
+          if (sp && st.capForProp(sp.t) === 'computer' && !sp.agentId) {
+            const own = st.props().find(p => p.agentId === a.id && p.id !== slot && !before.has(p.id) && st.capForProp(p.t) === 'computer');
             const kept = st.props().find(p => p.agentId === a.id && p.id !== slot && before.has(p.id));
             if (kept) st.removeProp(slot);   // it adopted a desk that already stood: that one is its own, the new one goes
             else { if (own) st.removeProp(own.id); const d = st.assignPropAgent(slot, a.id); if (!d || !d.ok) return refuse('The new ' + rc.role + ' could not be given its desk by the line, so nothing was built.'); }

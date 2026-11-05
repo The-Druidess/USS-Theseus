@@ -1,11 +1,10 @@
 /* STARNET — topbar.js : the TOPBAR INSTRUMENT-CLUSTER logic (read-only wiring).
 
-   The topbar holds one cockpit gauge group: COMMANDER (level + achievement progress)
+    The topbar holds one cockpit gauge group: COMMANDER (rank + achievement progress)
    and the moved-up session-status instruments (UPLINK / ONLINE / save).
 
    This module OWNS none of the data. It is a pure read-only consumer:
-     - COMMANDER level   — read from JourneyStore's server-owned progression snapshot.
-                             Crew XP cannot write this headline or celebrate its level.
+    - COMMANDER rank — read from JourneyStore's server-owned progression snapshot; crew XP cannot write or celebrate it.
      - UPLINK / ONLINE / save — their markup was moved up from #bottombar .bb-right with ids
                              intact, so main.js save() and stationui.js tick()/flashSave() keep
                              writing them with zero changes here.
@@ -31,7 +30,7 @@ const Topbar = (() => {
         return;
       }
       const stale = JourneyStore.state && JourneyStore.state().stale;
-      if (label) label.textContent = 'Lv ' + g.level + (stale ? ' · saved' : '');
+      if (label) label.textContent = 'Rank ' + g.level + (stale ? ' · saved' : '');
       if (lastCommanderLevel != null && g.level > lastCommanderLevel) {
         const chip = document.getElementById('tb-station');
         if (chip) { chip.classList.remove('lvup'); void chip.offsetWidth; chip.classList.add('lvup'); }
@@ -43,7 +42,7 @@ const Topbar = (() => {
         const pct = Math.max(0, Math.min(100, Math.round(100 * (g.points - g.levelStartsAt) / (g.nextLevelAt - g.levelStartsAt))));
         fill.style.width = pct + '%';
         const xp = $('#tb-station .tb-xp');
-        if (xp) xp.title = 'COMMANDER Lv ' + g.level + ' — ' + g.points + ' achievement points; ' + g.pointsToNextLevel + ' to the next level';
+        if (xp) xp.title = 'COMMANDER RANK ' + g.level + ' — ' + g.points + ' achievement points; ' + g.pointsToNextLevel + ' to the next rank';
       }
     } catch (_) { /* honest no-op: leave the sliver where it is */ }
   }

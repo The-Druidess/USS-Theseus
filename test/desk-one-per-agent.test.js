@@ -22,13 +22,59 @@ const isDesk = (st, p) => st.capForProp(p.t) === 'computer';
 const desksOf = (st, aid) => st.propsByAgent(aid).filter(p => isDesk(st, p)).map(p => p.id);
 // world.js deskPropFor: the FIRST workstation bound to the agent is where it sits
 const seatOf = (st, aid) => { const p = st.props().find(q => q.agentId === aid && isDesk(st, q)); return p ? p.id : null; };
+{
+  const source = fs.readFileSync(path.join(__dirname, '../frontend/app/build.js'), 'utf8');
+  const declaration = source.match(/const catalog = [^\r\n]+/)[0];
+  const visible = new Function('PropSprites', declaration + ';return catalog();')(Sprites);
+  A.eq(visible.filter(item => item.cat === 'workstation' && item.seat).map(item => item.id),
+    ['console', 'laptop', 'pixelrig', 'bench'], 'picker offers active workstation designs including Laptop');
+  const starter = M.starterDoc();
+  A.eq(starter.props.filter(prop => M.capForProp(prop.t) === 'computer').map(prop => prop.t), ['console'], 'fresh stations start with Console');
+  const fresh = M.create(M.defaultDoc());
+  const seeded = fresh.ensureWorkstation('agent');
+  A.ok(seeded.ok && fresh.propById(seeded.id).t === 'console', 'new agents receive Console instead of a retired Desk');
+  for (const type of ['desk', 'desk2', 'consoleL']) {
+    const legacy = M.starterDoc();
+    const workstation = legacy.props.find(prop => M.capForProp(prop.t) === 'computer');
+    workstation.t = type; workstation.agentId = 'agent'; workstation.w = type === 'consoleL' ? 3 : 2;
+    workstation.label = 'My workstation'; workstation.brief = 'Keep the standing instructions'; workstation.role = 'Reviewer';
+    const restored = M.deserialize(legacy);
+    const existing = restored.ensureWorkstation('agent');
+    const replacement = restored.propById(existing.id);
+    A.ok(existing.ok && existing.id === workstation.id && replacement.t === 'console',
+      type + ' upgrades in place without losing its agent assignment');
+    A.eq([replacement.x,replacement.y,replacement.w,replacement.h],[workstation.x,workstation.y,2,1],type+' replacement never enlarges the floor footprint');
+    for (const key of ['agentId','label','brief','role']) A.eq(replacement[key],workstation[key],type+' preserves '+key);
+    A.eq(M.deserialize(restored.serialize()).serialize(),restored.serialize(),type+' migration is idempotent');
+  }
+}
+{
+  const st = M.create(M.starterDoc());
+  const old = st.ensureWorkstation('agent');
+  A.eq(st.canPlaceProp('laptop',6,5,1,1).error,'NEEDS_SURFACE','Laptop requires a table or desk');
+  const table = st.addProp({t:'furniture_desk',x:6,y:5,w:2,h:1,block:true});
+  const laptop = st.addProp({t:'laptop',x:6,y:5,w:1,h:1,block:false});
+  A.ok(table.ok&&laptop.ok,'Laptop places on furniture Desk');
+  A.eq(st.mountOf(st.propById(laptop.id)),'surface','Laptop resolves its tabletop mount');
+  A.eq(M.capForProp('laptop'),'computer','Laptop supplies the same compute capability as Console');
+  A.ok(st.assignDesk(laptop.id,'agent').ok,'Laptop uses the workstation assignment rule');
+  A.ok(!st.propById(old.id).agentId,'assigning Laptop releases the agent\'s other workstation');
+  A.eq(st.ensureWorkstation('agent').id,laptop.id,'Laptop satisfies the agent\'s workstation requirement');
+  const restored = M.deserialize(st.serialize());
+  A.eq(restored.propById(laptop.id).agentId,'agent','Laptop assignment survives reload');
+  A.eq(restored.mountOf(restored.propById(laptop.id)),'surface','Laptop tabletop placement survives reload');
+  A.ok(restored.ensureWorkstation('rex').ok,'another agent has its own workstation');
+  const plan=SB.planEdit(restored.serialize(),{refit:[{op:'agent',prop:laptop.id,agent:'rex'}]},E);
+  A.ok(plan.ok&&SB.apply(restored,plan.plan,E).ok,'agent builder can assign a tabletop Laptop');
+  A.eq(desksOf(restored,'rex'),[laptop.id],'agent-builder Laptop assignment releases the previous workstation');
+}
 // a station where REX already sits at its desk, plus a free desk in a new room (the one it is about to be given)
 function station() {
   const st = M.create(M.starterDoc());
   st.ensureWorkstation('agent'); st.ensureWorkstation('rex');
-  const r = SB.planEdit(st.serialize(), { refit: [{ op: 'hall', x: 18, y: 4, w: 6, h: 3 }, { op: 'room', name: 'Den', kind: 'hab', x: 24, y: 0, w: 18, h: 11 }, { op: 'place', t: 'desk', x: 34, y: 1 }] }, E);
+  const r = SB.planEdit(st.serialize(), { refit: [{ op: 'hall', x: 18, y: 4, w: 6, h: 3 }, { op: 'room', name: 'Den', kind: 'hab', x: 24, y: 0, w: 18, h: 11 }, { op: 'place', t: 'console', x: 34, y: 1 }] }, E);
   A.ok(r.ok && SB.apply(st, r.plan, E).ok, 'fixture: a room with a free desk (' + (r.error || 'ok') + ')');
-  const free = st.props().find(p => p.t === 'desk' && p.x === 34 && p.y === 1);
+  const free = st.props().find(p => p.t === 'console' && p.x === 34 && p.y === 1);
   const old = desksOf(st, 'rex')[0];
   A.ok(free && !free.agentId && old && old !== free.id, 'fixture: REX has its own desk and the Den desk is free');
   return { st, free: free.id, old };
@@ -66,7 +112,7 @@ function station() {
   const p = SB.planEdit(st.serialize(), { refit: [{ op: 'agent', prop: free, agent: 'rex' }] }, E);
   A.ok(p.ok, 'the op plans (' + (p.error || 'ok') + ')');
   const oldDesk = st.propById(old);
-  A.ok(p.ok && /the desk at \(34, 1\) is REX's/.test(p.plan.summary) && new RegExp('REX leaves its desk at \\(' + oldDesk.x + ', ' + oldDesk.y + '\\)').test(p.plan.summary),
+  A.ok(p.ok && /the console at \(34, 1\) is REX's/.test(p.plan.summary) && new RegExp('REX leaves its ' + oldDesk.t + ' at \\(' + oldDesk.x + ', ' + oldDesk.y + '\\)').test(p.plan.summary),
     'the plan says REX moves off its old desk, truthfully: ' + (p.ok ? p.plan.summary.slice(0, 220) : p.error));
   A.ok(p.ok && SB.apply(st, p.plan, E).ok, 'and it applies');
   A.eq(desksOf(st, 'rex'), [free], 'after the op REX holds exactly ONE workstation (never double-bound)');

@@ -1,0 +1,29 @@
+{
+  "group_id": "bca92486-618f-447c-b470-018f761e5af9",
+  "objects": [
+    {
+      "id": "10d543ba-e047-4356-aaef-b6f10889a6c7",
+      "name": "base",
+      "prompt": "server rack cube cabinet with panels, lights, handle and feet",
+      "size": {
+        "width": 64,
+        "height": 64
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-02T04:07:20.426235"
+}

@@ -145,6 +145,226 @@
       "liveVerified": false
     },
     {
+      "id": "missionboard",
+      "view": "s",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard.png",
+      "sourceWidth": 1116,
+      "sourceHeight": 984,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/south.png",
+      "sourceSha256": "7352ada1e82c38cccc1f0c8c6254c1e5155577ec36120a71854c0206da4e3f3e",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 20,
+        "top": 26,
+        "width": 186,
+        "height": 164
+      },
+      "outputSha256": "452af75f2454fc0a91b30744550400ef3ed073c53a1976904236bfd76102aed9",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1116,
+        "height": 984
+      },
+      "alphaCounts": {
+        "transparent": 426024,
+        "partial": 0,
+        "opaque": 672120
+      },
+      "retainedPixels": 672120,
+      "retained": 672120,
+      "actualUniformFit": {
+        "x": 3.823171,
+        "y": -13,
+        "width": 28.353659,
+        "height": 25
+      },
+      "aspectRatioError": 0.385854,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false
+    },
+    {
+      "id": "missionboard",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-w.png",
+      "sourceWidth": 510,
+      "sourceHeight": 1062,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/west.png",
+      "sourceSha256": "23d2d78f263b294a389e41858d8a7526b1dd46ec5f8fcf932eff4f4995cc9c65",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 72,
+        "top": 24,
+        "width": 85,
+        "height": 177
+      },
+      "outputSha256": "536ec81b1d81211970508cb41ad3a00e8cfccff6c7e8412b4bf33db8bdbdc5fb",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 510,
+        "height": 1062
+      },
+      "alphaCounts": {
+        "transparent": 338832,
+        "partial": 0,
+        "opaque": 202788
+      },
+      "retainedPixels": 202788,
+      "retained": 202788,
+      "actualUniformFit": {
+        "x": 11.997175,
+        "y": -13,
+        "width": 12.00565,
+        "height": 25
+      },
+      "aspectRatioError": 1.039774,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false
+    },
+    {
+      "id": "missionboard",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-n.png",
+      "sourceWidth": 1080,
+      "sourceHeight": 984,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/north.png",
+      "sourceSha256": "35fe8b988b300e0f7a9a954e325e221b6ab0f3acd9a5604784a1190415ca2b18",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 22,
+        "top": 26,
+        "width": 180,
+        "height": 164
+      },
+      "outputSha256": "e47073d2f59e3a6cacea389b9ce3c35abc8c660ec477567e503b41148dce6d72",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 984
+      },
+      "alphaCounts": {
+        "transparent": 414432,
+        "partial": 0,
+        "opaque": 648288
+      },
+      "retainedPixels": 648288,
+      "retained": 648288,
+      "actualUniformFit": {
+        "x": 4.280488,
+        "y": -13,
+        "width": 27.439024,
+        "height": 25
+      },
+      "aspectRatioError": 0.422439,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false
+    },
+    {
+      "id": "missionboard",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-e.png",
+      "sourceWidth": 492,
+      "sourceHeight": 1068,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/east.png",
+      "sourceSha256": "13f7534b9b03ed8d29ace7f7b14ed40d4a602281ae7e0ef57c73998b648eb04f",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 65,
+        "top": 23,
+        "width": 82,
+        "height": 178
+      },
+      "outputSha256": "14e6b5b6a1dbb24cb9099f6df1ac484cc31f497ca6719974d9c8f602c964bc8d",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 492,
+        "height": 1068
+      },
+      "alphaCounts": {
+        "transparent": 318672,
+        "partial": 0,
+        "opaque": 206784
+      },
+      "retainedPixels": 206784,
+      "retained": 206784,
+      "actualUniformFit": {
+        "x": 12.241573,
+        "y": -13,
+        "width": 11.516854,
+        "height": 25
+      },
+      "aspectRatioError": 1.059326,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false
+    },
+    {
       "id": "commswall",
       "view": "s",
       "image": "commswall.png",
@@ -346,75 +566,6 @@
       "alpha": {
         "zero": 4987,
         "partial": 69101,
-        "opaque255": 0,
-        "maxAlpha": 254
-      },
-      "liveVerified": false
-    },
-    {
-      "id": "missionboard",
-      "view": "s",
-      "image": "missionboard.png",
-      "sourceWidth": 393,
-      "sourceHeight": 229,
-      "bounds": {
-        "x": -1,
-        "y": -13,
-        "width": 38,
-        "height": 25
-      },
-      "footprint": {
-        "w": 3,
-        "h": 1
-      },
-      "contact": {
-        "y": 0.9868995633187773
-      },
-      "actualUniformFit": {
-        "width": 38,
-        "height": 22.142493638676847
-      },
-      "aspectRatioError": 0.1290507929211675,
-      "source": "docs/station-remaster/catalog-storage-rest-2/sheet-v2-source.png",
-      "sourceSha256": "c9e0613ad8dba4058560b1fadd5f09c5351dc30adc50b4712fc3a435078588d8",
-      "output": "frontend/assets/industrial/catalog-storage-rest-2/missionboard.png",
-      "outputSha256": "23666085cfe75c12762b0c316ff368b3270d8cbcb3a69b0501b45e6851d427a0",
-      "sourceRect": {
-        "x": 800,
-        "y": 486,
-        "width": 736,
-        "height": 252
-      },
-      "cropInCell": {
-        "left": 159,
-        "top": 17,
-        "width": 393,
-        "height": 229
-      },
-      "sourceCrop": {
-        "left": 959,
-        "top": 503,
-        "width": 393,
-        "height": 229
-      },
-      "width": 393,
-      "height": 229,
-      "alphaBounds": {
-        "x": 0,
-        "y": 0,
-        "width": 393,
-        "height": 229
-      },
-      "retainedPixels": 81886,
-      "alphaResidueRemoved": 3311,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 8111,
-        "partial": 81886,
         "opaque255": 0,
         "maxAlpha": 254
       },

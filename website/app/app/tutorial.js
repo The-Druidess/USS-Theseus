@@ -975,7 +975,7 @@ const Tutorial = (() => {
   function onLevelUp() {
     tickBrief('level');
     showCoach('levelup', '#tb-station',
-      'my crew level grew from your feedback. your COMMANDER level here tracks recorded progress toward your goals. open QUEST LOG for your journey, or my dossier → GROWTH for my track record.',
+      'my crew rank grew from your feedback. your COMMANDER rank here tracks recorded progress toward your goals. open QUEST LOG for your journey, or my dossier → GROWTH for my track record.',
       { overTerms: true });   // a level transition fires exactly once — show it even over an open panel rather than drop it
   }
 
@@ -1194,7 +1194,7 @@ const Tutorial = (() => {
     }
     if (tab === 'GEAR') {
       const gear = [
-        ['desk', 'WORKSTATION', 'A desk, console, or pixel rig gives an agent a work position. A routed BAY needs a computer in its room.'],
+        ['console', 'WORKSTATION', 'A console, pixel rig, or bench gives an agent a work position. A routed BAY needs a computer in its room.'],
         ['war_intelcab', 'CABINET', 'File tools: read and write within the agent’s configured reach. Includes safes, vaults, racks, and shelves.'],
         ['comms_dish', 'DISH', 'Web search and page access. Uplinks and beacons provide the same capability.'],
         ['gigs_servercart', 'SERVER', 'Persistent notebook and reusable skill procedures. Relay stacks and cores also provide memory.'],

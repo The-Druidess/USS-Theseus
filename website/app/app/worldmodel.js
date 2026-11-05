@@ -111,7 +111,7 @@ const WorldModel = (() => {
      props grant reach; everything else is inert decor. A bay with no `computer` prop can't run (compute gate
      stays shut = cost-safe), which the REFIT validator surfaces as NO COMPUTE. */
   const CAP_PROP_MAP = {
-    console: 'computer', consoleL: 'computer', desk: 'computer', desk2: 'computer', pixelrig: 'computer', bench: 'computer',  // a workstation = compute
+    console: 'computer', laptop: 'computer', consoleL: 'computer', desk: 'computer', desk2: 'computer', pixelrig: 'computer', bench: 'computer',  // a workstation = compute
     war_intelcab: 'cabinet', safe: 'cabinet', vault: 'cabinet', rack: 'cabinet', shelf: 'cabinet',                            // a locked cabinet = files
     comms_dish: 'dish', comms_uplink: 'dish', comms_beacon: 'dish',                                                           // a comms dish = web
     gigs_servercart: 'notebook', bridge_relaystack: 'notebook', core: 'notebook',                                            // a server/databank = memory
@@ -3409,7 +3409,7 @@ const WorldModel = (() => {
        the old invariant — the overseer always has a desk — honestly. Idempotent: no-op when the agent
        already owns any seat-type workstation. Falls back to the nearest valid spawn-room tile if the
        canonical spot is occupied; callers may still synthesize when even that fails (crowded floor). */
-    const SEAT_WORKSTATIONS = { desk: 1, desk2: 1, console: 1, consoleL: 1, pixelrig: 1, bench: 1 };
+    const SEAT_WORKSTATIONS = { desk: 1, desk2: 1, console: 1, laptop: 1, consoleL: 1, pixelrig: 1, bench: 1 };
     // Is there anywhere to put the CHAIR? world.js seats a body on the tile row directly SOUTH of a
     // workstation (PropAnchor's 'south' approach), so a desk whose whole south row is wall or blocking
     // prop is a desk nobody can sit at. Pure geometry — the model still knows nothing about chairs.
@@ -3435,7 +3435,7 @@ const WorldModel = (() => {
       rows.push(r.y1);
       for (const y of rows)
         for (let x = r.x1; x <= r.x2; x++) {
-          if (!canPlaceProp('desk', x, y, 2, 1).ok) continue;
+          if (!canPlaceProp('console', x, y, 2, 1).ok) continue;
           if (deskSeatFree(x, y, 2)) return { x, y };
           if (!any) any = { x, y };
         }
@@ -3477,7 +3477,7 @@ const WorldModel = (() => {
       let dtx = r.x1 + Math.max(1, Math.floor((r.x2 - r.x1) / 2));
       if (dtx + 1 > r.x2) dtx = Math.max(r.x1, r.x2 - 1);
       const dty = Math.min(r.y1 + 1, r.y2 - 1);
-      let spot = (canPlaceProp('desk', dtx, dty, 2, 1).ok && deskSeatFree(dtx, dty, 2)) ? { x: dtx, y: dty } : null;
+      let spot = (canPlaceProp('console', dtx, dty, 2, 1).ok && deskSeatFree(dtx, dty, 2)) ? { x: dtx, y: dty } : null;
       if (!spot) spot = deskSpotIn(r);
       // CREW SEEDING: the spawn room fills up once several summoned specialists each own a desk. A crowded
       // spawn room must not strand the next one deskless while the rest of the station stands empty, so
@@ -3490,7 +3490,7 @@ const WorldModel = (() => {
         }
       }
       if (!spot) return fail('NO_ROOM_FOR_DESK');
-      const res = addProp({ t: 'desk', x: spot.x, y: spot.y, w: 2, h: 1, block: true });
+      const res = addProp({ t: 'console', x: spot.x, y: spot.y, w: 2, h: 1, block: true });
       if (!res.ok) return res;
       const bound = assignPropAgent(res.id, aid);
       return bound.ok ? Object.assign({}, bound, { x: spot.x, y: spot.y, roomId: roomAt(spot.x, spot.y) }) : bound;
@@ -3623,6 +3623,13 @@ const WorldModel = (() => {
     if (propRules) doc.props = doc.props.filter(p => !(p && typeof p.t === 'string') || !!propRules(p.t));
     doc.props = doc.props.filter(p => p && typeof p === 'object' && typeof p.t === 'string')
       .map(p => { const o = { id: p.id || null, t: p.t, x: p.x | 0, y: p.y | 0, w: Math.max(1, p.w | 0 || 1), h: Math.max(1, p.h | 0 || 1) }; if (p.block === false && !LEGACY_WALKABLE_DOCKS[p.t]) o.block = false; if (typeof p.agentId === 'string' && p.agentId) o.agentId = p.agentId; const r0 = cleanRot(p.r); if (r0) o.r = r0; if (p.m) o.m = 1; if (typeof p.role === 'string' && p.role) o.role = p.role.slice(0, 24); if (typeof p.brief === 'string' && p.brief.trim()) o.brief = p.brief.slice(0, 2000); if (p.t === 'bay' && typeof p.hands === 'string' && p.hands.trim()) o.hands = p.hands.slice(0, 160); if (typeof p.label === 'string' && p.label.trim()) o.label = p.label.slice(0, 48); if (p.t === 'intake' && typeof p.projectRoot === 'string' && p.projectRoot.trim()) o.projectRoot = p.projectRoot.trim().slice(0, 4096); if (p.t === 'intake' && p.limits && typeof p.limits === 'object') { const nl = normalizeLimits(p.limits); if (nl) o.limits = { maxHops: nl.maxHops, maxUsdPerMessage: nl.maxUsdPerMessage, maxUsdPerDay: nl.maxUsdPerDay }; } applyJunctionCfg(o, p); if (cleanDoor(p.door)) o.door = p.door; if (typeof p.connectorId === 'string' && p.connectorId.trim()) o.connectorId = p.connectorId.trim(); if (p.t === 'plugin_terminal' && typeof p.pluginId === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(p.pluginId.trim())) o.pluginId = p.pluginId.trim(); return o; });
+    for (const prop of doc.props) {
+      if (!['desk', 'desk2', 'consoleL'].includes(prop.t)) continue;
+      prop.t = 'console';
+      if (prop.h === 1 && (prop.w === 2 || prop.w === 3)) prop.w = 2;
+      delete prop.r;
+      delete prop.m;
+    }
     // Explicit, pack-owned shrinking only. Keep the rendered centre and floor line;
     // never enlarge obstacles or reinterpret a custom saved size. Idempotent on reload.
     for (const p of doc.props) {
@@ -3676,7 +3683,7 @@ const WorldModel = (() => {
         // ensureWorkstation adopts it for the new Commander on the normal boot path.
         // User-approved placement from the live station, 2026-09-15.
         // Preserve this composition and the original 18 x 11 room footprint.
-        { id: 'p' + doc._nid++, t: 'desk', x: 8, y: 1, w: 2, h: 1, block: true },
+        { id: 'p' + doc._nid++, t: 'console', x: 8, y: 1, w: 2, h: 1, block: true },
         { id: 'p' + doc._nid++, t: 'war_intelcab', x: 1, y: 0, w: 1, h: 2, block: true },
         { id: 'p' + doc._nid++, t: 'gigs_servercart', x: 1, y: 9, w: 1, h: 1, block: true },
         { id: 'p' + doc._nid++, t: 'comms_dish', x: 14, y: 0, w: 2, h: 2, block: true },

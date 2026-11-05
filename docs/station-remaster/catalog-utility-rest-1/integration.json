@@ -384,8 +384,8 @@
       "view": "s",
       "image": "connector_portal.png",
       "repoPath": "frontend/assets/industrial/catalog-utility-rest-1/connector_portal.png",
-      "sourceWidth": 924,
-      "sourceHeight": 1626,
+      "sourceWidth": 170,
+      "sourceHeight": 322,
       "footprint": {
         "w": 1,
         "h": 2
@@ -398,40 +398,41 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9981549815498155
+        "y": 1
       },
       "mode": "approved",
       "effects": false,
-      "source": "docs/station-remaster/catalog-utility-rest-1/connector-source.png",
-      "sourceSha256": "6a625391cfbe77d8d71ff5c1127a02b887099cbe51837fa248d1e0a6bbc32ec8",
-      "outputSha256": "e47660cc0ebf30136c467e31ffa8ddf27c8e07bab876b961284cc40bfbb24fa2",
+      "source": "docs/station-remaster/projection-correction/connector-white-box-source/rotations/south.png",
+      "sourceSha256": "af928767ccc4bfaa5f27c9a00304726b2a3e0e8fc01042a958bb0cbc98c2c5c7",
+      "outputSha256": "fe1dadd7123a6b16a40890c42f12b0bed4afe7cc7ba6053cbc95eaa49c085b29",
+      "pixelScale": 2,
       "sourceROI": {
-        "left": 0,
-        "top": 0,
-        "width": 948,
-        "height": 1660
+        "left": 57,
+        "top": 17,
+        "width": 85,
+        "height": 161
       },
       "sourceCrop": {
-        "left": 23,
-        "top": 8,
-        "width": 924,
-        "height": 1626
+        "left": 57,
+        "top": 17,
+        "width": 85,
+        "height": 161
       },
       "actualFit": {
-        "x": 0,
-        "y": -5.86039,
-        "width": 17,
-        "height": 29.915584
+        "x": 0.31677,
+        "y": 0,
+        "width": 16.36646,
+        "height": 31
       },
       "verification": {
-        "transparent": 113670,
-        "retained": 1388754,
-        "removedAlpha": 7662,
+        "transparent": 3828,
+        "retained": 50912,
+        "removedAlpha": 0,
         "retainedRGBAMismatches": 0,
         "allRGBMismatches": 0,
         "widthFraction": 1
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping"
+      "status": "owner-supplied white connector reference; 2x nearest-neighbor export; existing 1x2 footprint and live connector state retained"
     }
   ]
 }

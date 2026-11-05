@@ -1,6 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),A=require('./_assert');
 const source=fs.readFileSync(path.join(__dirname,'../frontend/app/propremaster.js'),'utf8');
+A.ok(/fetch\(ROOT\+'manifest\.json',\{cache:'no-store'\}\)/.test(source),'runtime manifests must revalidate so replaced sprite filenames are picked up on reload');
 const bare={module:{exports:{}}};vm.runInNewContext(source,bare);const pack=bare.module.exports;
 const good={image:'console.png',sourceWidth:1024,sourceHeight:512,footprint:{w:2,h:1},
  bounds:{x:-1,y:-10,width:26,height:22},mode:'static'};
@@ -50,6 +51,34 @@ function load(extra){
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../frontend/app/propsprites.js'),'utf8'),env);return env.module.exports;
 }
 const original=load({}),ps=load({PropRemaster:remaster});ps.setCtx(painter);ps.setNow(1000);
+calls.length=0;
+ps.draw({t:'plugin_terminal',x:0,y:0,w:1,h:2},false);
+A.eq(calls.map(call=>call.id),['plugin_terminal'],'plugin terminal uses its own artwork without replacing the Bridge pylon');
+for(const work of [false,true])A.eq(
+ ps.lightOf({t:'bridge_dispatch_pylon',x:0,y:0,w:1,h:2},work,true,{}),
+ ps.lightOf({t:'plugin_terminal',x:0,y:0,w:1,h:2},work,true,{}),
+ 'shared pylon skin does not retain a different legacy light spill');
+for(const id of ['red_cushion_chair','red_captains_chair','simple_red_cushion_chair']){
+ const chair=ps.spec(id);
+ A.eq({w:chair.w,h:chair.h,use:chair.use},{w:1,h:1,use:{kind:'seat',sit:true,approach:'auto'}},id+' is a single-tile seat');
+ A.eq(ps.facings(id),[0,1,2,3],id+' offers all four authored views');
+ for(const [rotation,view] of ['s','w','n','e'].entries()){
+  calls.length=0;ps.draw({t:id,x:0,y:0,w:1,h:1,r:rotation},false);
+  A.eq(calls.map(call=>({id:call.id,view:call.view})),[{id,view}],id+' routes facing '+view+' to its own art');
+ }
+}
+const furnitureDesk=ps.spec('furniture_desk');
+A.eq({label:furnitureDesk.label,tier:furnitureDesk.tier,w:furnitureDesk.w,h:furnitureDesk.h,surface:furnitureDesk.surface},
+ {label:'DESK',tier:'cosmetic',w:2,h:1,surface:true},'Desk is separate cosmetic surface furniture');
+A.ok(!require('../frontend/app/worldmodel.js').capForProp('furniture_desk'),'furniture Desk grants no workstation capability');
+A.ok(ps.spec('desk').retired&&ps.spec('desk').seat,'retired workstation Desk retains its saved identity');
+A.eq(ps.facings('furniture_desk'),[0,1,2,3],'furniture Desk offers all four authored views');
+for(const [rotation,view] of ['s','w','n','e'].entries()){
+ const box=ps.footprintAt('furniture_desk',rotation);
+ A.eq(box,rotation%2?{w:1,h:2}:{w:2,h:1},'furniture Desk reserves its rotated tabletop plan');
+ calls.length=0;ps.draw({t:'furniture_desk',x:0,y:0,w:box.w,h:box.h,r:rotation},false);
+ A.eq(calls.map(call=>({id:call.id,view:call.view})),[{id:'furniture_desk',view}],'furniture Desk routes its own '+view+' artwork');
+}
 for(const c of ps.CATALOG){
  A.eq(ps.footprintAt(c.id,0),original.footprintAt(c.id,0),'footprint preserved '+c.id);
  A.eq(ps.facings(c.id),original.facings(c.id),'only original authored facings '+c.id);

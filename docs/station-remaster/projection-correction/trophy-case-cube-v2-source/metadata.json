@@ -1,0 +1,29 @@
+{
+  "group_id": "9a277f5e-e698-427c-b0bd-d096eeb7e849",
+  "objects": [
+    {
+      "id": "5d3d45b6-77df-4f7c-a3c3-304916e19b73",
+      "name": "base",
+      "prompt": "Trophy display case, a cube with equal width, height and depth. White cabinet with green trim top and bottom. Glass window on the front face only; the side faces and top are solid white panels. Same design in every direction.",
+      "size": {
+        "width": 64,
+        "height": 64
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-04T17:18:52.413945"
+}

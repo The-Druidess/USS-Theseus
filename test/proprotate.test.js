@@ -8,7 +8,8 @@
    2. A TURN THAT RESIZES AN UPRIGHT PROP. `arcade` is authored 1x2 because it is TALL, not deep; the
       old code read that 2 as depth and a quarter turn made the cabinet twice as wide as itself. Only
       a floor DECAL (its footprint IS its picture) or a TABLE (its footprint IS its top surface) may
-      re-tile, and the painted box has to agree with the reserved box either way.
+      re-tile, and the painted box has to agree with the reserved box either way. The remaster's
+      TROPHYCASE facing exception is square and interaction-neutral, so it never re-tiles.
 
    Plus the plumbing: r/m survive addProp -> serialize -> migrate -> projectGeometry, a turn is one
    undo step, and a prop's approach side turns with it. */
@@ -119,6 +120,27 @@ A.eq(PS.footprintAt('longtable', 3), { w: 1, h: 3 }, 'a turned 3x1 table really 
 A.eq(PS.footprintAt('chair', 3), { w: 1, h: 1 }, 'a turned chair keeps its box');
 A.eq(PS.facings('stool'), [0], 'the STOOL is round — it offers no turn at all');
 A.eq(PS.facings('desk'), [0], 'a WORKSTATION never turns (its front is load-bearing)');
+const priorIndustrialTextures = global.IndustrialTextures;
+global.IndustrialTextures = { isRemaster: () => true };
+A.eq(PS.facings('trophycase'), [0, 1, 2, 3], 'the trophy case uses its authored south, west, north, and east views in remaster mode');
+for (const r of [1, 2, 3]) A.eq(PS.footprintAt('trophycase', r), { w: 2, h: 2 }, 'trophy case facing ' + r + ' preserves its square placement footprint');
+const trophyViews = JSON.parse(fs.readFileSync(path.join(__dirname, '../frontend/assets/industrial/projection-correction/manifest.json'), 'utf8')).props.trophycase.views;
+A.eq(Object.fromEntries(Object.entries(trophyViews).map(([f, v]) => [f, v.image])), {
+  s: 'trophycase.png', w: 'trophycase-w.png', n: 'trophycase-n.png', e: 'trophycase-e.png'
+}, 'trophy art filenames match the runtime south/west/north/east facing indices');
+A.eq(PS.facings('missionboard'), [0, 1, 2, 3], 'mission board exposes all four authored remaster facings');
+for (const r of [1, 2, 3]) A.eq(PS.footprintAt('missionboard', r), { w: 3, h: 1 }, 'mission board facing ' + r + ' preserves its 3×1 floor footprint');
+const boardViews = JSON.parse(fs.readFileSync(path.join(__dirname, '../frontend/assets/industrial/projection-correction/manifest.json'), 'utf8')).props.missionboard.views;
+A.eq(Object.fromEntries(Object.entries(boardViews).map(([f, v]) => [f, v.image])), {
+  s: 'missionboard.png', w: 'missionboard-w.png', n: 'missionboard-n.png', e: 'missionboard-e.png'
+}, 'mission board art files map to the proper cardinal facing indices');
+A.eq(PS.facings('jukebox'), [0, 1, 2, 3], 'the remastered jukebox exposes its authored south, west, north, and east views');
+for (const r of [1, 2, 3]) A.eq(PS.footprintAt('jukebox', r), { w: 1, h: 2 }, 'jukebox facing ' + r + ' preserves its 1×2 footprint');
+const jukeboxViews = JSON.parse(fs.readFileSync(path.join(__dirname, '../frontend/assets/industrial/projection-correction/manifest.json'), 'utf8')).props.jukebox.views;
+A.ok(Object.entries(jukeboxViews).every(([f, v]) => v.image.startsWith('jukebox-' + f + '-') && /^jukebox-[swne]-[a-f0-9]{12}\.png$/.test(v.image)),
+  'jukebox art files use cache-busted names for the proper cardinal facing indices');
+if (priorIndustrialTextures === undefined) delete global.IndustrialTextures;
+else global.IndustrialTextures = priorIndustrialTextures;
 /* the COUCH deliberately does NOT turn: a west-facing sofa view was authored in an earlier lane and
    is not part of what shipped here, so the couch keeps trunk's behaviour and offers south only. */
 A.eq(PS.facings('couch'), [0], 'the COUCH offers no turn (its turned view is not part of this lane)');
@@ -155,6 +177,20 @@ A.eq(st.propById(add.id).r, 3, 'the facing is stored on the doc');
 const plain = st.addProp({ t: 'stool', x: bx + 2, y: by, w: 1, h: 1, block: true });
 A.ok(plain.ok && !('r' in st.propById(plain.id)) && !('m' in st.propById(plain.id)),
   'an unturned prop serializes byte-identical to before — no r, no m');
+
+for (const id of ['red_cushion_chair', 'red_captains_chair', 'simple_red_cushion_chair', 'furniture_desk']) {
+  const chairState = WM.create(WM.defaultDoc());
+  const chairRoom = chairState.rooms()[0];
+  if (chairState.setFloor) chairState.setFloor(chairRoom.id);
+  const chairRect = chairRoom.rects[0];
+  const footprint = PS.footprintAt(id, 3);
+  const placed = chairState.addProp({ t: id, x: chairRect.x1 + 1, y: chairRect.y1 + 1, ...footprint, block: true, r: 3 });
+  A.ok(placed.ok, id + ' is placeable as new furniture');
+  const savedChair = JSON.parse(JSON.stringify(chairState.serialize()));
+  const restoredChair = WM.create(WM.migrate ? WM.migrate(savedChair) : savedChair).propById(placed.id);
+  A.eq(restoredChair && { t: restoredChair.t, r: restoredChair.r, w: restoredChair.w, h: restoredChair.h },
+    { t: id, r: 3, ...footprint }, id + ' preserves its type, facing, and footprint across save/reload');
+}
 
 const ser = JSON.parse(JSON.stringify(st.serialize ? st.serialize() : st.doc()));
 const back = WM.create(WM.migrate ? WM.migrate(ser) : ser);
@@ -233,8 +269,9 @@ for (const facing of [1, 2, 3, 0]) {
 savedStation.undo();
 A.eq([savedStation.propById(compact.id).w, savedStation.propById(compact.id).h, savedStation.propById(compact.id).r], [2, 1, 3], 'undo restores compact size and the previous facing');
 const restoredStation = WM.create(JSON.parse(JSON.stringify(savedStation.doc())));
-A.ok(builderTurn(restoredStation, compact.id, -1).ok, 'compact saved desk remains turnable after reload');
-A.eq([restoredStation.propById(compact.id).w, restoredStation.propById(compact.id).h], [2, 1], 'reloaded upright desk still preserves its original footprint');
+A.eq(restoredStation.propById(compact.id).t, 'console', 'retired saved desk upgrades to the active Console on reload');
+A.eq([restoredStation.propById(compact.id).w, restoredStation.propById(compact.id).h, restoredStation.propById(compact.id).x, restoredStation.propById(compact.id).y, restoredStation.propById(compact.id).r | 0], [2, 1, 1, 1, 0], 'replacement Console preserves its safe footprint and faces its authored front');
+A.eq(restoredStation.propById(neighbour.id), savedStation.propById(neighbour.id), 'workstation upgrade leaves adjacent furniture untouched');
 for (const [type, x, w, h] of [['rug', 1, 4, 3], ['longtable', 7, 2, 1], ['booth', 10, 2, 1]]) {
   const made = savedStation.addProp({ t: type, x, y: 5, w, h, block: type !== 'rug' });
   A.ok(made.ok, type + ' saved plan prop is placed');

@@ -1,0 +1,29 @@
+{
+  "group_id": "66263fe5-b8a8-4fec-9537-1cd793f13546",
+  "objects": [
+    {
+      "id": "0b746b17-98a7-4c64-8f2e-c4cf748f5ce1",
+      "name": "base",
+      "prompt": "white cylindrical object with a glowing green core",
+      "size": {
+        "width": 144,
+        "height": 144
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-04T17:33:51.390019"
+}

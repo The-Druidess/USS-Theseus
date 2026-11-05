@@ -1,0 +1,29 @@
+{
+  "group_id": "c7caadca-76c9-4f5f-9d05-9646f7fa1c58",
+  "objects": [
+    {
+      "id": "3aa2cc3c-31a4-439a-8b66-29fad729918c",
+      "name": "base",
+      "prompt": "white-framed chair with a muted red quilted cushion, round pedestal base, pixel art game object",
+      "size": {
+        "width": 96,
+        "height": 96
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-02T04:06:17.708570"
+}

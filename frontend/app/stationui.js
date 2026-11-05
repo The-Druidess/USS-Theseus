@@ -121,7 +121,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // panelBright (−100…100, default 0) is the tube's BRIGHTNESS knob: above 0 it lifts the panel glass's black
   // level toward the phosphor colour (never toward white); below 0 it takes the panels DOWN toward true black
   // (Andrew 10-01: "it doesnt get dark enough"). 0 = the shipped look, untouched.
-  function defaults() { return { theme: 'green', themeHue: 136, themeSat: 100, themeGlow: 100, panelBright: 0, roomLighting: 'low', textScale: 0, flicker: true, crtGlass: 'full', staticLevel: 100, sound: true, hints: true, backdrop: 'void', sessionRow: 'compact', keepComputerAwake: false, notifyPrefs: notifyDefaults() }; }
+  function defaults() { return { theme: 'green', themeHue: 136, themeSat: 100, themeGlow: 100, panelBright: 0, roomLighting: 'low', textScale: 0, flicker: true, crtGlass: 'full', staticLevel: 0, sound: true, hints: true, backdrop: 'void', sessionRow: 'compact', keepComputerAwake: false, notifyPrefs: notifyDefaults() }; }
   // Raise overall room exposure without changing the distribution of its lights.
   // Existing saves retain their chosen level; missing values start at LOW.
   const ROOM_LIGHTING_STEPS = [
@@ -185,12 +185,15 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // P1-8 notification preferences: per-category on/off + a notification sound toggle. Every category defaults ON
   // (no silent regression); each is HONORED at emit time in notify() below (a decorative toggle would be a bug).
   function notifyDefaults() { return { runComplete: true, needsApproval: true, cronDigest: true, sound: true }; }
-  function blank() { return { v: 1, settings: defaults(), tasks: [], notifs: [], termPos: {}, termSize: {}, consoleSection: {} }; }
+  function blank() { return { v: 1, staticLevelRevision: 1, settings: defaults(), tasks: [], notifs: [], termPos: {}, termSize: {}, consoleSection: {} }; }
   function load() {
     try {
       const r = JSON.parse(localStorage.getItem(KEY));
       if (r && r.v === 1) {
+        const migrateStaticLevel = r.staticLevelRevision !== 1;
         r.settings = Object.assign(defaults(), r.settings || {});
+        if (migrateStaticLevel) r.settings.staticLevel = 0;
+        r.staticLevelRevision = 1;
         if (r.settings.theme === 'amber') {
           r.settings.theme = 'green';
           r.settings.themeHue = 136;
@@ -202,6 +205,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         if (!r.termPos || typeof r.termPos !== 'object') r.termPos = {};             // remembered drag positions (persisted)
         if (!r.termSize || typeof r.termSize !== 'object') r.termSize = {};          // remembered dimensions (persisted)
         if (!r.consoleSection || typeof r.consoleSection !== 'object') r.consoleSection = {};  // last-active console section per window
+        if (migrateStaticLevel) { try { localStorage.setItem(KEY, JSON.stringify(r)); } catch (_) {} }
         return r;
       }
     } catch (_) {}
@@ -412,7 +416,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     // would remove it out from under a verification run.
     document.body.classList.toggle('crt-dull', resolveGlass(s.crtGlass) === 'dulled');
     // Scale the active renderer's grain without replacing its tuned CRT preset.
-    if (typeof World !== 'undefined' && World.crt) World.crt.staticLevel = clampN(s.staticLevel, 0, 200, 100) / 100;
+    if (typeof World !== 'undefined' && World.crt) World.crt.staticLevel = clampN(s.staticLevel, 0, 200, 0) / 100;
     // SESSION ROWS — one body class; app.css re-lays the SAME .ws-row markup as a three-line card.
     // The rail is not re-rendered here: the extra lines are always in the DOM, so flipping this is a
     // pure repaint and cannot disturb rail focus, scroll position, or an in-place rename.
@@ -1762,6 +1766,22 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const key = String(a.name).trim().toUpperCase();
     return present.filter(x => x && String(x.name || '').trim().toUpperCase() === key).length > 1 ? String(a.id || '') : '';
   }
+  function crewNameForRole(agent, role) {
+    const labels = {
+      'the commander': 'CMNDR', commander: 'CMNDR',
+      'the first officer': 'FIRST OFF.', 'first officer': 'FIRST OFF.', 'number two': 'FIRST OFF.',
+      'chief security officer': 'CHF. SEC.',
+      'the treasurer': 'BANKER', treasurer: 'BANKER',
+      'the ambassador': 'AMBSDR', ambassador: 'AMBSDR',
+      'chief engineer': 'CHF. ENG.',
+      'chief comm officer': 'CHF. COMM.', 'chief communications officer': 'CHF. COMM.',
+      'chief med officer': 'CHF. MED.', 'chief medical officer': 'CHF. MED.', 'medical officer': 'CHF. MED.',
+      'chief helm officer': 'CHF. HELM',
+      'chief science officer': 'CHF. SCI.'
+    };
+    const key = String(role || '').trim().toLocaleLowerCase();
+    return labels[key] || String(agent && (agent.name || agent.id) || '');
+  }
   let crewQuery = '';
   function crewPortrait(a) {
     return '<span class="crew-portrait" aria-hidden="true"><img alt="" draggable="false" hidden></span>';
@@ -1778,7 +1798,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const roomName = room ? String(room.name || room.id) : 'UNASSIGNED';
       const bridge = !!room && /^(?:the\s+)?bridge$/i.test(roomName.trim());
       const authorityLevel = authority && Number.isFinite(authority.level) ? authority.level : null;
-      return { a, i, roomName, bridge, assigned: !!room, authorityLevel };
+      const authorityRole = authority && typeof authority.role === 'string' ? authority.role : '';
+      return { a, i, roomName, bridge, assigned: !!room, authorityLevel, authorityRole };
     }).sort((a, b) => (a.authorityLevel == null ? Infinity : a.authorityLevel) - (b.authorityLevel == null ? Infinity : b.authorityLevel)
       || Number(b.bridge) - Number(a.bridge)
       || Number(b.assigned) - Number(a.assigned)
@@ -1792,7 +1813,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const rows = Array.from(ul.querySelectorAll('[data-agent-id]'));
     if (ordered.length === rows.length && ordered.every((entry, i) =>
       rows[i].dataset.agentId === entry.a.id && rows[i].dataset.roomName === entry.roomName
-      && rows[i].dataset.authorityLevel === (entry.authorityLevel == null ? '' : String(entry.authorityLevel)))) return;
+      && rows[i].dataset.authorityLevel === (entry.authorityLevel == null ? '' : String(entry.authorityLevel))
+      && rows[i].dataset.authorityRole === entry.authorityRole)) return;
     const scrollTop = ul.scrollTop;
     const focused = document.activeElement && document.activeElement.closest('#crew [data-agent-id]');
     const focusedId = focused && focused.dataset.agentId;
@@ -1809,22 +1831,22 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireCrewLive();   // ensure the per-agent run-state listener is live
     const ul = $('#crew'); if (!ul) return;
     const ordered = crewManifestOrder(present, typeof App !== 'undefined' && App.station ? App.station() : null);
-    const qRow = '<li class="crew-row crew-q-row" role="button" tabindex="0" aria-label="Q, Captain and Commander, Level 0" aria-keyshortcuts="Enter Space" data-q-terminal data-authority-level="0" style="--ci:0">' +
+    const qRow = '<li class="crew-row crew-q-row" role="button" tabindex="0" aria-label="Judge Q, Captain and Commander, Clearance Level 0" aria-keyshortcuts="Enter Space" data-q-terminal data-authority-level="0" style="--ci:0">' +
       '<span class="crew-portrait" aria-hidden="true"><img alt="" draggable="false" hidden></span>' +
       '<span class="dot on"></span><div class="crew-main">' +
       '<div class="crew-eyebrow" title="Captain and Commander">CAPTAIN</div>' +
-      '<div class="crew-name">Q<span class="crew-room" title="Assigned hierarchy level">Level 0</span></div>' +
+      '<div class="crew-name"><span class="crew-title">JUDGE Q</span><span class="crew-room" title="Assigned Bridge clearance level" aria-label="Clearance Level 0">L0</span></div>' +
       '<div class="crew-status" data-q-presence>ONLINE</div></div>' +
       '<button type="button" class="crew-dossier crew-interface" aria-label="Open Q interface" data-tip="Open Q interface">INTERFACE</button></li>';
-    ul.innerHTML = qRow + ordered.map(({ a, i, roomName, authorityLevel }, order) =>
-      '<li class="crew-row" role="button" tabindex="0" aria-label="' + (present.length > 1 ? 'Show sessions with ' + esc(a.name || a.id) + ', ' + esc(roomName) + '; Shift+F10 for the dossier" aria-keyshortcuts="Shift+F10' : 'Open dossier for ' + esc(a.name || a.id) + ', ' + esc(roomName)) + '" data-i="' + i + '" data-agent-id="' + esc(a.id) + '" data-room-name="' + esc(roomName) + '" data-authority-level="' + (authorityLevel == null ? '' : authorityLevel) + '" style="--ci:' + (order + 1) + '">' +
+    ul.innerHTML = qRow + ordered.map(({ a, i, roomName, authorityLevel, authorityRole }, order) =>
+      '<li class="crew-row" role="button" tabindex="0" aria-label="' + (present.length > 1 ? 'Show sessions with ' + esc(a.name || a.id) + ', ' + esc(roomName) + '; Shift+F10 for the dossier" aria-keyshortcuts="Shift+F10' : 'Open dossier for ' + esc(a.name || a.id) + ', ' + esc(roomName)) + '" data-i="' + i + '" data-agent-id="' + esc(a.id) + '" data-room-name="' + esc(roomName) + '" data-authority-level="' + (authorityLevel == null ? '' : authorityLevel) + '" data-authority-role="' + esc(authorityRole) + '" style="--ci:' + (order + 1) + '">' +
       crewPortrait(a) +
       '<span class="dot on"></span>' +
       '<div class="crew-main">' +
       '<div class="crew-eyebrow" title="' + esc(roomName) + '">' + esc(roomName) + '</div>' +
-      '<div class="crew-name" style="color:' + esc(a.color) + '">' + esc(a.name) +
-      (duplicateAgentName(a) ? '<span class="crew-id">[' + esc(duplicateAgentName(a)) + ']</span>' : '') +
-      (authorityLevel == null ? '' : '<span class="crew-room" title="Assigned hierarchy level">Level ' + authorityLevel + '</span>') + '</div>' +
+      '<div class="crew-name" style="color:' + esc(a.color) + '"><span class="crew-title" title="' + esc(a.name || a.id) + '">' + esc(crewNameForRole(a, authorityRole)) +
+      (duplicateAgentName(a) ? '<span class="crew-id">[' + esc(duplicateAgentName(a)) + ']</span>' : '') + '</span>' +
+      (authorityLevel == null ? '' : '<span class="crew-room" title="Assigned Bridge clearance level" aria-label="Clearance Level ' + authorityLevel + '">L' + authorityLevel + '</span>') + '</div>' +
       '<div class="crew-status" id="cs-' + esc(a.id) + '">…</div>' +
       // in-flight work bar: hidden until the row is .working (crewTick toggles it from the real run state).
       // The shimmer (.bar-active) reads as live activity; it's an indeterminate sweep, not a % readout.
@@ -2074,7 +2096,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     try { focused = !!(a && typeof App !== 'undefined' && App.currentAgent && App.currentAgent() && App.currentAgent().id === a.id); } catch (_) {}
     const dotCls = dn ? 'down' : live ? 'working' : (focused && act === 'talk') ? 'thinking' : 'on';
     const statusText = dn ? 'OFFLINE' : live ? 'WORKING' : (focused && act === 'talk') ? 'THINKING' : 'ONLINE';
-    const lv = (typeof Xp !== 'undefined' && a.stats) ? Xp.compute(a.stats).level : null;   // always-visible level chip
+    const lv = (typeof Xp !== 'undefined' && a.stats) ? Xp.compute(a.stats).level : null;   // always-visible rank chip
     return '<div class="ag-hero">' +
       // recessed portrait WELL: corner ticks + a slow scan-sweep overlay (v2 hero pattern). The sweep +
       // ticks are pointer-events:none cosmetic overlays; the canvas keeps rendering the live agent body.
@@ -2094,7 +2116,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         : '<div class="ag-name" style="color:' + esc(a.color) + '">' + esc(a.name) +
             (duplicateAgentName(a) ? '<span class="ag-name-id">[' + esc(duplicateAgentName(a)) + ']</span>' : '') +
             '<button class="ag-rename" id="ag-rename-btn" title="rename this agent" aria-label="Rename agent">✎</button>' +
-            (lv ? '<span class="ag-lv">Lv ' + lv + '</span>' : '') + '</div>') +
+            (lv ? '<span class="ag-lv">Rank ' + lv + '</span>' : '') + '</div>') +
       '<div class="ag-role-line"><span class="ag-sdot ' + dotCls + '"></span>' + statusText + '</div>' +
       '<div class="ag-tags">' +
       // the agent's deployed SPECIALTY (set by the Recruitment Bay) — its primary "what it's FOR" identity, shown first.
@@ -2116,7 +2138,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const runs = (a.stats && a.stats.counters && a.stats.counters.runs) || 0;
     return '<div class="stat-grid">' +
       '<div class="stat-cell"><div class="stat-val">' + runs + '</div><div class="stat-lbl">RUNS</div></div>' +
-      '<div class="stat-cell"><div class="stat-val">' + (g ? g.level : '—') + '</div><div class="stat-lbl">LEVEL</div></div>' +
+      '<div class="stat-cell"><div class="stat-val">' + (g ? g.level : '—') + '</div><div class="stat-lbl">RANK</div></div>' +
       '<div class="stat-cell"><div class="stat-val pos">' + (g ? g.positiveFeedback : 0) + '</div><div class="stat-lbl">KUDOS</div></div>' +
       '</div>';
   }
@@ -2235,11 +2257,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<div class="gx-station" style="margin-top:18px;">' +
       '<div class="hd"><span class="badge">●</span><span class="ttl">Station prestige</span><span class="agents">&Sigma; ' + nAg + ' AGENT' + (nAg === 1 ? '' : 'S') + '</span></div>' +
       '<div class="body">' +
-        '<div class="lv"><div class="gx-lbl" style="font-size:9px;">SHIP</div><div class="n">' + s.level + '</div><div class="gx-lbl" style="font-size:9px;">LEVEL</div></div>' +
+        '<div class="lv"><div class="gx-lbl" style="font-size:9px;">SHIP</div><div class="n">' + s.level + '</div><div class="gx-lbl" style="font-size:9px;">RANK</div></div>' +
         '<div style="flex:1;">' +
           '<div class="gx-row" style="margin-bottom:6px;"><span class="gx-val" style="font-size:13px;">' + s.xp.toLocaleString() + ' <span class="gx-dim">/</span> ' + Xp.xpForLevel(s.level + 1).toLocaleString() + ' <span class="gx-dim" style="font-size:11px;">XP</span></span><span class="gx-val" style="color:var(--gold);font-size:13px;">' + s.pct + '%</span></div>' +
           '<div class="gx-trk"><div class="gx-gfill" style="width:' + s.pct + '%;"></div></div>' +
-          '<div class="gx-row" style="margin-top:7px;"><span class="gx-val gx-dim" style="font-size:11px;">' + s.toNext.toLocaleString() + ' XP TO LV ' + (s.level + 1) + '</span>' +
+          '<div class="gx-row" style="margin-top:7px;"><span class="gx-val gx-dim" style="font-size:11px;">' + s.toNext.toLocaleString() + ' XP TO RANK ' + (s.level + 1) + '</span>' +
             '<span class="gx-mono" style="font-size:10px;color:var(--ph-dim);">' + s.positiveFeedback + ' APPROVALS &middot; <span style="color:var(--ph);">' + (s.known ? s.band.toUpperCase() : 'CALIBRATING') + '</span></span></div>' +
         '</div>' +
       '</div></div>'
@@ -2257,15 +2279,15 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
 
     const progression =
       '<div class="ag-xp-panel">' +
-      '<div class="gx-sec"><span class="gx-ref">▣</span><span class="gx-title">Progression</span><span class="gx-tag">LV ' + g.level + '&rarr;' + (g.level + 1) + '</span></div>' +
-      '<div class="gx-row" style="margin-bottom:6px;"><span class="gx-lbl">This level</span>' +
+      '<div class="gx-sec"><span class="gx-ref">▣</span><span class="gx-title">Rank progression</span><span class="gx-tag">RANK ' + g.level + '&rarr;' + (g.level + 1) + '</span></div>' +
+      '<div class="gx-row" style="margin-bottom:6px;"><span class="gx-lbl">This rank</span>' +
         '<span class="gx-val" style="font-size:15px;">' + g.inLevel + ' <span class="gx-dim">/</span> ' + g.span + ' <span class="gx-dim" style="font-size:11px;">XP</span></span></div>' +
       '<div class="gx-trk" style="margin-bottom:5px;"><div class="gx-fill" style="width:' + g.pct + '%;"></div><div class="gx-mark" style="left:' + g.pct + '%;"></div></div>' +
-      '<div class="gx-row"><span class="gx-val gx-dim" style="font-size:12px;">' + g.toNext + ' XP TO LV ' + (g.level + 1) + '</span><span class="gx-val" style="color:var(--ph);font-size:13px;">' + g.pct + '%</span></div>' +
+      '<div class="gx-row"><span class="gx-val gx-dim" style="font-size:12px;">' + g.toNext + ' XP TO RANK ' + (g.level + 1) + '</span><span class="gx-val" style="color:var(--ph);font-size:13px;">' + g.pct + '%</span></div>' +
       '<div class="gx-well"><span class="gx-lbl">Positive feedback</span><span class="v">' + g.positiveFeedback + '</span></div>' +
       // what a level actually MEANS (UX sweep 2026-07-15): honest — levels gate nothing (sandbox law);
       // they are the agent's proven track record from work you rated well.
-      '<div class="gx-row gx-dim" style="font-size:11px;margin-top:4px;">Rate completed work “nailed it” to earn XP. Positive turn-in feedback earns XP too. Levels celebrate progress; every capability is available from the start.</div>' +
+      '<div class="gx-row gx-dim" style="font-size:11px;margin-top:4px;">Rate completed work “nailed it” to earn XP. Positive turn-in feedback earns XP too. Ranks celebrate progress; every capability is available from the start.</div>' +
       '</div>';
 
     const confnum = g.known ? (g.confidence + '<span style="font-size:18px;color:var(--ph-dim);">%</span>') : '—';
@@ -2337,11 +2359,11 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
        and with LEVEL already one of BRIEF's three stat wells. Four restatements of context the user already had,
        occupying the top of the pane. The level chip survives (it belongs beside a level bar); the rest is gone. */
     return '<div class="gx ag-growth">' +
-      '<div class="ag-growth-hero"><div class="ag-level-badge"><span>LEVEL</span><strong>' + pad2(g.level) + '</strong></div>' +
+      '<div class="ag-growth-hero"><div class="ag-level-badge"><span>RANK</span><strong>' + pad2(g.level) + '</strong></div>' +
       '<div class="ag-growth-heading"><span class="ag-growth-eyebrow">AGENT PROGRESSION</span><h3>' + esc(a.name || 'Agent') + '</h3><p>' + g.xp.toLocaleString() + ' total XP · ' + earned + ' of ' + cat.length + ' achievements earned</p>' + progression + '</div></div>' +
       (nextMilestone ? '<div class="ag-next-challenge"><span>CHALLENGE TO AIM FOR</span><b>' + nextMilestone.label + '</b><span>' + nextMilestone.hint + '</span></div>' : '') +
       '<div class="ag-growth-section-title">Performance &amp; learning</div><div class="gx-2">' + confidence + reliabilityBlk + practiceBlk + '</div>' +
-      '<p class="ag-growth-station-link">The station’s own level, systems and milestones: <button type="button" class="bb xs" data-open-progress>QUESTS › PROGRESS</button></p>' +
+      '<p class="ag-growth-station-link">The station’s own rank, systems and milestones: <button type="button" class="bb xs" data-open-progress>QUESTS › PROGRESS</button></p>' +
       '<section class="ag-achievements">' + trophies + '</section></div>';
   }
 
@@ -3542,7 +3564,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
          change it. This is the array order and mountConsole renders it verbatim; there is no other list. */
       { id: 'brief', label: 'BRIEF', glyph: '▤', desc: 'Who this agent is, how it is set up, and what it can do.',
         build: frag(agHead(a, act) + agBrief(a)) },
-      { id: 'growth', label: 'GROWTH', glyph: '★', desc: 'Level up through real work. Track XP, achievements, and performance.',
+      { id: 'growth', label: 'GROWTH', glyph: '★', desc: 'Earn ranks through real work. Track XP, achievements, and performance.',
         build: frag(agGrowth(a)) },
       { id: 'record', label: 'RECORD', glyph: '▦', desc: 'Review work, understand failed runs, and find restore points.',
         build: (elx) => {
@@ -3681,7 +3703,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       if (next) { next._growthHtml = html; stats.replaceWith(next); }
     }
     const level = w.querySelector('.ag-lv');
-    if (level && a.stats) level.textContent = 'Lv ' + Xp.compute(a.stats).level;
+    if (level && a.stats) level.textContent = 'Rank ' + Xp.compute(a.stats).level;
   }
 
   // BRIEF live telemetry, painted in place (no DOM rebuild → open CONFIG/MEMORY editors are never wiped).
@@ -7472,8 +7494,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         return '<button class="set-theme ' + (cur === v ? 'sel' : '') + '" aria-pressed="' + (cur === v ? 'true' : 'false') + '" data-glass="' + v + '" title="' + why + '">' + name + '</button>';
       }).join('') +
       '</div>' +
-      '<label class="set-slider"><span class="set-slider-name">STATIC LEVEL</span><input type="range" id="set-static" min="0" max="200" step="5" aria-describedby="set-static-help" value="' + clampN(s.staticLevel, 0, 200, 100) + '"><span class="set-slider-val" id="set-static-val">' + clampN(s.staticLevel, 0, 200, 100) + '%</span></label>' +
-      '<p class="mc-hint" id="set-static-help">Film grain over the station view. 0% removes static; 100% is the default. Changes preview and save immediately.</p>' +
+      '<label class="set-slider"><span class="set-slider-name">STATIC LEVEL</span><input type="range" id="set-static" min="0" max="200" step="5" aria-describedby="set-static-help" value="' + clampN(s.staticLevel, 0, 200, 0) + '"><span class="set-slider-val" id="set-static-val">' + clampN(s.staticLevel, 0, 200, 0) + '%</span></label>' +
+      '<p class="mc-hint" id="set-static-help">Film grain over the station view. 0% removes static; increase it for more grain. Changes preview and save immediately.</p>' +
       '<label class="set-row"><input type="checkbox" id="set-flicker" ' + (s.flicker ? 'checked' : '') + '> SCREEN FLICKER</label>' +
       // TERMINAL AUDIO is a sound control, not a display one — its own header (it also gates notification chimes).
       '<h4 class="ms-h">SOUND</h4>' +
@@ -7744,7 +7766,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     wireSlider(satIn, v => { s.theme = 'custom'; s.themeSat = clampN(v, 0, 100, 100); sliderVal('#set-sat-val', s.themeSat + '%'); selCustom(); syncCustomChip(); });
     wireSlider(glowIn, v => { s.themeGlow = clampN(v, 0, 150, 100); sliderVal('#set-glow-val', s.themeGlow + '%'); });
     wireSlider(brightIn, v => { s.panelBright = clampN(v, -100, 100, 0); sliderVal('#set-bright-val', s.panelBright + '%'); });
-    wireSlider(host.querySelector('#set-static'), v => { s.staticLevel = clampN(v, 0, 200, 100); sliderVal('#set-static-val', s.staticLevel + '%'); });
+    wireSlider(host.querySelector('#set-static'), v => { s.staticLevel = clampN(v, 0, 200, 0); sliderVal('#set-static-val', s.staticLevel + '%'); });
     const bind = (id, key) => host.querySelector(id).addEventListener('change', ev => { s[key] = ev.target.checked; applySettings(); save(); flashSaved(appMsg()); });
     bind('#set-flicker', 'flicker'); bind('#set-sound', 'sound'); bind('#set-hints', 'hints');
     const lightingChips = host.querySelectorAll('#set-lighting [data-lighting]');
@@ -10231,8 +10253,8 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const progression = j.progression;
     const achievements = progression && Array.isArray(progression.achievements) ? progression.achievements.slice(-5).reverse() : [];
     const proofLabel = (kind, authority) => authority === 'commander-confirmed' ? 'You confirmed' : kind === 'metric' ? 'You recorded' : 'Ship log recorded';
-    const growthHtml = progression ? '<div class="q-commander-growth"><div class="q-journey-title">COMMANDER LEVEL ' + progression.level + '</div>'
-      + '<div class="sub">' + progression.points + ' achievement points · ' + progression.pointsToNextLevel + ' to the next level</div>'
+    const growthHtml = progression ? '<div class="q-commander-growth"><div class="q-journey-title">COMMANDER RANK ' + progression.level + '</div>'
+      + '<div class="sub">' + progression.points + ' achievement points · ' + progression.pointsToNextLevel + ' to the next rank</div>'
       + '<div class="sub dim">Confirmed goal activity and recorded metric checkpoints earn points across your goals. Confirming a completed goal earns 100 points. Setbacks never erase your history.</div>'
       + '<details class="q-growth-history"><summary>Recent achievements</summary>' + achievements.map(a => '<details class="sub q-achievement"><summary>◆ ' + esc(a.title || a.kind || 'Goal progress') + ' <span class="gx-tag">+' + (Number(a.points) || 0) + '</span></summary>'
         + '<div>' + esc(a.evidence || '') + '</div><div class="dim">' + proofLabel(a.kind, a.verifiedBy) + '</div></details>').join('') + '</details></div>' : '';
@@ -10533,7 +10555,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const commanderJourney = typeof JourneyStore !== 'undefined' && JourneyStore.status ? JourneyStore.status() : null;
     const commanderLevel = commanderJourney && commanderJourney.progression && commanderJourney.progression.level;
     const journalCount = Number.isFinite(commanderLevel)
-      ? '<div class="q-journal-count"><strong>' + commanderLevel + '</strong><span>Commander<br>level</span></div>'
+      ? '<div class="q-journal-count"><strong>' + commanderLevel + '</strong><span>Commander<br>rank</span></div>'
       : '<div class="q-journal-count"><strong>' + open.length + '</strong><span>available quests</span></div>';
     const filtersHtml = '<nav class="q-filters" aria-label="Quest categories">' + categories.map(c =>
       '<button class="q-filter" data-category="' + c[0] + '" aria-pressed="' + (c === category) + '">' + c[1]

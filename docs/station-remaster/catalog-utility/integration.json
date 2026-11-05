@@ -163,55 +163,146 @@
     {
       "id": "jukebox",
       "view": "s",
-      "image": "jukebox.png",
-      "repoPath": "frontend/assets/industrial/catalog-utility/jukebox.png",
-      "sourceWidth": 287,
-      "sourceHeight": 383,
-      "footprint": {
-        "w": 1,
-        "h": 2
-      },
+      "image": "frontend/assets/industrial/catalog-utility/jukebox.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
       "bounds": {
         "x": -1,
         "y": -3,
         "width": 18,
         "height": 27
       },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
       "contact": {
         "x": 0.5,
-        "y": 0.9921671018276762
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 6,
+          "y": 24
+        }
       },
-      "mode": "approved",
-      "effects": false,
-      "source": "docs/station-remaster/catalog-utility/sheet-source.png",
-      "sourceSha256": "af07907f829821db2e288c6bcf32ab8966193dae9d1b247f7338d30150b20d42",
-      "outputSha256": "787cd6c617c9c20c1a15acc15d1fad7eeea009b7c164865e20d658e8c8bd357e",
-      "sourceROI": {
-        "left": 1140,
-        "top": 60,
-        "width": 370,
-        "height": 440
-      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/south.png",
+      "sourceSha256": "58d09cffc2efc40762cbf08cc2307667748798c028e79a35b983c72d0eb15cf6",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 1182,
-        "top": 102,
-        "width": 287,
-        "height": 383
+        "left": 14,
+        "top": 8,
+        "width": 36,
+        "height": 42
       },
-      "actualFit": {
+      "outputSha256": "37720212de9f7a443f181f6cbfd57c1bcde29206b0e2332890320624e8df90a5"
+    },
+    {
+      "id": "jukebox",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-w.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "bounds": {
         "x": -1,
-        "y": 0.167247,
+        "y": -3,
         "width": 18,
-        "height": 24.020906
+        "height": 27
       },
-      "verification": {
-        "transparent": 12306,
-        "retained": 97615,
-        "removedAlpha": 1683,
-        "retainedRGBAMismatches": 0,
-        "allRGBMismatches": 0
+      "footprint": {
+        "w": 1,
+        "h": 2
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping"
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 6,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/west.png",
+      "sourceSha256": "874dd91f036db2d65ec65d7c943ba279da5b188067a3f0d2c9af3e19ee8ba066",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 9,
+        "width": 28,
+        "height": 48
+      },
+      "outputSha256": "6667183f8f9ec9190f64b1b2cd39d5f6ab57b34a43f1b645902c12efa1e5c223"
+    },
+    {
+      "id": "jukebox",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-n.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 6,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/north.png",
+      "sourceSha256": "c034336d245dee1465c6eac8d0cdc8258b74af290ec1ebd7ce7c01c76c379687",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 14,
+        "top": 9,
+        "width": 36,
+        "height": 42
+      },
+      "outputSha256": "0237056091097ee9f723addfb221dacc9464fe3c2b7e20a9438bc98bff47c97a"
+    },
+    {
+      "id": "jukebox",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-e.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1,
+        "space": "exported-image-normalized",
+        "targetWorld": {
+          "x": 6,
+          "y": 24
+        }
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/east.png",
+      "sourceSha256": "1d702d97bf5d8a23a43c73317c5fb28772fe8af0e37d8bcf8b336de7ff53eb3e",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 9,
+        "width": 28,
+        "height": 48
+      },
+      "outputSha256": "ecedf70b21d756eff69a191731b9476a608c8cb90cea6d23f12583f5cc232e96"
     },
     {
       "id": "pixelrig",

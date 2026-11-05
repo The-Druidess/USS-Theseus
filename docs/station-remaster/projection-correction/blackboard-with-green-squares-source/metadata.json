@@ -1,0 +1,29 @@
+{
+  "group_id": "52c04d50-7a26-4d5b-ab87-a64d5da44887",
+  "objects": [
+    {
+      "id": "fc2da630-f941-4853-9c09-c2620c1f4615",
+      "name": "base",
+      "prompt": "whiteboard on two legs: black board surface with neon green squares in a 5x3 grid, white metal frame and legs, marker tray along the bottom edge, same pixel style as the reference",
+      "size": {
+        "width": 224,
+        "height": 224
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-02T04:07:25.217024"
+}

@@ -3311,6 +3311,9 @@ const PropSprites = (() => {
       px(sx + 2, sy - 1, 1, 2, '#ff5a4a');                                    // red jam pin
     }
   };
+  F['missionboard:w'] = F.missionboard;
+  F['missionboard:n'] = F.missionboard;
+  F['missionboard:e'] = F.missionboard;
 
   F.trophycase = (x, y, w, h, f) => {
     // TROPHY CASE (2x2) — v4 REBUILD. Also predated the style law (flat box + inset). Now TALL 3/4: a
@@ -3400,6 +3403,9 @@ const PropSprites = (() => {
     rimEdge(gx, gy, 1, gh, 0.22);                                            // cold pane edge, west
     px(gx + gw - 1, gy + gh - 4, 1, 3, '#1b232a');
   };
+  F['trophycase:w'] = F.trophycase;
+  F['trophycase:n'] = F.trophycase;
+  F['trophycase:e'] = F.trophycase;
 
   F.splitter = (x, y, w, h, f) => {
     // SPLITTER (1x1) — fans ONE stream across its lanes (load-balance = real parallelism). At 12px detail is
@@ -5389,6 +5395,9 @@ const PropSprites = (() => {
       spill(x + 2, B, cw - 4, '#f0b23a', 0.16, 4);
     }
   };
+  F['jukebox:w'] = F.jukebox;
+  F['jukebox:n'] = F.jukebox;
+  F['jukebox:e'] = F.jukebox;
 
   const WD = '#6b5030', WD_LIT = '#96723f', WD_DK = '#3d2c19';         // BED frame timber
   const QLT = '#a83a3a', QLT_LIT = '#cf5f56', QLT_DK = '#6b2020';      // the quilt
@@ -7690,8 +7699,7 @@ const PropSprites = (() => {
     if(online&&fired){px(x+2,y-4,4,1,'#dcfaff');bloom(x+2,y-4,4,1,ACC.data,0.16);}
   };
   /* PLUGIN TERMINAL (plugin extensions, 2026-09-29): a standing display that IS a plugin in the world — its tools for
-     the room's agent, its window on a click. It wears the DISPATCH PYLON's finished art (catalog artId) rather than
-     inventing new art; the catalog row, the capability and the binding are what make it a terminal. */
+    the room's agent, its window on a click. The dispatch pylon remains its classic fallback. */
   F.plugin_terminal = (x, y, w, h, f) => F.bridge_dispatch_pylon(x, y, w, h, f);
   F.workbench = (x, y, w, h, f) => {
     /* v45 WORKBENCH (2x1) — TERMINAL: shell.exec + verify.run. It is the one COMPUTE-adjacent prop
@@ -10727,6 +10735,27 @@ const PropSprites = (() => {
     F.seatchair(x,y,w,h,f);
   };
 
+  for (const id of ['red_cushion_chair','red_captains_chair','simple_red_cushion_chair']) {
+    F[id] = F.podchair;
+    F[id+':e'] = F['podchair:e'];
+    F[id+':n'] = F['podchair:n'];
+    F[id+':w'] = (x,y,w,h,f) => {
+      ctx.save();
+      try { ctx.translate(x+w,y); ctx.scale(-1,1); F['podchair:e'](0,0,w,h,f); }
+      finally { ctx.restore(); }
+    };
+  }
+
+  F.laptop = F.deskterminal;
+  F.furniture_desk = F.longtable;
+  F['furniture_desk:e'] = F['longtable:e'];
+  F['furniture_desk:n'] = F.lowtable;
+  F['furniture_desk:w'] = (x,y,w,h,f) => {
+    ctx.save();
+    try { ctx.translate(x+w,y); ctx.scale(-1,1); F['longtable:e'](0,0,w,h,f); }
+    finally { ctx.restore(); }
+  };
+
   const CATALOG = [
     // Industrial construction kit: cosmetic furniture, never new capability grants.
     { id: "industrial_locker", label: "MODULAR LOCKER", cat: "storage", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: true },
@@ -10744,10 +10773,11 @@ const PropSprites = (() => {
 
     /* ===================== FUNCTIONAL ===================== */
     // WORKSTATIONS — the agent's seat. Assign ONE agent; it walks here and sits to work when tasked.
-    { id: "desk", label: "DESK", cat: "workstation", tier: "functional", seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
-    { id: "desk2", label: "DESK ×2", cat: "workstation", tier: "functional", seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
+    { id: "desk", label: "DESK", cat: "workstation", tier: "functional", retired: true, seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
+    { id: "desk2", label: "DESK ×2", cat: "workstation", tier: "functional", retired: true, seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
     { id: "console", label: "CONSOLE", cat: "workstation", tier: "functional", seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
-    { id: "consoleL", label: "CONSOLE L", cat: "workstation", tier: "functional", seat: true, w: 3, h: 1, animated: true, blocks: true, desc: D_WS },
+    { id: "laptop", label: "LAPTOP", cat: "workstation", tier: "functional", seat: true, w: 1, h: 1, animated: true, blocks: false, mount: "surface", desc: D_WS },
+    { id: "consoleL", label: "CONSOLE L", cat: "workstation", tier: "functional", retired: true, seat: true, w: 3, h: 1, animated: true, blocks: true, desc: D_WS },
     { id: "pixelrig", label: "PIXEL RIG", cat: "workstation", tier: "functional", seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
     { id: "bench", label: "BENCH", cat: "workstation", tier: "functional", seat: true, w: 4, h: 1, animated: true, blocks: true, desc: D_WS },
     { id: "workbench", label: "WORKBENCH", cat: "workstation", tier: "functional", w: 2, h: 1, animated: true, blocks: true, desc: "WORKBENCH — grants the room's agent shell + verify, so it can run and test real code. Pair it with a workstation in the same room." },
@@ -10770,7 +10800,7 @@ const PropSprites = (() => {
     // laid with the BELT tool and compile into the RoutingPlan. F.beltH stays so stations that placed one
     // still render; it just can't be placed anew.
     // CAPABILITY — object = capability. Place one in a BAY's room to grant that agent a power.
-    { id: "plugin_terminal", artId: "bridge_dispatch_pylon", label: "PLUGIN TERMINAL", cat: "capability", tier: "functional", w: 1, h: 2, animated: true, blocks: true, desc: "PLUGIN TERMINAL — one of your plugins, standing in the station. Gives the room's agent that plugin's tools (each call asks you first, unless you choose Always or Full access) and opens its window when clicked. Installing a plugin with tools places one for you." },
+    { id: "plugin_terminal", label: "PLUGIN TERMINAL", cat: "capability", tier: "functional", w: 1, h: 2, animated: true, blocks: true, desc: "PLUGIN TERMINAL — one of your plugins, standing in the station. Gives the room's agent that plugin's tools (each call asks you first, unless you choose Always or Full access) and opens its window when clicked. Installing a plugin with tools places one for you." },
     { id: "connector_portal", label: "CONNECTOR", cat: "capability", tier: "functional", w: 1, h: 2, animated: true, blocks: true, desc: "CONNECTOR — bind an MCP server here to grant the room's agent that server's live tools. Click it to bind one." },
     { id: "comms_dish", label: "DISH", cat: "capability", tier: "functional", w: 2, h: 2, animated: true, blocks: true, desc: D_WEB },
     { id: "comms_uplink", label: "UPLINK", cat: "capability", tier: "functional", w: 2, h: 2, animated: true, blocks: true, desc: D_WEB },
@@ -10894,6 +10924,7 @@ const PropSprites = (() => {
     // had to be parked on the deck. `surface: true` is what a mount:"surface" / stack:true prop may be
     // placed ON. See the MOUNT AXIS note above the catalog for what those two flags mean.
     { id: "sidetable", label: "SIDE TABLE", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, surface: true },
+    { id: "furniture_desk", label: "DESK", cat: "decor", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: true, surface: true },
     /* THE LOW TABLE + THE DINER SET (2026-08-17). All three are `surface: true` tables or a seat —
        nothing here moves the shared top plane, so a mug placed on any of them still lands. */
     { id: "lowtable", label: "LOW TABLE", cat: "decor", tier: "cosmetic", w: 3, h: 1, animated: false, blocks: true, surface: true },
@@ -10909,6 +10940,9 @@ const PropSprites = (() => {
     { id: "booth", label: "BOOTH", cat: "decor", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: true, use: { kind: 'couch', sit: false, approach: 'south' } },
     { id: "dinerchair", label: "DINER CHAIR", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, use: { kind: 'seat', sit: true, approach: 'auto' } },
     { id: "podchair", label: "POD CHAIR", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, use: { kind: 'seat', sit: true, approach: 'auto' } },
+    { id: "red_cushion_chair", label: "RED CUSHION CHAIR", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, use: { kind: 'seat', sit: true, approach: 'auto' } },
+    { id: "red_captains_chair", label: "RED CAPTAIN'S CHAIR", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, use: { kind: 'seat', sit: true, approach: 'auto' } },
+    { id: "simple_red_cushion_chair", label: "SIMPLE RED CUSHION CHAIR", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, use: { kind: 'seat', sit: true, approach: 'auto' } },
     { id: "loungetable", label: "LOUNGE TABLE", cat: "decor", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: true, surface: true },
     { id: "longtable", label: "LONG TABLE", cat: "decor", tier: "cosmetic", w: 3, h: 1, animated: false, blocks: true, surface: true },
     // DECOR EXPANSION (2026-07-15) — theming set. Flat paint/looms walk-over; solid bodies block.
@@ -11048,16 +11082,14 @@ const PropSprites = (() => {
      the picture without turning the routes would make the sprite lie about where boxes go. */
   const isDecal = id => { const s = spec(id); return !!(s && s.flat); };
 
-  /* CLASSIC ROTATION IS FOR DECOR ONLY. The fully loaded industrial remaster adds
-     authored desk/desk2 projections with a matching operator approach in world.js. A `tier:'functional'` prop is the projection of a REAL capability —
-     an agent walks to it, sits at it, and it grants tools — so its orientation is load-bearing
-     rather than decorative, and the approach/seat/routing seams all key off its front.
-     `tier:'cosmetic'` props are furnishing, so those are the ones people get to aim however they
-     like. Stated here because this is the one place that decides what a facing may draw: a turned
-     view added to a functional prop by a later edit is inert, not a silent behaviour change. */
-  const REMASTER_DIRECTIONAL = new Set(['desk','desk2','seatchair']);
+    /* CLASSIC ROTATION IS FOR DECOR ONLY. The industrial remaster adds authored desk/desk2 views with
+      matching operator approaches. Most functional fronts remain load-bearing; TROPHYCASE and
+      MISSIONBOARD are display-surface exceptions, while JUKEBOX is a decorative music cabinet. Their
+      authored views change only which side is visible, and their reserved footprints stay fixed. */
+  const REMASTER_DIRECTIONAL = new Set(['desk','desk2','seatchair','trophycase','missionboard','jukebox']);
   const rotatable = id => {
     const s=spec(id);
+    if (id === 'jukebox') return remasterStyle();
     return (remasterStyle() && REMASTER_DIRECTIONAL.has(id)) || (!!s && s.tier !== 'functional');
   };
 
@@ -11453,7 +11485,7 @@ const PropSprites = (() => {
     telescope: 2, telescope_r: 2, tallplant: 2, quarters_vending: 3, quarters_lockerbank: 3, jukebox: 3, pinball: 2, safe: 3,
     war_intelcab: 3, comms_beacon: 3, bridge_relaystack: 3, incubator: 2, fabricator: 3, vat: 3, etsy_kiln: 3, etsy_dyevat: 2,
     commswall: 3, bigscreen: 3, calwall: 2, chartwall: 2, arc_indexwall: 2, weaponrack: 2, weaponrack_r: 2, shelf: 2, rack: 2,
-    war_threatcore: 3, bridge_dispatch_pylon: 3, research_corelens: 3, research_trendpillar: 3, pub_outboundchute: 3,
+    war_threatcore: 3, research_corelens: 3, research_trendpillar: 3, pub_outboundchute: 3,
     punchbag: 2, punchbag_r: 2, camerarig: 2, camerarig_r: 2, treasury_token_furnace: 3, monstera: 1, tv: 2, couch: 1 };
   // Cache only silhouette geometry: work lights and animation never change the shadow.
   // A sheared, vertically compressed silhouette projects the standing sprite onto the deck.
@@ -11694,7 +11726,7 @@ const PropSprites = (() => {
     wartable: { c: [120, 200, 255], r: 34, a: 0.12, m: 'screen', y: 0.45 }, calwall: { c: BLUE_RGB, r: 30, a: 0.10, m: 'screen', y: 0.35 },
     bridge_consolebank: { c: [80, 180, 190], r: 52, a: 0.24, m: 'steady', y: 0.1 },
     bridge_tacticaltable: { c: [80, 180, 190], r: 64, a: 0.30, m: 'steady', y: 0.45 },
-    bridge_tacscreen: { c: BLUE_RGB, r: 24, a: 0.12, m: 'screen', y: 0.35 }, bridge_dispatch_pylon: { c: AMBER_RGB, r: 22, a: 0.12, m: 'pulse', y: 0.3 },
+    bridge_tacscreen: { c: BLUE_RGB, r: 24, a: 0.12, m: 'screen', y: 0.35 },
     bridge_orderqueue: { c: AMBER_RGB, r: 22, a: 0.10, m: 'screen', y: 0.35 }, war_pivotpanel: { c: BLUE_RGB, r: 22, a: 0.10, m: 'screen', y: 0.35 },
     war_threatcore: { c: [255, 90, 80], r: 26, a: 0.14, m: 'pulse', y: 0.3 },
     tv: { c: [140, 200, 255], r: 26, a: 0.14, m: 'screen', y: 0.4 }, arcade: { c: [255, 120, 200], r: 22, a: 0.14, m: 'screen', y: 0.3 },

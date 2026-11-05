@@ -72,19 +72,18 @@ body.glass-demo:not(.hud-mode) #crew .crew-portrait > .dot {
 }
 body.glass-demo:not(.hud-mode) #crew .crew-row.working .crew-portrait > .dot { background: var(--ph); }
 body.glass-demo:not(.hud-mode) #crew .crew-row.asking .crew-portrait > .dot { background: var(--gold); }
-/* name line: NAME ........ 4:12  (or Lv 2 while idle) */
+/* name line: NAME ........ 4:12  (or clearance badge while idle) */
 body.glass-demo:not(.hud-mode) #crew .crew-main { display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 0; }
 body.glass-demo:not(.hud-mode) #crew .crew-name {
-  flex: 1 0 100%; display: flex; align-items: baseline; gap: 6px;
+  flex: 1 0 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 6px;
   font-size: 19px; letter-spacing: 1.2px; line-height: 1.15;
 }
-body.glass-demo:not(.hud-mode) #crew .crew-name .crew-room { margin-left: auto; font-size: 13px; letter-spacing: .5px; opacity: 1; color: var(--cg-mute); }
+body.glass-demo:not(.hud-mode) #crew .crew-name .crew-room { font-size: 13px; letter-spacing: .5px; opacity: 1; color: var(--cg-mute); }
 body.glass-demo:not(.hud-mode) #crew .crew-name .crew-clock {
-  font-size: 19px; color: var(--ph-bright); font-variant-numeric: tabular-nums; letter-spacing: .5px;
+  grid-column: 2; grid-row: 1; justify-self: end; font-size: 19px; color: var(--ph-bright); font-variant-numeric: tabular-nums; letter-spacing: .5px;
 }
 body.glass-demo:not(.hud-mode) #crew .crew-name .crew-clock:empty { display: none; }
 body.glass-demo:not(.hud-mode) #crew .crew-row.has-clock .crew-room { display: none; }
-body.glass-demo:not(.hud-mode) #crew .crew-row.has-clock .crew-clock { margin-left: auto; }
 /* status line: working · web.search */
 body.glass-demo:not(.hud-mode) #crew :is(.crew-status, .crew-step) {
   margin-top: 3px; font-size: 14px; letter-spacing: .4px; line-height: 1.3; opacity: 1;

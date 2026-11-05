@@ -361,10 +361,10 @@ const PropRemaster = (() => {
     try{
       // Classic avoids all optional asset traffic and remains independently runnable.
       if(typeof location!=='undefined' && new URLSearchParams(location.search||'').get('textures')==='classic')return;
-      const response=await fetch(ROOT+'manifest.json');if(!response.ok)throw Error('manifest unavailable');
+      const response=await fetch(ROOT+'manifest.json',{cache:'no-store'});if(!response.ok)throw Error('manifest unavailable');
       const manifest=await response.json();
       if(!manifest||manifest.version!==1||!manifest.props||typeof manifest.props!=='object')throw Error('invalid manifest');
-      if(projectionReview)try{const geometry=await fetch(ROOT+'runtime-geometry.json');if(geometry.ok){const data=await geometry.json();if(data.version===1&&data.views)measuredGeometry=data.views;}}catch(_){} // older packs retain measured-at-load fallback
+      if(projectionReview)try{const geometry=await fetch(ROOT+'runtime-geometry.json',{cache:'no-store'});if(geometry.ok){const data=await geometry.json();if(data.version===1&&data.views)measuredGeometry=data.views;}}catch(_){} // older packs retain measured-at-load fallback
       const queue=[];
       for(const [id,p]of Object.entries(manifest.props)){
         if(!/^[A-Za-z0-9_]+$/.test(id)||!p||!p.views)continue;

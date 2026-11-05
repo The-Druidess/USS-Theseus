@@ -126,11 +126,14 @@ A.eq(PropSprites.spec('arcade').use.sit, false, 'arcade is stand-and-play (sit:f
       seat is couch-kind, so planCouchSit + world.js SIDE_SEAT own its anchor, facing and occlusion, and
       test/recliner-side-seat.test.js is what locks that. Flipping a recliner true would reopen exactly
       the bed/sofa route this law closed and change nothing on screen. */
-const SITTABLE = new Set(['stool', 'chair', 'dinerchair', 'podchair']);   // 2026-08-17: two more 1x1 seats, same pose as chair
+const SITTABLE = new Set(['stool', 'chair', 'dinerchair', 'podchair', 'red_cushion_chair', 'red_captains_chair', 'simple_red_cushion_chair']);
 for (const sp of PropSprites.CATALOG) {
   if (!sp.use) continue;
   A.eq(!!sp.use.sit, SITTABLE.has(sp.id), 'SEAT LAW: ' + sp.id + '.use.sit === ' + SITTABLE.has(sp.id));
-  if (SITTABLE.has(sp.id)) A.eq(sp.use.kind, 'seat', sp.id + ' uses kind:seat (planSeat claims + renders ON it)');
+  if (SITTABLE.has(sp.id)) {
+    A.eq(sp.use.kind, 'seat', sp.id + ' uses kind:seat (planSeat claims + renders ON it)');
+    A.eq([sp.w, sp.h], [1, 1], sp.id + ' keeps the single-tile seat footprint');
+  }
 }
 for (const id of SITTABLE) A.ok(PropSprites.spec(id) && PropSprites.spec(id).use, 'seat prop ' + id + ' still carries a use descriptor');
 A.eq(PropSprites.spec('couch').use.sit, false, 'couch is stand-at (SEAT LAW)');

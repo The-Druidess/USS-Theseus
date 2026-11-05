@@ -1,0 +1,29 @@
+{
+  "group_id": "7b3699f0-60ab-4698-a3d2-a219414b1886",
+  "objects": [
+    {
+      "id": "95a7519d-5171-46e8-956b-ba7400229c94",
+      "name": "console",
+      "prompt": "LCARS computer console table from Star Trek, wide display top and tan pedestal, pixel art",
+      "size": {
+        "width": 128,
+        "height": 128
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-05T00:30:46.298612"
+}

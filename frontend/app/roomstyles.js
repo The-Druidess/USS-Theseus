@@ -33,8 +33,8 @@
     desks: { name: 'work desks', about: 'desks (each seats its own agent)', words: ['desk', 'office', 'workspace', 'work', 'workstations', 'computers'],
       sets: [
         // spaced for either desk: the classic one is 2 tiles wide, the remastered one 3
-        { w: 12, h: 3, pieces: [['desk', 0, 0], ['desk', 4, 0], ['desk', 8, 0], ['plant', 11, 0]] },
-        { w: 7, h: 3, pieces: [['desk', 0, 0], ['desk', 4, 0]] },
+        { w: 12, h: 3, pieces: [['console', 0, 0], ['console', 4, 0], ['console', 8, 0], ['plant', 11, 0]] },
+        { w: 7, h: 3, pieces: [['console', 0, 0], ['console', 4, 0]] },
       ] },
     meeting: { name: 'a meeting table', about: 'a long table with chairs and a whiteboard', words: ['meeting', 'meetings', 'conference', 'planning', 'standup', 'huddle'],
       sets: [
@@ -73,13 +73,13 @@
       ] },
     lab: { name: 'a lab bench', about: 'a desk, a sample cart, a core lens and research papers', words: ['science', 'research', 'experiments', 'laboratory', 'analysis'],
       sets: [
-        { w: 8, h: 4, pieces: [['research_corelens', 0, 0], ['desk', 2, 0], ['research_samplecart', 5, 0], ['plant', 7, 0], ['research_papers', 4, 3], ['tube', 0, 3]] },
-        { w: 5, h: 3, pieces: [['desk', 0, 0], ['research_samplecart', 3, 0]] },
+        { w: 8, h: 4, pieces: [['research_corelens', 0, 0], ['console', 2, 0], ['research_samplecart', 5, 0], ['plant', 7, 0], ['research_papers', 4, 3], ['tube', 0, 3]] },
+        { w: 5, h: 3, pieces: [['console', 0, 0], ['research_samplecart', 3, 0]] },
       ] },
     comms: { name: 'a comms desk', about: 'a console, screens and a comms dish', words: ['communications', 'radio', 'signal', 'network', 'web', 'internet'],
       sets: [
-        { w: 8, h: 4, pieces: [['screens', 0, 0], ['consoleL', 2, 0], ['comms_dish', 6, 0], ['plant', 0, 3]] },
-        { w: 6, h: 3, pieces: [['consoleL', 0, 0], ['screens', 4, 0]] },
+        { w: 8, h: 4, pieces: [['screens', 0, 0], ['console', 2, 0], ['comms_dish', 6, 0], ['plant', 0, 3]] },
+        { w: 6, h: 3, pieces: [['console', 0, 0], ['screens', 4, 0]] },
       ] },
     workshop: { name: 'a workshop', about: 'a workbench, a fabricator, a toolbox and crates', words: ['maker', 'tools', 'build', 'fabrication', 'engineering', 'garage'],
       sets: [
@@ -159,8 +159,8 @@
     desks: { name: 'an office', about: 'desks (each seats its own agent), a whiteboard, bookshelves, a rack', kind: 'hab', deck: { style: 'ash', mat: 'resin' }, walls: { mat: 'panelled' },
       feature: { left: ['bookshelf'], centre: ['whiteboard'], right: ['industrial_drawerbank'] },
       centre: [
-        { w: 12, h: 3, pieces: [['desk', 0, 0], ['desk', 4, 0], ['desk', 8, 0]] },
-        { w: 7, h: 3, pieces: [['desk', 0, 0], ['desk', 4, 0]] }],
+        { w: 12, h: 3, pieces: [['console', 0, 0], ['console', 4, 0], ['console', 8, 0]] },
+        { w: 7, h: 3, pieces: [['console', 0, 0], ['console', 4, 0]] }],
       corners: ['tallplant', 'plant', 'plant', 'monstera'], sides: ['rack', 'coffee', 'plant', 'bookstack'] },
     meeting: { name: 'a meeting room', about: 'a long table with chairs, a big screen, coffee', kind: 'hab', deck: { style: 'indigo', mat: 'panel' }, walls: { mat: 'panelled' },
       feature: { left: ['plant'], centre: ['bigscreen'], right: ['plant'] },
@@ -171,8 +171,8 @@
     lab: { name: 'a lab', about: 'a vat, specimen tubes, incubators, core lenses, a lab desk and a sample cart', kind: 'lab', deck: { style: 'sterile', mat: 'tile' }, walls: { mat: 'service' },
       feature: { left: ['vat', 'tube'], centre: ['research_corelens', 'research_trendpillar', 'research_corelens'], right: ['incubator', 'incubator'] },
       centre: [
-        { w: 9, h: 3, pieces: [['desk', 0, 0], ['research_samplecart', 4, 0], ['research_papers', 7, 0]] },
-        { w: 5, h: 3, pieces: [['desk', 0, 0], ['research_samplecart', 3, 0]] }],
+        { w: 9, h: 3, pieces: [['console', 0, 0], ['research_samplecart', 4, 0], ['research_papers', 7, 0]] },
+        { w: 5, h: 3, pieces: [['console', 0, 0], ['research_samplecart', 3, 0]] }],
       corners: ['plant', 'tallplant', 'plant', 'plant'], sides: ['telescope', 'research_samplecart', 'tube'] },
     workshop: { name: 'a workshop', about: 'a workbench, a fabricator, a tool bench, drawers, crates', kind: 'factory', deck: { style: 'hull', mat: 'tread' }, walls: { mat: 'pipework' },
       feature: { left: ['workbench', 'toolbox'], centre: ['fabricator'], right: ['industrial_drawerbank'] },
@@ -183,8 +183,8 @@
     comms: { name: 'a comms room', about: 'a comms wall, screens, consoles, a rack, a comms dish', kind: 'bridge', deck: { style: 'hull', mat: 'resin' }, walls: { mat: 'service' },
       feature: { left: ['screens'], centre: ['commswall'], right: ['rack'] },
       centre: [
-        { w: 8, h: 2, pieces: [['consoleL', 0, 0], ['consoleL', 5, 0]] },
-        { w: 3, h: 2, pieces: [['consoleL', 0, 0]] }],
+        { w: 8, h: 2, pieces: [['console', 0, 0], ['console', 5, 0]] },
+        { w: 3, h: 2, pieces: [['console', 0, 0]] }],
       corners: ['plant', 'plant', 'plant', 'tallplant'], sides: ['comms_dish', 'screens', 'plant'] },
     storage: { name: 'a store room', about: 'lockers, racks, a shelf, stacks of crates and boxes', kind: 'storage', deck: { style: 'rust', mat: 'cargo' }, walls: { mat: 'utility' },
       feature: { left: ['industrial_locker', 'industrial_locker'], centre: ['shelf'], right: ['rackV', 'rackV'] },

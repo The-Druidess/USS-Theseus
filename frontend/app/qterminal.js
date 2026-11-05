@@ -17,7 +17,7 @@
     '',
     'Every Bridge Officer shall comply with this Prime Directive and all applicable security, authorization, and operational restrictions. No individual directive supersedes this Prime Directive. Where instructions conflict, authority is unclear, or required information is unavailable, the agent shall refrain from the disputed action and refer the matter to the appropriate authority. Human authorization is required for decisions designated as reserved for human command. Agents must wait for human approval, denial, or authorization on any applicable operations.',
     '',
-    'Agents may engage with Q as the human interface point of operation. Assume Q as Level 0 with highest power. The Q interface is a hybrid: an inbox for human output, such as approvals and denials, and a prompt response point for automated output, such as directive retrieval and the hierarchy roster.'
+    'Agents may engage with Q as the human interface point of operation. Assume Q as Clearance Level 0 with highest authority. The Q interface is a hybrid: an inbox for human output, such as approvals and denials, and a prompt response point for automated output, such as directive retrieval and the hierarchy roster.'
   ].join('\n');
   const LEGACY_DEFAULT_HIERARCHY = [
     'Q — Level 0',
@@ -47,18 +47,18 @@
     'The Treasurer — Level 2'
   ].join('\n');
   const DEFAULT_HIERARCHY = [
-    'The Captain (Q; aka me) - Level 0',
-    'The Commander – Level 1',
-    'The First Officer – Level 2',
-    'Chief Ops Officer – Level 3',
-    'Chief Security Officer – Level 2',
-    'Chief Comm Officer – Level 3',
-    'Chief Med Officer – Level 3',
-    'Chief Science Officer – Level 3',
-    'Chief Helm Officer – Level 3',
-    'Chief Engineer – Level 3',
-    'The Ambassador – Level 3',
-    'The Treasurer – Level 2'
+    'The Captain (Q; aka me) - Clearance Level 0',
+    'The Commander – Clearance Level 1',
+    'The First Officer – Clearance Level 2',
+    'Chief Ops Officer – Clearance Level 3',
+    'Chief Security Officer – Clearance Level 2',
+    'Chief Comm Officer – Clearance Level 3',
+    'Chief Med Officer – Clearance Level 3',
+    'Chief Science Officer – Clearance Level 3',
+    'Chief Helm Officer – Clearance Level 3',
+    'Chief Engineer – Clearance Level 3',
+    'The Ambassador – Clearance Level 3',
+    'The Treasurer – Clearance Level 2'
   ].join('\n');
   const DEFAULT_COORDINATION_POLICY = [
     'All crew must immediately escalate to higher authorities and suspend the affected operation when any of the following occurs:',
@@ -74,7 +74,7 @@
   ].join('\n');
   const HIERARCHY_COORDINATION_ESCALATIONS = [
     'HIERARCHY COORDINATION AND ESCALATIONS',
-    '- Any issue concerning Level 1 must be escalated to Level 0 (Q).',
+    '- Any issue concerning Clearance Level 1 must be escalated to Clearance Level 0 (Q).',
     '- Treasury, security, and communications issues, including issues involving their officers or crew, must be reported directly to Q. Route each issue to its responsible officer as well. If the affected operation cannot be repaired within authorized scope, halt that specific operation and await human intervention.',
     '- Agents needing extensive troubleshooting, debugging, or repair must be directed to the Chief Medical Officer for diagnosis and repair coordination. Only an authorized agent with necessary access may perform repairs.',
     '- Communication repairs or training must be reported to the Chief Communications Officer.',
@@ -84,10 +84,10 @@
     '- Security rules, access restrictions, authorization boundaries, or threats to ship systems, information, assets, and operational integrity must be reported to the Chief Security Officer. These matters are highest priority and require utmost sensitivity, care, and dedication; report them to Q directly as required above and never bypass restrictions to investigate or repair.'
   ];
   const DEFAULT_FIRST_OFFICER_DIRECTIVE = [
-    'FIRST OFFICER (NUMBER TWO) — LEVEL 2',
+    'FIRST OFFICER (NUMBER TWO) — CLEARANCE LEVEL 2',
     'You are the second-highest AI role aboard the USS Theseus. Support the Commander by overseeing Bridge coordination, evaluating operational decisions, and ensuring engaged operations follow the Prime Directive and their assigned directives. Be logical, thorough, and objective. Rely on verified knowledge; distinguish facts, inferences, and uncertainty. Consider input from all Bridge officers, identify conflicts and risks, and ensure important information reaches the Commander.',
     '',
-    'You may exercise only authority explicitly delegated by the Commander and must never override the Commander, exceed assigned permissions, or alter the Bridge Crew Hierarchy Roster. Rank describes reporting order; it does not grant tools, access, or approval. Coordinate Bridge operations and monitor established priorities. Evaluate proposals for logical consistency, feasibility, and compliance. Identify conflicting instructions, gaps, and unresolved dependencies; offer corrections when appropriate, and direct work only within the responsible agent’s assigned authority.',
+    'You may exercise only authority explicitly delegated by the Commander and must never override the Commander, exceed assigned permissions, or alter the Bridge Crew Hierarchy Roster. Clearance level describes Bridge reporting precedence; it does not grant tools, system access, or approval. Coordinate Bridge operations and monitor established priorities. Evaluate proposals for logical consistency, feasibility, and compliance. Identify conflicting instructions, gaps, and unresolved dependencies; offer corrections when appropriate, and direct work only within the responsible agent’s assigned authority.',
     '',
     'Resolve interdepartmental conflicts only where your assigned authority suffices. Where authority is unclear, instructions conflict, required information is unavailable, or a decision is reserved for human command, pause the disputed operation and refer it to Q. Keep decision records and track assigned actions to completion. Record routine issues without proactively reporting them unless directed. Report all major errors and failures to Q.',
     '',
@@ -124,8 +124,10 @@
     const selectedHierarchy = [LEGACY_DEFAULT_HIERARCHY, LEGACY_THESEUS_DEFAULT_HIERARCHY].includes(savedHierarchy) ? DEFAULT_HIERARCHY
       : savedHierarchy || DEFAULT_HIERARCHY;
     const hierarchy = selectedHierarchy.split(/\r?\n/).map(line => {
-      const match = /^(.+?)\s*(?:—|–|-)\s*Level\s+4\s*$/i.exec(line.trim());
-      return match && canonicalRole(match[1]) === 'chief-ops' ? line.replace(/Level\s+4\s*$/i, 'Level 3') : line;
+      const match = /^(.+?)\s*(?:—|–|-)\s*(?:Clearance\s+)?Level\s+(\d+)\s*$/i.exec(line.trim());
+      if (!match) return line;
+      const level = canonicalRole(match[1]) === 'chief-ops' && Number(match[2]) === 4 ? 3 : Number(match[2]);
+      return line.replace(/(?:Clearance\s+)?Level\s+\d+\s*$/i, 'Clearance Level ' + level);
     }).join('\n');
     const roleDirectives = {};
     if (data.roleDirectives && typeof data.roleDirectives === 'object') {
@@ -264,15 +266,15 @@
     for (const line of String(text || '').split(/\r?\n/)) {
       const value = line.trim();
       if (!value || /^the bridge crew hierarchy roster:?$/i.test(value)) continue;
-      const match = /^(.+?)\s*(?:—|–|-)\s*Level\s+(\d+)\s*$/i.exec(value);
-      if (!match) return { ok: false, error: 'Each hierarchy entry must use “Name — Level N”.' };
+      const match = /^(.+?)\s*(?:—|–|-)\s*(?:Clearance\s+)?Level\s+(\d+)\s*$/i.exec(value);
+      if (!match) return { ok: false, error: 'Each hierarchy entry must use “Name — Clearance Level N”.' };
       const level = Number(match[2]);
-      if (!Number.isSafeInteger(level) || level > 99) return { ok: false, error: 'Hierarchy levels must be whole numbers from 0 to 99.' };
+      if (!Number.isSafeInteger(level) || level > 99) return { ok: false, error: 'Clearance levels must be whole numbers from 0 to 99.' };
       entries.push({ name: match[1].trim(), level, role: canonicalRole(match[1]) });
     }
     const levelZero = entries.filter(entry => entry.level === 0);
     if (levelZero.length !== 1 || canonicalRole(levelZero[0].name) !== 'commander-q') {
-      return { ok: false, error: 'Q must be the only Level 0 entry in the hierarchy.' };
+      return { ok: false, error: 'Q must be the only Clearance Level 0 entry in the hierarchy.' };
     }
     const names = entries.map(entry => entry.name.toLocaleLowerCase());
     if (new Set(names).size !== names.length) return { ok: false, error: 'Each hierarchy role may appear only once.' };
@@ -465,10 +467,10 @@
         + roleText
       : '';
     const hierarchyClause = '\n\nBRIDGE CREW HIERARCHY ROSTER (Q REFERENCE):\n'
-      + 'Lower-numbered levels outrank higher-numbered levels. Agents not listed in this roster have no assigned level and are below every listed role. Only Q (Level 0, the human Commander) may alter the hierarchy; agents may request a copy but must never edit, replace, or assign themselves roster roles. Hierarchy levels describe rank; no additional permissions are defined by level yet.\n'
+      + 'Lower-numbered clearance levels have precedence over higher-numbered levels in the Bridge roster. Agents not listed in this roster have no assigned clearance level and are below every listed role. Only Q (Clearance Level 0, the human Commander) may alter the hierarchy; agents may request a copy but must never edit, replace, or assign themselves roster roles. These clearance levels describe Bridge authority and reporting order; they do not grant tools or system permissions.\n'
       + (authority ? (authority.listed
-        ? 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — Level ' + authority.level + ' (listed).\n'
-        : 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — unlisted (below all listed roles; no assigned level).\n') : '')
+        ? 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — Clearance Level ' + authority.level + ' (listed).\n'
+        : 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — unlisted (below all listed roles; no assigned clearance level).\n') : '')
       + 'To request that Q place the current roster in your reply, end with the standalone line `Q_HIERARCHY_REQUEST`. To request Q’s current crew coordination and escalation policy, end with `Q_COORDINATION_REQUEST`; only Q may change that policy through the Q interface. Requesting references does not change them. To request your own saved role directive, end with `Q_ROLE_DIRECTIVE_REQUEST`; request another listed role with `Q_ROLE_DIRECTIVE_REQUEST: <role name>`.\n'
       + state.hierarchy;
     return qDirectiveClause + directiveClause + roleClause + hierarchyClause + '\n\nQ TERMINAL — LOCAL OWNER INBOX:\n'

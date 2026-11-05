@@ -232,7 +232,7 @@
     { id: 'trusted',     label: 'TRUSTED',     hint: 'satisfaction 85%',  when: (c, s) => s.samples >= MIN_SAMPLES && s.confidence >= 85 },   // satisfaction -> TRUSTED
     { id: 'dependable',  label: 'DEPENDABLE',  hint: '85% of 10+ runs',   when: (c, s) => (c.runsOwned || 0) >= 10 && reliability(s).band === 'dependable' },   // S4: the harness's own read, SUSTAINED
     { id: 'seasoned',    label: 'SEASONED',    hint: 'reach Lv 5',        when: (c, s) => s.level >= 5 },             // S4: the one rung on an otherwise empty Lv1 -> Lv10 ladder
-    { id: 'veteran',     label: 'VETERAN',     hint: 'reach Lv 10',       when: (c, s) => s.level >= 10 },            // reached level 10
+    { id: 'veteran',     label: 'VETERAN',     hint: 'reach Rank 10',     when: (c, s) => s.level >= 10 },            // reached Rank 10
   ];
   // the ONE milestone loop — shared by applyEvent (fire on a real event) and reconcile (light what is already
   // true). Mutates s.milestones, appends the newly-earned ids to `into`, and returns it.

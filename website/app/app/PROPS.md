@@ -173,7 +173,7 @@ directly, so adding `F['bench:e']` gives the bench that facing with no list to u
 
 | rule | where |
 | --- | --- |
-| only `tier:'cosmetic'` props turn (a functional prop's front is load-bearing) | `viewAt` |
+| only `tier:'cosmetic'` props turn by default; remaster-only display exceptions must have authored, interaction-neutral views (`trophycase`, `missionboard`) | `viewAt` |
 | a WEST view is the authored EAST one mirrored, re-lit through `px()`'s LSWAP | `viewAt` |
 | a prop whose two sides are one picture offers ONE turn (`SIDE_SYMMETRIC`) | `viewAt` |
 | a turn NEVER resizes an upright prop; only a decal or a table re-tiles | `footprintAt` |

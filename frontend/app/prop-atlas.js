@@ -49,7 +49,7 @@
      cadet(g,(x+fp.w/2)*12,y*12+1+cadetHeight,false,now);PropSprites.drawOver(prop);
    }
    if(placement&&p.id==='lowtable')PropSprites.draw({t:'industrial_toolcaddy',x:x+(fp.w>1?1:0),y:y+fp.h-1,w:1,h:1,mount:'surface'},false,{still:true});
-   if(fp.w<=4)PropSprites.draw({t:'desk',x:7,y:ground-1,w:3,h:1},false,{occupied:work,still:!work});
+  if(fp.w<=4)PropSprites.draw({t:'console',x:7,y:ground-1,w:2,h:1},false,{occupied:work,still:!work});
    PropSprites.draw({t:'crate',x:14,y:ground-1,w:2,h:1},false);cadet(g,204,ground*12,false,now);g.restore();
    const v=PropSprites.viewAt(p.id,r),key=v.fn===undefined?'s':['s','w','n','e'][r];
    const ready=PropRemaster.enabled(p.id,key)||((r===1||r===3)&&(PropRemaster.enabled(p.id,'e')||PropRemaster.enabled(p.id,'w')));

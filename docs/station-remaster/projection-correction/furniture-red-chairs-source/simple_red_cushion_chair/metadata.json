@@ -1,0 +1,29 @@
+{
+  "group_id": "80b24238-7d48-4131-8a61-921c838e7ac2",
+  "objects": [
+    {
+      "id": "438f11c9-e3e8-4bbc-a4ee-06237d95929d",
+      "name": "base",
+      "prompt": "simple white tulip-style chair with a red seat cushion",
+      "size": {
+        "width": 96,
+        "height": 96
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-02T04:06:27.342441"
+}

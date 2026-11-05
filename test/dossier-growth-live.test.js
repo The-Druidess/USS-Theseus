@@ -21,13 +21,13 @@ const approve={name:'memory.feedback',payload:{id:'work:one',reason:'work_great'
 agent.stats=Xp.applyEvent(agent.stats,approve).stats;station=Xp.applyEvent(station,approve).stats;
 context.refreshGrowthLive(w,agent);
 A.ok(growth.html.includes('30 total XP'),'an already-open panel paints XP without waiting for a level-up');
-A.ok(growth.html.includes('20 XP TO LV 2'),'the progress threshold follows the earned XP');
+A.ok(growth.html.includes('20 XP TO RANK 2'),'the rank threshold follows the earned XP');
 A.ok(brief.html.includes('>1</div><div class="stat-lbl">KUDOS'),'BRIEF updates its positive rating count');
 A.eq(growth.practice,practice,'refresh preserves the already-loaded asynchronous skillbase node');
 const same=replacements;context.refreshGrowthLive(w,agent);A.eq(replacements,same,'another idle tick does not rebuild growth');
 agent.stats=Xp.applyEvent(agent.stats,{...approve,payload:{...approve.payload,id:'work:two'}}).stats;
 context.refreshGrowthLive(w,agent);
-A.eq(level.textContent,'Lv 2','the brief level follows the same XP curve');
+A.eq(level.textContent,'Rank 2','the brief rank follows the same XP curve');
 A.ok(growth.html.includes('60 total XP'),'level-up preserves the total XP readout');
 context.refreshGrowthLive(w,other);
 A.ok(growth.html.includes('SCRIBE')&&growth.html.includes('0 total XP'),'switching agents reads the selected agent only');

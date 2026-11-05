@@ -266,15 +266,15 @@
       }
     },
     "console:s": {
-      "image": "console.png",
-      "width": 1009,
-      "height": 833,
-      "sha256": "bba19eba3657d61ad0f3cd8f615a72163607d35f770c08b34bf902790cb34206",
+      "image": "console-s-9f5f3f957919.png",
+      "width": 582,
+      "height": 396,
+      "sha256": "9f5f3f957919ffe8579402b3f237d721497cb3106ea30f23c71b612fe2349891",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 1009,
-        "height": 833
+        "width": 582,
+        "height": 396
       }
     },
     "consoleL:s": {
@@ -290,27 +290,27 @@
       }
     },
     "pixelrig:s": {
-      "image": "pixelrig.png",
-      "width": 403,
-      "height": 338,
-      "sha256": "fcd094212eb3aeb69d3ed6d00189b1aa0c8810c4927a6ca33e15272d9d088743",
+      "image": "pixelrig-s-e575a02eac65.png",
+      "width": 462,
+      "height": 258,
+      "sha256": "e575a02eac65228e9c1a7c6be6bdf832263dee2a4c4e3d5f75c2e7a19b718c5f",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 403,
-        "height": 338
+        "width": 462,
+        "height": 258
       }
     },
     "bench:s": {
-      "image": "bench.png",
-      "width": 1534,
-      "height": 673,
-      "sha256": "ee09f18b7313c4cf3812757873652ffe6fba352d9ce8d0a48814c135e8d1a106",
+      "image": "bench-s-7c665ada2175.png",
+      "width": 888,
+      "height": 378,
+      "sha256": "7c665ada2175fb07312e0413af5c583ff4693ccb9b80afae70be2ce8164112d3",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 1534,
-        "height": 673
+        "width": 888,
+        "height": 378
       }
     },
     "workbench:s": {
@@ -423,14 +423,14 @@
     },
     "connector_portal:s": {
       "image": "connector_portal.png",
-      "width": 924,
-      "height": 1626,
-      "sha256": "e47660cc0ebf30136c467e31ffa8ddf27c8e07bab876b961284cc40bfbb24fa2",
+      "width": 170,
+      "height": 322,
+      "sha256": "fe1dadd7123a6b16a40890c42f12b0bed4afe7cc7ba6053cbc95eaa49c085b29",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 924,
-        "height": 1626
+        "width": 170,
+        "height": 322
       }
     },
     "comms_dish:s": {
@@ -506,15 +506,15 @@
       }
     },
     "rack:s": {
-      "image": "rack.png",
-      "width": 342,
-      "height": 306,
-      "sha256": "9321efaf4fc8992bfd73a390e0958a99fd078f0110ad87420a9292e5ff491e0f",
+      "image": "rack-s-e2e47b49dc94.png",
+      "width": 216,
+      "height": 252,
+      "sha256": "e2e47b49dc944181121189537d5eaa6815c7cc02d3370b1513efc52ac16ebab5",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 342,
-        "height": 306
+        "width": 216,
+        "height": 252
       }
     },
     "shelf:s": {
@@ -591,26 +591,98 @@
     },
     "missionboard:s": {
       "image": "missionboard.png",
-      "width": 393,
-      "height": 229,
-      "sha256": "23666085cfe75c12762b0c316ff368b3270d8cbcb3a69b0501b45e6851d427a0",
+      "width": 1116,
+      "height": 984,
+      "sha256": "452af75f2454fc0a91b30744550400ef3ed073c53a1976904236bfd76102aed9",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 393,
-        "height": 229
+        "width": 1116,
+        "height": 984
+      }
+    },
+    "missionboard:w": {
+      "image": "missionboard-w.png",
+      "width": 510,
+      "height": 1062,
+      "sha256": "536ec81b1d81211970508cb41ad3a00e8cfccff6c7e8412b4bf33db8bdbdc5fb",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 510,
+        "height": 1062
+      }
+    },
+    "missionboard:n": {
+      "image": "missionboard-n.png",
+      "width": 1080,
+      "height": 984,
+      "sha256": "e47073d2f59e3a6cacea389b9ce3c35abc8c660ec477567e503b41148dce6d72",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 984
+      }
+    },
+    "missionboard:e": {
+      "image": "missionboard-e.png",
+      "width": 492,
+      "height": 1068,
+      "sha256": "14e6b5b6a1dbb24cb9099f6df1ac484cc31f497ca6719974d9c8f602c964bc8d",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 492,
+        "height": 1068
       }
     },
     "trophycase:s": {
       "image": "trophycase.png",
-      "width": 307,
-      "height": 345,
-      "sha256": "f94bbe031f81b0cc5c6074016185e8ad84024d43426b8e80812907b3ab47a955",
+      "width": 174,
+      "height": 216,
+      "sha256": "6784031af24bb1b786d6031ba6111788306594efb671c5e1f6ac8f0dc3c776fe",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 307,
-        "height": 345
+        "width": 174,
+        "height": 216
+      }
+    },
+    "trophycase:w": {
+      "image": "trophycase-w.png",
+      "width": 168,
+      "height": 222,
+      "sha256": "774ac4ffb6cc333ef8ffbba21a438d4e19457856dc1d839362107113aeb09456",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 222
+      }
+    },
+    "trophycase:n": {
+      "image": "trophycase-n.png",
+      "width": 174,
+      "height": 222,
+      "sha256": "9623b2dabc5d82f629d51690b7a98a01005a476b863a6260d619838d3d43834c",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 174,
+        "height": 222
+      }
+    },
+    "trophycase:e": {
+      "image": "trophycase-e.png",
+      "width": 174,
+      "height": 222,
+      "sha256": "e18ed9e0ed55ebcf2dc84f8c359b296efd417f1335dc6e1223f6aff829699435",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 174,
+        "height": 222
       }
     },
     "bridge_consolebank:s": {
@@ -782,15 +854,15 @@
       }
     },
     "bridge_dispatch_pylon:s": {
-      "image": "bridge_dispatch_pylon.png",
-      "width": 302,
-      "height": 573,
-      "sha256": "1dedd24c99f02c3503fa0efee2a826b508da301170e7a28315c208cccfa9ac30",
+      "image": "plugin_terminal-s-4859253042c3.png",
+      "width": 348,
+      "height": 696,
+      "sha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 302,
-        "height": 573
+        "width": 348,
+        "height": 696
       }
     },
     "bridge_orderqueue:s": {
@@ -974,15 +1046,15 @@
       }
     },
     "rackV:s": {
-      "image": "rackV.png",
-      "width": 182,
-      "height": 453,
-      "sha256": "b3133a3d31c76f615c809ee57a2f8b1b10570d6e65977704226af827f1447e3e",
+      "image": "rackV-s-547438d6c97b.png",
+      "width": 204,
+      "height": 504,
+      "sha256": "547438d6c97bd19b94575843f277e39a7952156e480a09bebacfdb0c9c9b2159",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 182,
-        "height": 453
+        "width": 204,
+        "height": 504
       }
     },
     "crate:s": {
@@ -1250,15 +1322,51 @@
       }
     },
     "jukebox:s": {
-      "image": "jukebox.png",
-      "width": 287,
-      "height": 383,
-      "sha256": "787cd6c617c9c20c1a15acc15d1fad7eeea009b7c164865e20d658e8c8bd357e",
+      "image": "jukebox-s-37720212de9f.png",
+      "width": 216,
+      "height": 252,
+      "sha256": "37720212de9f7a443f181f6cbfd57c1bcde29206b0e2332890320624e8df90a5",
       "crop": {
         "x": 0,
         "y": 0,
-        "width": 287,
-        "height": 383
+        "width": 216,
+        "height": 252
+      }
+    },
+    "jukebox:w": {
+      "image": "jukebox-w-6667183f8f9e.png",
+      "width": 168,
+      "height": 288,
+      "sha256": "6667183f8f9ec9190f64b1b2cd39d5f6ab57b34a43f1b645902c12efa1e5c223",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 288
+      }
+    },
+    "jukebox:n": {
+      "image": "jukebox-n-023705609109.png",
+      "width": 216,
+      "height": 252,
+      "sha256": "0237056091097ee9f723addfb221dacc9464fe3c2b7e20a9438bc98bff47c97a",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 216,
+        "height": 252
+      }
+    },
+    "jukebox:e": {
+      "image": "jukebox-e-ecedf70b21d7.png",
+      "width": 168,
+      "height": 288,
+      "sha256": "ecedf70b21d756eff69a191731b9476a608c8cb90cea6d23f12583f5cc232e96",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 288
       }
     },
     "bunk:s": {
@@ -2207,6 +2315,222 @@
         "y": 0,
         "width": 232,
         "height": 259
+      }
+    },
+    "plugin_terminal:s": {
+      "image": "plugin_terminal-s-4859253042c3.png",
+      "width": 348,
+      "height": 696,
+      "sha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 348,
+        "height": 696
+      }
+    },
+    "red_cushion_chair:s": {
+      "image": "red_cushion_chair-s-91aaf8cf9bce.png",
+      "width": 288,
+      "height": 480,
+      "sha256": "91aaf8cf9bce17dcd3d52fea029f198cdf344ba804399192847fdbefa92ed8d6",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 288,
+        "height": 480
+      }
+    },
+    "red_cushion_chair:w": {
+      "image": "red_cushion_chair-w-0a5c9343a88f.png",
+      "width": 294,
+      "height": 474,
+      "sha256": "0a5c9343a88f59986bc468388b694d42aba3530e10ac20af3e16a44e95d76a05",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 294,
+        "height": 474
+      }
+    },
+    "red_cushion_chair:n": {
+      "image": "red_cushion_chair-n-ec4097d6e053.png",
+      "width": 312,
+      "height": 462,
+      "sha256": "ec4097d6e053fd14218d65a0aac4b496d9cfd041bff2f58ec4b2d255b9350df5",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 312,
+        "height": 462
+      }
+    },
+    "red_cushion_chair:e": {
+      "image": "red_cushion_chair-e-a54a6586c2f7.png",
+      "width": 294,
+      "height": 480,
+      "sha256": "a54a6586c2f78601b969b2c9dbd89fb21a555beae9be2ac35fbfde53c8cb6a6b",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 294,
+        "height": 480
+      }
+    },
+    "red_captains_chair:s": {
+      "image": "red_captains_chair-s-3e9ffdc38c64.png",
+      "width": 276,
+      "height": 450,
+      "sha256": "3e9ffdc38c646df826856ea2e9ff76909e93efa303315a241fd01c0bb17ebcab",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 276,
+        "height": 450
+      }
+    },
+    "red_captains_chair:w": {
+      "image": "red_captains_chair-w-7733126a9ba3.png",
+      "width": 246,
+      "height": 438,
+      "sha256": "7733126a9ba30d94c1c4758e339eece5777fdcb2b08173acb50e7976b4a2fd96",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 246,
+        "height": 438
+      }
+    },
+    "red_captains_chair:n": {
+      "image": "red_captains_chair-n-5ed31d422977.png",
+      "width": 252,
+      "height": 384,
+      "sha256": "5ed31d42297758d87348aad476858b8cf6982a838506823184b91dfda5aaebf4",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 252,
+        "height": 384
+      }
+    },
+    "red_captains_chair:e": {
+      "image": "red_captains_chair-e-9f59dc6081a8.png",
+      "width": 240,
+      "height": 432,
+      "sha256": "9f59dc6081a8d187dba9f63ab01d8d9afa1cbf49c437da91ab9c22a8309d82a2",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 432
+      }
+    },
+    "simple_red_cushion_chair:s": {
+      "image": "simple_red_cushion_chair-s-4def3258d076.png",
+      "width": 318,
+      "height": 414,
+      "sha256": "4def3258d076cbf0634ab708eef197075fa6139897561e5a3026416a7ccf7ad9",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 318,
+        "height": 414
+      }
+    },
+    "simple_red_cushion_chair:w": {
+      "image": "simple_red_cushion_chair-w-874a3d34c005.png",
+      "width": 300,
+      "height": 426,
+      "sha256": "874a3d34c0051d6f2611675713df0a60bbaf88ae5d3687827845ab9876f74074",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 426
+      }
+    },
+    "simple_red_cushion_chair:n": {
+      "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "width": 312,
+      "height": 426,
+      "sha256": "e3bbc34100d61e73c3d989a7bde00adb079a9539783a88f38d64f290fbb66696",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 312,
+        "height": 426
+      }
+    },
+    "simple_red_cushion_chair:e": {
+      "image": "simple_red_cushion_chair-e-60c67969e536.png",
+      "width": 264,
+      "height": 420,
+      "sha256": "60c67969e536074c1d07e541681eaa02df55f86077087b1be08811c84ca66bc2",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 264,
+        "height": 420
+      }
+    },
+    "furniture_desk:s": {
+      "image": "furniture_desk-s-0f98311fb7a8.png",
+      "width": 630,
+      "height": 258,
+      "sha256": "0f98311fb7a86f1586addec896a74134bae13ecdecafdd5f52a80283b84a35ff",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 630,
+        "height": 258
+      }
+    },
+    "furniture_desk:w": {
+      "image": "furniture_desk-w-f661e14deda1.png",
+      "width": 228,
+      "height": 384,
+      "sha256": "f661e14deda1d1a09059b21ddc4b9256c8e5db4c9ff075534a7e7ac7df22ff44",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 228,
+        "height": 384
+      }
+    },
+    "furniture_desk:n": {
+      "image": "furniture_desk-n-f5ad07744c51.png",
+      "width": 570,
+      "height": 246,
+      "sha256": "f5ad07744c51e3ccd24743fefae5e3b2fc82b7904e6abd3b2d25f71941bb329b",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 570,
+        "height": 246
+      }
+    },
+    "furniture_desk:e": {
+      "image": "furniture_desk-e-07076a59f19a.png",
+      "width": 216,
+      "height": 384,
+      "sha256": "07076a59f19a30d6ea44ca4733e9e32436d3ed8b908755f259743f94a28edcbe",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 216,
+        "height": 384
+      }
+    },
+    "laptop:s": {
+      "image": "laptop-s-e68e4f7f650d.png",
+      "width": 276,
+      "height": 276,
+      "sha256": "e68e4f7f650d1f5b0bdcc942bfe7b489d0cc6df4ff4c55c8306af1d1a6d65de7",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "width": 276,
+        "height": 276
       }
     }
   }

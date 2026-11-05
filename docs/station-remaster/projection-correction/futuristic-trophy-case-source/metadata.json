@@ -1,0 +1,29 @@
+{
+  "group_id": "f1eecc8b-edcd-457e-849e-09fbc862a686",
+  "objects": [
+    {
+      "id": "86754826-fe9e-41c1-8c7f-a681ad8d7d54",
+      "name": "base",
+      "prompt": "futuristic white metal display cabinet cube with green edge lighting and a blue glass door, single shelf, transparent background",
+      "size": {
+        "width": 64,
+        "height": 64
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-11-02T04:07:28.355675"
+}

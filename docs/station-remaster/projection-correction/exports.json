@@ -382,114 +382,262 @@
     {
       "id": "jukebox",
       "view": "s",
-      "image": "jukebox.png",
-      "repoPath": "frontend/assets/industrial/catalog-utility/jukebox.png",
-      "sourceWidth": 287,
-      "sourceHeight": 383,
-      "footprint": {
-        "w": 1,
-        "h": 2
-      },
+      "image": "frontend/assets/industrial/catalog-utility/jukebox.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
       "bounds": {
         "x": -1,
         "y": -3,
         "width": 18,
         "height": 27
       },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
       "contact": {
         "x": 0.5,
-        "y": 0.9921671018276762
+        "y": 1
       },
-      "mode": "approved",
-      "effects": false,
-      "source": "docs/station-remaster/catalog-utility/sheet-source.png",
-      "sourceSha256": "af07907f829821db2e288c6bcf32ab8966193dae9d1b247f7338d30150b20d42",
-      "outputSha256": "787cd6c617c9c20c1a15acc15d1fad7eeea009b7c164865e20d658e8c8bd357e",
-      "sourceROI": {
-        "left": 1140,
-        "top": 60,
-        "width": 370,
-        "height": 440
-      },
-      "sourceCrop": {
-        "left": 1182,
-        "top": 102,
-        "width": 287,
-        "height": 383
-      },
-      "actualFit": {
+      "fit": {
         "x": -1,
-        "y": 0.167247,
+        "y": 3,
         "width": 18,
-        "height": 24.020906
+        "height": 21
       },
-      "verification": {
-        "transparent": 12306,
-        "retained": 97615,
-        "removedAlpha": 1683,
-        "retainedRGBAMismatches": 0,
-        "allRGBMismatches": 0
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/south.png",
+      "sourceSha256": "58d09cffc2efc40762cbf08cc2307667748798c028e79a35b983c72d0eb15cf6",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 14,
+        "top": 8,
+        "width": 36,
+        "height": 42
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping",
+      "outputSha256": "37720212de9f7a443f181f6cbfd57c1bcde29206b0e2332890320624e8df90a5",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 216,
+        "height": 252
+      },
+      "alphaCounts": {
+        "transparent": 8712,
+        "partial": 0,
+        "opaque": 45720
+      },
+      "liveAccepted": false,
       "group": "utility",
-      "output": "frontend/assets/industrial/projection-correction/jukebox.png",
-      "retained": 97615
+      "output": "frontend/assets/industrial/projection-correction/jukebox-s-37720212de9f.png",
+      "retained": 45720
+    },
+    {
+      "id": "jukebox",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-w.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.125,
+        "y": -3,
+        "width": 15.75,
+        "height": 27
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/west.png",
+      "sourceSha256": "874dd91f036db2d65ec65d7c943ba279da5b188067a3f0d2c9af3e19ee8ba066",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 9,
+        "width": 28,
+        "height": 48
+      },
+      "outputSha256": "6667183f8f9ec9190f64b1b2cd39d5f6ab57b34a43f1b645902c12efa1e5c223",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 288
+      },
+      "alphaCounts": {
+        "transparent": 13356,
+        "partial": 0,
+        "opaque": 35028
+      },
+      "liveAccepted": false,
+      "group": "utility",
+      "output": "frontend/assets/industrial/projection-correction/jukebox-w-6667183f8f9e.png",
+      "retained": 35028
+    },
+    {
+      "id": "jukebox",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-n.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1,
+        "y": 3,
+        "width": 18,
+        "height": 21
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/north.png",
+      "sourceSha256": "c034336d245dee1465c6eac8d0cdc8258b74af290ec1ebd7ce7c01c76c379687",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 14,
+        "top": 9,
+        "width": 36,
+        "height": 42
+      },
+      "outputSha256": "0237056091097ee9f723addfb221dacc9464fe3c2b7e20a9438bc98bff47c97a",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 216,
+        "height": 252
+      },
+      "alphaCounts": {
+        "transparent": 8352,
+        "partial": 0,
+        "opaque": 46080
+      },
+      "liveAccepted": false,
+      "group": "utility",
+      "output": "frontend/assets/industrial/projection-correction/jukebox-n-023705609109.png",
+      "retained": 46080
+    },
+    {
+      "id": "jukebox",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-utility/jukebox-e.png",
+      "sourceWidth": 168,
+      "sourceHeight": 288,
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.125,
+        "y": -3,
+        "width": 15.75,
+        "height": 27
+      },
+      "source": "docs/station-remaster/projection-correction/jukebox-reference-source/rotations/east.png",
+      "sourceSha256": "1d702d97bf5d8a23a43c73317c5fb28772fe8af0e37d8bcf8b336de7ff53eb3e",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 9,
+        "width": 28,
+        "height": 48
+      },
+      "outputSha256": "ecedf70b21d756eff69a191731b9476a608c8cb90cea6d23f12583f5cc232e96",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 288
+      },
+      "alphaCounts": {
+        "transparent": 13356,
+        "partial": 0,
+        "opaque": 35028
+      },
+      "liveAccepted": false,
+      "group": "utility",
+      "output": "frontend/assets/industrial/projection-correction/jukebox-e-ecedf70b21d7.png",
+      "retained": 35028
     },
     {
       "id": "pixelrig",
       "view": "s",
-      "image": "pixelrig.png",
-      "repoPath": "frontend/assets/industrial/catalog-utility/pixelrig.png",
-      "sourceWidth": 403,
-      "sourceHeight": 338,
-      "footprint": {
-        "w": 2,
-        "h": 1
-      },
+      "image": "frontend/assets/industrial/projection-correction/pixelrig-s-e575a02eac65.png",
+      "sourceWidth": 462,
+      "sourceHeight": 258,
       "bounds": {
         "x": -1,
         "y": -14,
         "width": 30,
         "height": 26
       },
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
       "contact": {
         "x": 0.5,
-        "y": 0.9911242603550295
+        "y": 1
       },
-      "mode": "approved",
-      "effects": false,
-      "source": "docs/station-remaster/catalog-utility/sheet-source.png",
-      "sourceSha256": "af07907f829821db2e288c6bcf32ab8966193dae9d1b247f7338d30150b20d42",
-      "outputSha256": "fcd094212eb3aeb69d3ed6d00189b1aa0c8810c4927a6ca33e15272d9d088743",
-      "sourceROI": {
-        "left": 15,
-        "top": 560,
-        "width": 445,
-        "height": 425
+      "fit": {
+        "x": -0.9999999999999982,
+        "y": -4.753246753246753,
+        "width": 29.999999999999996,
+        "height": 16.753246753246753
       },
+      "source": "docs/station-remaster/projection-correction/artist-workbench-source/rotations/south.png",
+      "sourceSha256": "5152de2a066cda7148bc0c2d955210c6a77fe1da3c9f920754e7a1b9aee4a257",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 40,
-        "top": 615,
-        "width": 403,
-        "height": 338
+        "left": 12,
+        "top": 28,
+        "width": 77,
+        "height": 43
       },
-      "actualFit": {
-        "x": -1,
-        "y": -12.937965,
-        "width": 30,
-        "height": 25.16129
+      "outputSha256": "e575a02eac65228e9c1a7c6be6bdf832263dee2a4c4e3d5f75c2e7a19b718c5f",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 462,
+        "height": 258
       },
-      "verification": {
-        "transparent": 25678,
-        "retained": 110536,
-        "removedAlpha": 4168,
-        "retainedRGBAMismatches": 0,
-        "allRGBMismatches": 0
+      "alphaCounts": {
+        "transparent": 53136,
+        "partial": 0,
+        "opaque": 66060
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping",
+      "liveAccepted": false,
       "group": "utility",
-      "output": "frontend/assets/industrial/projection-correction/pixelrig.png",
-      "retained": 110536
+      "output": "frontend/assets/industrial/projection-correction/pixelrig-s-e575a02eac65.png",
+      "retained": 66060
     },
     {
       "id": "core",
@@ -550,58 +698,54 @@
     {
       "id": "rackV",
       "view": "s",
-      "image": "rackV.png",
-      "repoPath": "frontend/assets/industrial/catalog-utility/rackV.png",
-      "sourceWidth": 182,
-      "sourceHeight": 453,
-      "footprint": {
-        "w": 1,
-        "h": 2
-      },
+      "image": "frontend/assets/industrial/projection-correction/rackV-s-547438d6c97b.png",
+      "sourceWidth": 204,
+      "sourceHeight": 504,
       "bounds": {
         "x": -1,
         "y": -12,
         "width": 14,
         "height": 36
       },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
       "contact": {
         "x": 0.5,
-        "y": 0.9933774834437086
+        "y": 1
       },
-      "mode": "approved",
-      "effects": false,
-      "source": "docs/station-remaster/catalog-utility/sheet-source.png",
-      "sourceSha256": "af07907f829821db2e288c6bcf32ab8966193dae9d1b247f7338d30150b20d42",
-      "outputSha256": "b3133a3d31c76f615c809ee57a2f8b1b10570d6e65977704226af827f1447e3e",
-      "sourceROI": {
-        "left": 1250,
-        "top": 490,
-        "width": 260,
-        "height": 495
+      "fit": {
+        "x": -1.0000000000000009,
+        "y": -10.588235294117652,
+        "width": 14.000000000000002,
+        "height": 34.58823529411765
       },
+      "source": "docs/station-remaster/projection-correction/server-rack-tall-source/rotations/south.png",
+      "sourceSha256": "cb17c01212dcad2169550d8184be3d6dbbffc504026ea7e2352eeb0e7092cbd3",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 1298,
-        "top": 510,
-        "width": 182,
-        "height": 453
+        "left": 47,
+        "top": 16,
+        "width": 34,
+        "height": 84
       },
-      "actualFit": {
-        "x": -1,
-        "y": -10.615385,
-        "width": 14,
-        "height": 34.846154
+      "outputSha256": "547438d6c97bd19b94575843f277e39a7952156e480a09bebacfdb0c9c9b2159",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 204,
+        "height": 504
       },
-      "verification": {
-        "transparent": 8891,
-        "retained": 73555,
-        "removedAlpha": 1855,
-        "retainedRGBAMismatches": 0,
-        "allRGBMismatches": 0
+      "alphaCounts": {
+        "transparent": 2304,
+        "partial": 0,
+        "opaque": 100512
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping",
-      "group": "utility",
-      "output": "frontend/assets/industrial/projection-correction/rackV.png",
-      "retained": 73555
+      "liveAccepted": false,
+      "group": "storage",
+      "output": "frontend/assets/industrial/projection-correction/rackV-s-547438d6c97b.png",
+      "retained": 100512
     },
     {
       "id": "bookshelf",
@@ -966,9 +1110,9 @@
     {
       "id": "rack",
       "view": "s",
-      "image": "rack.png",
-      "sourceWidth": 342,
-      "sourceHeight": 306,
+      "image": "frontend/assets/industrial/projection-correction/rack-s-e2e47b49dc94.png",
+      "sourceWidth": 216,
+      "sourceHeight": 252,
       "bounds": {
         "x": 0,
         "y": -14,
@@ -981,59 +1125,39 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9901960784313726
+        "y": 1
       },
-      "actualUniformFit": {
-        "width": 29,
-        "height": 25.94736842105263
+      "fit": {
+        "x": 3.3571428571428577,
+        "y": -14,
+        "width": 22.285714285714285,
+        "height": 26
       },
-      "aspectRatioError": 0.0020283975659229903,
-      "source": "docs/station-remaster/catalog-storage/sheet-v1-source.png",
-      "sourceSha256": "e74b7fd81b642c5f5e8432b6824fd714371c7760d9bc4a1b46f230c67d21ea63",
-      "output": "frontend/assets/industrial/projection-correction/rack.png",
-      "outputSha256": "9321efaf4fc8992bfd73a390e0958a99fd078f0110ad87420a9292e5ff491e0f",
-      "sourceRect": {
-        "x": 690,
-        "y": 565,
-        "width": 390,
-        "height": 312
-      },
-      "cropInCell": {
-        "left": 22,
-        "top": 6,
-        "width": 342,
-        "height": 306
-      },
+      "source": "docs/station-remaster/projection-correction/server-rack-cube-source/rotations/south.png",
+      "sourceSha256": "44ba39e489d20ffdb535d382e7da422b2b44528ad723fdac0ef85c204989cd7a",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 712,
-        "top": 571,
-        "width": 342,
-        "height": 306
+        "left": 14,
+        "top": 11,
+        "width": 36,
+        "height": 42
       },
-      "width": 342,
-      "height": 306,
+      "outputSha256": "e2e47b49dc944181121189537d5eaa6815c7cc02d3370b1513efc52ac16ebab5",
       "alphaBounds": {
         "x": 0,
         "y": 0,
-        "width": 342,
-        "height": 306
+        "width": 216,
+        "height": 252
       },
-      "retainedPixels": 95811,
-      "alphaResidueRemoved": 1019,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 8841,
-        "partial": 95770,
-        "opaque255": 41,
-        "maxAlpha": 255
+      "alphaCounts": {
+        "transparent": 2448,
+        "partial": 0,
+        "opaque": 51984
       },
-      "liveVerified": false,
-      "group": "storage",
-      "retained": 95811
+      "liveAccepted": false,
+      "group": "capability",
+      "output": "frontend/assets/industrial/projection-correction/rack-s-e2e47b49dc94.png",
+      "retained": 51984
     },
     {
       "id": "safe",
@@ -3072,9 +3196,9 @@
     {
       "id": "console",
       "view": "s",
-      "image": "console.png",
-      "sourceWidth": 1009,
-      "sourceHeight": 833,
+      "image": "frontend/assets/industrial/projection-correction/console-s-9f5f3f957919.png",
+      "sourceWidth": 582,
+      "sourceHeight": 396,
       "bounds": {
         "x": -3,
         "y": -11,
@@ -3087,59 +3211,39 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9963985594237695
+        "y": 1
       },
-      "actualUniformFit": {
-        "width": 27.859543817527012,
-        "height": 23
+      "fit": {
+        "x": -3,
+        "y": -7.051546391752577,
+        "width": 28,
+        "height": 19.051546391752577
       },
-      "aspectRatioError": -0.0050162922311782765,
-      "source": "docs/station-remaster/catalog-command/console-v2-source.png",
-      "sourceSha256": "9b16ec410d1f493787b7dea0248e98d6cf3691855ed1cc6b4f12026dab0f4005",
-      "output": "frontend/assets/industrial/projection-correction/console.png",
-      "outputSha256": "bba19eba3657d61ad0f3cd8f615a72163607d35f770c08b34bf902790cb34206",
-      "sourceRect": {
-        "x": 0,
-        "y": 0,
-        "width": 1383,
-        "height": 1137
-      },
-      "cropInCell": {
-        "left": 187,
-        "top": 154,
-        "width": 1009,
-        "height": 833
-      },
+      "source": "docs/station-remaster/projection-correction/computer-console-v2-source/rotations/south.png",
+      "sourceSha256": "31472b3f856f9593aa7520b6f3b61e174f86af9f9dfbc49602ebebe64b2ba3bf",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 187,
-        "top": 154,
-        "width": 1009,
-        "height": 833
+        "left": 16,
+        "top": 30,
+        "width": 97,
+        "height": 66
       },
-      "width": 1009,
-      "height": 833,
+      "outputSha256": "9f5f3f957919ffe8579402b3f237d721497cb3106ea30f23c71b612fe2349891",
       "alphaBounds": {
         "x": 0,
         "y": 0,
-        "width": 1009,
-        "height": 833
+        "width": 582,
+        "height": 396
       },
-      "retainedPixels": 658631,
-      "alphaResidueRemoved": 4117,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 181866,
-        "partial": 658072,
-        "opaque255": 559,
-        "maxAlpha": 255
+      "alphaCounts": {
+        "transparent": 54036,
+        "partial": 0,
+        "opaque": 176436
       },
-      "liveVerified": false,
-      "group": "command",
-      "retained": 658631
+      "liveAccepted": false,
+      "group": "workstation",
+      "output": "frontend/assets/industrial/projection-correction/console-s-9f5f3f957919.png",
+      "retained": 176436
     },
     {
       "id": "consoleL",
@@ -3216,9 +3320,9 @@
     {
       "id": "bench",
       "view": "s",
-      "image": "bench.png",
-      "sourceWidth": 1534,
-      "sourceHeight": 673,
+      "image": "frontend/assets/industrial/projection-correction/bench-s-7c665ada2175.png",
+      "sourceWidth": 888,
+      "sourceHeight": 378,
       "bounds": {
         "x": -1,
         "y": -14,
@@ -3231,59 +3335,39 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9955423476968797
+        "y": 1
       },
-      "actualUniformFit": {
+      "fit": {
+        "x": -1,
+        "y": -10.986486486486488,
         "width": 54,
-        "height": 23.691003911342893
+        "height": 22.986486486486488
       },
-      "aspectRatioError": 0.09746299047933515,
-      "source": "docs/station-remaster/catalog-command/bench-final-source.png",
-      "sourceSha256": "7507ed20103d20abba395e8e21f1b4976f4dc13619f191350417dfef670e5eee",
-      "output": "frontend/assets/industrial/projection-correction/bench.png",
-      "outputSha256": "ee09f18b7313c4cf3812757873652ffe6fba352d9ce8d0a48814c135e8d1a106",
-      "sourceRect": {
-        "x": 0,
-        "y": 0,
-        "width": 1811,
-        "height": 868
-      },
-      "cropInCell": {
-        "left": 127,
-        "top": 84,
-        "width": 1534,
-        "height": 673
-      },
+      "source": "docs/station-remaster/projection-correction/bench-workbench-source/rotations/south.png",
+      "sourceSha256": "257bee647f8cc44e003e9a03f22e181eabce8dd1c314993f0847478416faea50",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 127,
-        "top": 84,
-        "width": 1534,
-        "height": 673
+        "left": 16,
+        "top": 60,
+        "width": 148,
+        "height": 63
       },
-      "width": 1534,
-      "height": 673,
+      "outputSha256": "7c665ada2175fb07312e0413af5c583ff4693ccb9b80afae70be2ce8164112d3",
       "alphaBounds": {
         "x": 0,
         "y": 0,
-        "width": 1534,
-        "height": 673
+        "width": 888,
+        "height": 378
       },
-      "retainedPixels": 674893,
-      "alphaResidueRemoved": 4584,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 357489,
-        "partial": 673354,
-        "opaque255": 1539,
-        "maxAlpha": 255
+      "alphaCounts": {
+        "transparent": 148752,
+        "partial": 0,
+        "opaque": 186912
       },
-      "liveVerified": false,
+      "liveAccepted": false,
       "group": "command",
-      "retained": 674893
+      "output": "frontend/assets/industrial/projection-correction/bench-s-7c665ada2175.png",
+      "retained": 186912
     },
     {
       "id": "bridge_consolebank",
@@ -4362,11 +4446,235 @@
       "retained": 260677
     },
     {
+      "id": "missionboard",
+      "view": "s",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard.png",
+      "sourceWidth": 1116,
+      "sourceHeight": 984,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/south.png",
+      "sourceSha256": "7352ada1e82c38cccc1f0c8c6254c1e5155577ec36120a71854c0206da4e3f3e",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 20,
+        "top": 26,
+        "width": 186,
+        "height": 164
+      },
+      "outputSha256": "452af75f2454fc0a91b30744550400ef3ed073c53a1976904236bfd76102aed9",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1116,
+        "height": 984
+      },
+      "alphaCounts": {
+        "transparent": 426024,
+        "partial": 0,
+        "opaque": 672120
+      },
+      "retainedPixels": 672120,
+      "retained": 672120,
+      "actualUniformFit": {
+        "x": 3.823171,
+        "y": -13,
+        "width": 28.353659,
+        "height": 25
+      },
+      "aspectRatioError": 0.385854,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false,
+      "output": "frontend/assets/industrial/projection-correction/missionboard.png"
+    },
+    {
+      "id": "missionboard",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-w.png",
+      "sourceWidth": 510,
+      "sourceHeight": 1062,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/west.png",
+      "sourceSha256": "23d2d78f263b294a389e41858d8a7526b1dd46ec5f8fcf932eff4f4995cc9c65",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 72,
+        "top": 24,
+        "width": 85,
+        "height": 177
+      },
+      "outputSha256": "536ec81b1d81211970508cb41ad3a00e8cfccff6c7e8412b4bf33db8bdbdc5fb",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 510,
+        "height": 1062
+      },
+      "alphaCounts": {
+        "transparent": 338832,
+        "partial": 0,
+        "opaque": 202788
+      },
+      "retainedPixels": 202788,
+      "retained": 202788,
+      "actualUniformFit": {
+        "x": 11.997175,
+        "y": -13,
+        "width": 12.00565,
+        "height": 25
+      },
+      "aspectRatioError": 1.039774,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false,
+      "output": "frontend/assets/industrial/projection-correction/missionboard-w.png"
+    },
+    {
+      "id": "missionboard",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-n.png",
+      "sourceWidth": 1080,
+      "sourceHeight": 984,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/north.png",
+      "sourceSha256": "35fe8b988b300e0f7a9a954e325e221b6ab0f3acd9a5604784a1190415ca2b18",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 22,
+        "top": 26,
+        "width": 180,
+        "height": 164
+      },
+      "outputSha256": "e47073d2f59e3a6cacea389b9ce3c35abc8c660ec477567e503b41148dce6d72",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 1080,
+        "height": 984
+      },
+      "alphaCounts": {
+        "transparent": 414432,
+        "partial": 0,
+        "opaque": 648288
+      },
+      "retainedPixels": 648288,
+      "retained": 648288,
+      "actualUniformFit": {
+        "x": 4.280488,
+        "y": -13,
+        "width": 27.439024,
+        "height": 25
+      },
+      "aspectRatioError": 0.422439,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false,
+      "output": "frontend/assets/industrial/projection-correction/missionboard-n.png"
+    },
+    {
+      "id": "missionboard",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-storage-rest-2/missionboard-e.png",
+      "sourceWidth": 492,
+      "sourceHeight": 1068,
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/blackboard-with-green-squares-source/rotations/east.png",
+      "sourceSha256": "13f7534b9b03ed8d29ace7f7b14ed40d4a602281ae7e0ef57c73998b648eb04f",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 65,
+        "top": 23,
+        "width": 82,
+        "height": 178
+      },
+      "outputSha256": "14e6b5b6a1dbb24cb9099f6df1ac484cc31f497ca6719974d9c8f602c964bc8d",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 492,
+        "height": 1068
+      },
+      "alphaCounts": {
+        "transparent": 318672,
+        "partial": 0,
+        "opaque": 206784
+      },
+      "retainedPixels": 206784,
+      "retained": 206784,
+      "actualUniformFit": {
+        "x": 12.241573,
+        "y": -13,
+        "width": 11.516854,
+        "height": 25
+      },
+      "aspectRatioError": 1.059326,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "liveAccepted": false,
+      "output": "frontend/assets/industrial/projection-correction/missionboard-e.png"
+    },
+    {
       "id": "trophycase",
       "view": "s",
       "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase.png",
-      "sourceWidth": 307,
-      "sourceHeight": 345,
+      "sourceWidth": 174,
+      "sourceHeight": 216,
       "bounds": {
         "x": -1,
         "y": -6,
@@ -4379,49 +4687,239 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9927536231884058
+        "y": 1
       },
       "fit": {
-        "x": -1,
-        "y": -5.2182410423452765,
-        "width": 26,
-        "height": 29.218241042345277
+        "x": -0.083333,
+        "y": -6,
+        "width": 24.166667,
+        "height": 30
       },
       "underfill": {
-        "x": 1,
-        "y": 0.9739413680781759
+        "x": 0.929487,
+        "y": 1
       },
-      "source": "docs\\station-remaster\\catalog-crew-rest-1\\sources\\sheet.png",
-      "sourceSha256": "bfa8cb5c831e1e72c2e3e481d4466d493e63f177a80ba447e29b517bb5b4368b",
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/south.png",
+      "sourceSha256": "26c63d0d8260895497a260e9237a8fe5babc58967dd25b03280f6dae9e438f3c",
+      "pixelScale": 6,
       "sourceCrop": {
-        "left": 1248,
-        "top": 521,
-        "width": 307,
-        "height": 345
+        "left": 18,
+        "top": 16,
+        "width": 29,
+        "height": 36
       },
-      "outputSha256": "f94bbe031f81b0cc5c6074016185e8ad84024d43426b8e80812907b3ab47a955",
+      "outputSha256": "6784031af24bb1b786d6031ba6111788306594efb671c5e1f6ac8f0dc3c776fe",
       "alphaBounds": {
         "x": 0,
         "y": 0,
-        "width": 307,
-        "height": 345
+        "width": 174,
+        "height": 216
       },
       "alphaCounts": {
-        "transparent": 3177,
-        "partial": 102677,
-        "opaque": 61
+        "transparent": 2952,
+        "partial": 0,
+        "opaque": 34632
       },
       "maxSourceAlpha": 255,
       "coreThreshold": 180,
       "edgeRadius": 3,
-      "removedFogPixels": 2067,
+      "removedFogPixels": 0,
       "retainedRgbChanges": 0,
       "retainedAlphaChanges": 0,
       "opaqueCellEdgePixels": 0,
       "liveAccepted": false,
       "group": "club",
       "output": "frontend/assets/industrial/projection-correction/trophycase.png",
-      "retained": 102738
+      "retained": 34632
+    },
+    {
+      "id": "trophycase",
+      "view": "w",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-w.png",
+      "sourceWidth": 168,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.648649,
+        "y": -6,
+        "width": 22.702703,
+        "height": 30
+      },
+      "underfill": {
+        "x": 0.873181,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/west.png",
+      "sourceSha256": "2bdbbba56a073d4c409de02aedbad8cc15b2021577bcc567a1f911b1e89245e3",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 15,
+        "width": 28,
+        "height": 37
+      },
+      "outputSha256": "774ac4ffb6cc333ef8ffbba21a438d4e19457856dc1d839362107113aeb09456",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 168,
+        "height": 222
+      },
+      "alphaCounts": {
+        "transparent": 2412,
+        "partial": 0,
+        "opaque": 34884
+      },
+      "maxSourceAlpha": 255,
+      "coreThreshold": 180,
+      "edgeRadius": 3,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "opaqueCellEdgePixels": 0,
+      "liveAccepted": false,
+      "group": "club",
+      "output": "frontend/assets/industrial/projection-correction/trophycase-w.png",
+      "retained": 34884
+    },
+    {
+      "id": "trophycase",
+      "view": "n",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-n.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.243243,
+        "y": -6,
+        "width": 23.513514,
+        "height": 30
+      },
+      "underfill": {
+        "x": 0.904366,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/north.png",
+      "sourceSha256": "ba916aa543543ad76c10a3704a2e7c8843810c1e475424b1fcd5f03ac9f1237a",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 18,
+        "top": 15,
+        "width": 29,
+        "height": 37
+      },
+      "outputSha256": "9623b2dabc5d82f629d51690b7a98a01005a476b863a6260d619838d3d43834c",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 174,
+        "height": 222
+      },
+      "alphaCounts": {
+        "transparent": 3456,
+        "partial": 0,
+        "opaque": 35172
+      },
+      "maxSourceAlpha": 255,
+      "coreThreshold": 180,
+      "edgeRadius": 3,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "opaqueCellEdgePixels": 0,
+      "liveAccepted": false,
+      "group": "club",
+      "output": "frontend/assets/industrial/projection-correction/trophycase-n.png",
+      "retained": 35172
+    },
+    {
+      "id": "trophycase",
+      "view": "e",
+      "image": "frontend/assets/industrial/catalog-crew-rest-1/trophycase-e.png",
+      "sourceWidth": 174,
+      "sourceHeight": 222,
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.243243,
+        "y": -6,
+        "width": 23.513514,
+        "height": 30
+      },
+      "underfill": {
+        "x": 0.904366,
+        "y": 1
+      },
+      "source": "docs/station-remaster/projection-correction/trophy-case-cube-v2-source/rotations/east.png",
+      "sourceSha256": "6b81eeae21f7027ac4044c5f0ec9559a487776c3dc3feb83d24c26eb6101798d",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 17,
+        "top": 15,
+        "width": 29,
+        "height": 37
+      },
+      "outputSha256": "e18ed9e0ed55ebcf2dc84f8c359b296efd417f1335dc6e1223f6aff829699435",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 174,
+        "height": 222
+      },
+      "alphaCounts": {
+        "transparent": 3240,
+        "partial": 0,
+        "opaque": 35388
+      },
+      "maxSourceAlpha": 255,
+      "coreThreshold": 180,
+      "edgeRadius": 3,
+      "removedFogPixels": 0,
+      "retainedRgbChanges": 0,
+      "retainedAlphaChanges": 0,
+      "opaqueCellEdgePixels": 0,
+      "liveAccepted": false,
+      "group": "club",
+      "output": "frontend/assets/industrial/projection-correction/trophycase-e.png",
+      "retained": 35388
     },
     {
       "id": "bay",
@@ -4770,8 +5268,8 @@
       "view": "s",
       "image": "connector_portal.png",
       "repoPath": "frontend/assets/industrial/catalog-utility-rest-1/connector_portal.png",
-      "sourceWidth": 924,
-      "sourceHeight": 1626,
+      "sourceWidth": 170,
+      "sourceHeight": 322,
       "footprint": {
         "w": 1,
         "h": 2
@@ -4784,43 +5282,44 @@
       },
       "contact": {
         "x": 0.5,
-        "y": 0.9981549815498155
+        "y": 1
       },
       "mode": "approved",
       "effects": false,
-      "source": "docs/station-remaster/catalog-utility-rest-1/connector-source.png",
-      "sourceSha256": "6a625391cfbe77d8d71ff5c1127a02b887099cbe51837fa248d1e0a6bbc32ec8",
-      "outputSha256": "e47660cc0ebf30136c467e31ffa8ddf27c8e07bab876b961284cc40bfbb24fa2",
+      "source": "docs/station-remaster/projection-correction/connector-white-box-source/rotations/south.png",
+      "sourceSha256": "af928767ccc4bfaa5f27c9a00304726b2a3e0e8fc01042a958bb0cbc98c2c5c7",
+      "outputSha256": "fe1dadd7123a6b16a40890c42f12b0bed4afe7cc7ba6053cbc95eaa49c085b29",
+      "pixelScale": 2,
       "sourceROI": {
-        "left": 0,
-        "top": 0,
-        "width": 948,
-        "height": 1660
+        "left": 57,
+        "top": 17,
+        "width": 85,
+        "height": 161
       },
       "sourceCrop": {
-        "left": 23,
-        "top": 8,
-        "width": 924,
-        "height": 1626
+        "left": 57,
+        "top": 17,
+        "width": 85,
+        "height": 161
       },
       "actualFit": {
-        "x": 0,
-        "y": -5.86039,
-        "width": 17,
-        "height": 29.915584
+        "x": 0.31677,
+        "y": 0,
+        "width": 16.36646,
+        "height": 31
       },
       "verification": {
-        "transparent": 113670,
-        "retained": 1388754,
-        "removedAlpha": 7662,
+        "transparent": 3828,
+        "retained": 50912,
+        "removedAlpha": 0,
         "retainedRGBAMismatches": 0,
         "allRGBMismatches": 0,
         "widthFraction": 1
       },
-      "status": "source and game-scale candidate reviewed; not live integrated; image-specific effect regions need remapping",
+      "status": "owner-supplied white connector reference; 2x nearest-neighbor export; existing 1x2 footprint and live connector state retained",
       "group": "workflow",
       "output": "frontend/assets/industrial/projection-correction/connector_portal.png",
-      "retained": 1388754
+      "retained": 50912
     },
     {
       "id": "etsy_dyevat",
@@ -7413,78 +7912,6 @@
       "retained": 69101
     },
     {
-      "id": "missionboard",
-      "view": "s",
-      "image": "missionboard.png",
-      "sourceWidth": 393,
-      "sourceHeight": 229,
-      "bounds": {
-        "x": -1,
-        "y": -13,
-        "width": 38,
-        "height": 25
-      },
-      "footprint": {
-        "w": 3,
-        "h": 1
-      },
-      "contact": {
-        "x": 0.5,
-        "y": 0.9868995633187773
-      },
-      "actualUniformFit": {
-        "width": 38,
-        "height": 22.142493638676847
-      },
-      "aspectRatioError": 0.1290507929211675,
-      "source": "docs/station-remaster/catalog-storage-rest-2/sheet-v2-source.png",
-      "sourceSha256": "c9e0613ad8dba4058560b1fadd5f09c5351dc30adc50b4712fc3a435078588d8",
-      "output": "frontend/assets/industrial/projection-correction/missionboard.png",
-      "outputSha256": "23666085cfe75c12762b0c316ff368b3270d8cbcb3a69b0501b45e6851d427a0",
-      "sourceRect": {
-        "x": 800,
-        "y": 486,
-        "width": 736,
-        "height": 252
-      },
-      "cropInCell": {
-        "left": 159,
-        "top": 17,
-        "width": 393,
-        "height": 229
-      },
-      "sourceCrop": {
-        "left": 959,
-        "top": 503,
-        "width": 393,
-        "height": 229
-      },
-      "width": 393,
-      "height": 229,
-      "alphaBounds": {
-        "x": 0,
-        "y": 0,
-        "width": 393,
-        "height": 229
-      },
-      "retainedPixels": 81886,
-      "alphaResidueRemoved": 3311,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 8111,
-        "partial": 81886,
-        "opaque255": 0,
-        "maxAlpha": 254
-      },
-      "liveVerified": false,
-      "group": "walls-displays",
-      "retained": 81886
-    },
-    {
       "id": "whiteboard",
       "view": "s",
       "image": "whiteboard.png",
@@ -8618,78 +9045,6 @@
       "liveVerified": false,
       "group": "archive-tech",
       "retained": 79619
-    },
-    {
-      "id": "bridge_dispatch_pylon",
-      "view": "s",
-      "image": "bridge_dispatch_pylon.png",
-      "sourceWidth": 302,
-      "sourceHeight": 573,
-      "bounds": {
-        "x": -2,
-        "y": -11,
-        "width": 19,
-        "height": 35
-      },
-      "footprint": {
-        "w": 1,
-        "h": 2
-      },
-      "contact": {
-        "x": 0.5,
-        "y": 0.9947643979057592
-      },
-      "actualUniformFit": {
-        "width": 18.44677137870855,
-        "height": 35
-      },
-      "aspectRatioError": -0.029117295857444603,
-      "source": "docs/station-remaster/catalog-storage-rest-3/narrow-correction-source.png",
-      "sourceSha256": "af94a864ae4dccbadf6a29a0b728e851142b713b2fa8cbc410701fe62a92ef1a",
-      "output": "frontend/assets/industrial/projection-correction/bridge_dispatch_pylon.png",
-      "outputSha256": "1dedd24c99f02c3503fa0efee2a826b508da301170e7a28315c208cccfa9ac30",
-      "sourceRect": {
-        "x": 600,
-        "y": 0,
-        "width": 599,
-        "height": 625
-      },
-      "cropInCell": {
-        "left": 84,
-        "top": 29,
-        "width": 302,
-        "height": 573
-      },
-      "sourceCrop": {
-        "left": 684,
-        "top": 29,
-        "width": 302,
-        "height": 573
-      },
-      "width": 302,
-      "height": 573,
-      "alphaBounds": {
-        "x": 0,
-        "y": 0,
-        "width": 302,
-        "height": 573
-      },
-      "retainedPixels": 121857,
-      "alphaResidueRemoved": 2087,
-      "coreThreshold": 180,
-      "edgeRadius": 3,
-      "opaqueCellEdgePixels": 0,
-      "rgbChanges": 0,
-      "retainedAlphaChanges": 0,
-      "alpha": {
-        "zero": 51189,
-        "partial": 121631,
-        "opaque255": 226,
-        "maxAlpha": 255
-      },
-      "liveVerified": false,
-      "group": "archive-tech",
-      "retained": 121857
     },
     {
       "id": "bridge_orderqueue",
@@ -10515,6 +10870,994 @@
       "status": "generated redesign; live review pending",
       "group": "capability-v2",
       "output": "frontend/assets/industrial/projection-correction/studio.png"
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-s-91aaf8cf9bce.png",
+      "sourceWidth": 288,
+      "sourceHeight": 480,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.9000000000000004,
+        "y": -5,
+        "width": 10.2,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_cushion_chair/rotations/south.png",
+      "sourceSha256": "661f0deb7752982f7349606d0a4fd6a4a457dbfd30b62e0a548f209421455fc2",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 26,
+        "top": 10,
+        "width": 48,
+        "height": 80
+      },
+      "outputSha256": "91aaf8cf9bce17dcd3d52fea029f198cdf344ba804399192847fdbefa92ed8d6",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 288,
+        "height": 480
+      },
+      "alphaCounts": {
+        "transparent": 51840,
+        "partial": 0,
+        "opaque": 86400
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_cushion_chair-s-91aaf8cf9bce.png",
+      "retained": 86400
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "w",
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-w-0a5c9343a88f.png",
+      "sourceWidth": 294,
+      "sourceHeight": 474,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.7278481012658231,
+        "y": -5,
+        "width": 10.544303797468354,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_cushion_chair/rotations/west.png",
+      "sourceSha256": "5b6d6100af5123c58b5a2f01c0fb9e8905b55b32ddd9b0faee1c15fb91d62d6e",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 25,
+        "top": 11,
+        "width": 49,
+        "height": 79
+      },
+      "outputSha256": "0a5c9343a88f59986bc468388b694d42aba3530e10ac20af3e16a44e95d76a05",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 294,
+        "height": 474
+      },
+      "alphaCounts": {
+        "transparent": 70236,
+        "partial": 0,
+        "opaque": 69120
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_cushion_chair-w-0a5c9343a88f.png",
+      "retained": 69120
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "n",
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-n-ec4097d6e053.png",
+      "sourceWidth": 312,
+      "sourceHeight": 462,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.2597402597402594,
+        "y": -5,
+        "width": 11.480519480519481,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_cushion_chair/rotations/north.png",
+      "sourceSha256": "9ab5981ee5fe7ed96d3fed8e501dd306520a885cfc3ef32a92ed38b2a608feb9",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 24,
+        "top": 13,
+        "width": 52,
+        "height": 77
+      },
+      "outputSha256": "ec4097d6e053fd14218d65a0aac4b496d9cfd041bff2f58ec4b2d255b9350df5",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 312,
+        "height": 462
+      },
+      "alphaCounts": {
+        "transparent": 56844,
+        "partial": 0,
+        "opaque": 87300
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_cushion_chair-n-ec4097d6e053.png",
+      "retained": 87300
+    },
+    {
+      "id": "red_cushion_chair",
+      "view": "e",
+      "image": "frontend/assets/industrial/projection-correction/red_cushion_chair-e-a54a6586c2f7.png",
+      "sourceWidth": 294,
+      "sourceHeight": 480,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.7937500000000002,
+        "y": -5,
+        "width": 10.4125,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_cushion_chair/rotations/east.png",
+      "sourceSha256": "8a47c08fd9d67c021799ca5d3d9ce210188b4ae54b9f899503d5a2adf4bcd5c7",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 23,
+        "top": 10,
+        "width": 49,
+        "height": 80
+      },
+      "outputSha256": "a54a6586c2f78601b969b2c9dbd89fb21a555beae9be2ac35fbfde53c8cb6a6b",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 294,
+        "height": 480
+      },
+      "alphaCounts": {
+        "transparent": 54180,
+        "partial": 0,
+        "opaque": 86940
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_cushion_chair-e-a54a6586c2f7.png",
+      "retained": 86940
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-s-3e9ffdc38c64.png",
+      "sourceWidth": 276,
+      "sourceHeight": 450,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.7866666666666662,
+        "y": -5,
+        "width": 10.426666666666668,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_captains_chair/rotations/south.png",
+      "sourceSha256": "48bcaa59913cd28324b4bdea2ec7d71cbb749de7bb3028303b2b4b9015ca0018",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 21,
+        "top": 11,
+        "width": 46,
+        "height": 75
+      },
+      "outputSha256": "3e9ffdc38c646df826856ea2e9ff76909e93efa303315a241fd01c0bb17ebcab",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 276,
+        "height": 450
+      },
+      "alphaCounts": {
+        "transparent": 40248,
+        "partial": 0,
+        "opaque": 83952
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_captains_chair-s-3e9ffdc38c64.png",
+      "retained": 83952
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "w",
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-w-7733126a9ba3.png",
+      "sourceWidth": 246,
+      "sourceHeight": 438,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 1.2260273972602747,
+        "y": -5,
+        "width": 9.54794520547945,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_captains_chair/rotations/west.png",
+      "sourceSha256": "3b00ea72876e98fb0ea127dc93c24e2fcae1d9b245d0051c22afc2ce7f3b58ac",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 24,
+        "top": 13,
+        "width": 41,
+        "height": 73
+      },
+      "outputSha256": "7733126a9ba30d94c1c4758e339eece5777fdcb2b08173acb50e7976b4a2fd96",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 246,
+        "height": 438
+      },
+      "alphaCounts": {
+        "transparent": 41940,
+        "partial": 0,
+        "opaque": 65808
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_captains_chair-w-7733126a9ba3.png",
+      "retained": 65808
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "n",
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-n-5ed31d422977.png",
+      "sourceWidth": 252,
+      "sourceHeight": 384,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.421875,
+        "y": -5,
+        "width": 11.15625,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_captains_chair/rotations/north.png",
+      "sourceSha256": "495eee55f8f8e2f1c47855d1d5053e10166d1199abbacb679bf321e81039bd5d",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 27,
+        "top": 22,
+        "width": 42,
+        "height": 64
+      },
+      "outputSha256": "5ed31d42297758d87348aad476858b8cf6982a838506823184b91dfda5aaebf4",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 252,
+        "height": 384
+      },
+      "alphaCounts": {
+        "transparent": 24804,
+        "partial": 0,
+        "opaque": 71964
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_captains_chair-n-5ed31d422977.png",
+      "retained": 71964
+    },
+    {
+      "id": "red_captains_chair",
+      "view": "e",
+      "image": "frontend/assets/industrial/projection-correction/red_captains_chair-e-9f59dc6081a8.png",
+      "sourceWidth": 240,
+      "sourceHeight": 432,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 1.2777777777777777,
+        "y": -5,
+        "width": 9.444444444444445,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/red_captains_chair/rotations/east.png",
+      "sourceSha256": "facd5a71dba54ab8d52e75676f9bccab472fdfc3f177fa1f3f7ea991701f4590",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 27,
+        "top": 13,
+        "width": 40,
+        "height": 72
+      },
+      "outputSha256": "9f59dc6081a8d187dba9f63ab01d8d9afa1cbf49c437da91ab9c22a8309d82a2",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 240,
+        "height": 432
+      },
+      "alphaCounts": {
+        "transparent": 38628,
+        "partial": 0,
+        "opaque": 65052
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/red_captains_chair-e-9f59dc6081a8.png",
+      "retained": 65052
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-s-4def3258d076.png",
+      "sourceWidth": 318,
+      "sourceHeight": 414,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0,
+        "y": -3.6226415094339615,
+        "width": 12,
+        "height": 15.622641509433961
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/simple_red_cushion_chair/rotations/south.png",
+      "sourceSha256": "bdb060106fb5d49f047c4f79e2069ec0db6fa58ea6aa7726bd033338c0938209",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 19,
+        "top": 13,
+        "width": 53,
+        "height": 69
+      },
+      "outputSha256": "4def3258d076cbf0634ab708eef197075fa6139897561e5a3026416a7ccf7ad9",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 318,
+        "height": 414
+      },
+      "alphaCounts": {
+        "transparent": 88884,
+        "partial": 0,
+        "opaque": 42768
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-s-4def3258d076.png",
+      "retained": 42768
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "w",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-w-874a3d34c005.png",
+      "sourceWidth": 300,
+      "sourceHeight": 426,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.014084507042253946,
+        "y": -5,
+        "width": 11.971830985915492,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/simple_red_cushion_chair/rotations/west.png",
+      "sourceSha256": "6ee20fd97de374ada4a52ed5768479b1b41f0331d7122a4ee860f5d43b6e2814",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 23,
+        "top": 14,
+        "width": 50,
+        "height": 71
+      },
+      "outputSha256": "874a3d34c0051d6f2611675713df0a60bbaf88ae5d3687827845ab9876f74074",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 426
+      },
+      "alphaCounts": {
+        "transparent": 66888,
+        "partial": 0,
+        "opaque": 60912
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-w-874a3d34c005.png",
+      "retained": 60912
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "n",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "sourceWidth": 312,
+      "sourceHeight": 426,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0,
+        "y": -4.384615384615387,
+        "width": 12,
+        "height": 16.384615384615387
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/simple_red_cushion_chair/rotations/north.png",
+      "sourceSha256": "07eaaf940fbac9a5ce4f70bab8bec0cbb305f4390821b584767b41a031732f56",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 23,
+        "top": 14,
+        "width": 52,
+        "height": 71
+      },
+      "outputSha256": "e3bbc34100d61e73c3d989a7bde00adb079a9539783a88f38d64f290fbb66696",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 312,
+        "height": 426
+      },
+      "alphaCounts": {
+        "transparent": 79128,
+        "partial": 0,
+        "opaque": 53784
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "retained": 53784
+    },
+    {
+      "id": "simple_red_cushion_chair",
+      "view": "e",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-e-60c67969e536.png",
+      "sourceWidth": 264,
+      "sourceHeight": 420,
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 0.6571428571428566,
+        "y": -5,
+        "width": 10.685714285714287,
+        "height": 17
+      },
+      "source": "docs/station-remaster/projection-correction/furniture-red-chairs-source/simple_red_cushion_chair/rotations/east.png",
+      "sourceSha256": "9cb66747671ccb1d934c82e5e7fc48fafb91965f50fbd66da9f348bd7ea9bf16",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 26,
+        "top": 15,
+        "width": 44,
+        "height": 70
+      },
+      "outputSha256": "60c67969e536074c1d07e541681eaa02df55f86077087b1be08811c84ca66bc2",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 264,
+        "height": 420
+      },
+      "alphaCounts": {
+        "transparent": 45900,
+        "partial": 0,
+        "opaque": 64980
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-e-60c67969e536.png",
+      "retained": 64980
+    },
+    {
+      "id": "plugin_terminal",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "sourceWidth": 348,
+      "sourceHeight": 696,
+      "bounds": {
+        "x": -2,
+        "y": -11,
+        "width": 19,
+        "height": 35
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1.25,
+        "y": -11,
+        "width": 17.5,
+        "height": 35
+      },
+      "source": "docs/station-remaster/projection-correction/green-core-object-source/rotations/south.png",
+      "sourceSha256": "1ad751fae89c403e40ed3efd3d14d1f296e9978cb4e610dbafdcfd97debf7ccc",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 41,
+        "top": 14,
+        "width": 58,
+        "height": 116
+      },
+      "outputSha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 348,
+        "height": 696
+      },
+      "alphaCounts": {
+        "transparent": 74484,
+        "partial": 0,
+        "opaque": 167724
+      },
+      "liveAccepted": false,
+      "group": "capability",
+      "output": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "retained": 167724
+    },
+    {
+      "id": "bridge_dispatch_pylon",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "sourceWidth": 348,
+      "sourceHeight": 696,
+      "bounds": {
+        "x": -2,
+        "y": -11,
+        "width": 19,
+        "height": 35
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1.25,
+        "y": -11,
+        "width": 17.5,
+        "height": 35
+      },
+      "source": "docs/station-remaster/projection-correction/green-core-object-source/rotations/south.png",
+      "sourceSha256": "1ad751fae89c403e40ed3efd3d14d1f296e9978cb4e610dbafdcfd97debf7ccc",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 41,
+        "top": 14,
+        "width": 58,
+        "height": 116
+      },
+      "outputSha256": "4859253042c338471f0af22492114f6939bb46b42952f760a762326cfa4391cd",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 348,
+        "height": 696
+      },
+      "alphaCounts": {
+        "transparent": 74484,
+        "partial": 0,
+        "opaque": 167724
+      },
+      "liveAccepted": false,
+      "group": "screens",
+      "output": "frontend/assets/industrial/projection-correction/plugin_terminal-s-4859253042c3.png",
+      "retained": 167724
+    },
+    {
+      "id": "furniture_desk",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-s-0f98311fb7a8.png",
+      "sourceWidth": 630,
+      "sourceHeight": 258,
+      "bounds": {
+        "x": -1,
+        "y": -7,
+        "width": 26,
+        "height": 19
+      },
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1,
+        "y": 1.352380952380953,
+        "width": 26,
+        "height": 10.647619047619047
+      },
+      "source": "docs/station-remaster/projection-correction/futuristic-desk-source/rotations/south.png",
+      "sourceSha256": "77c318f2d5702dcba20fe9a145ab74c6a02592951cec1193a9fbd12abcd5a969",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 10,
+        "top": 45,
+        "width": 105,
+        "height": 43
+      },
+      "outputSha256": "0f98311fb7a86f1586addec896a74134bae13ecdecafdd5f52a80283b84a35ff",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 630,
+        "height": 258
+      },
+      "alphaCounts": {
+        "transparent": 68040,
+        "partial": 0,
+        "opaque": 94500
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/furniture_desk-s-0f98311fb7a8.png",
+      "retained": 94500
+    },
+    {
+      "id": "furniture_desk",
+      "view": "w",
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-w-f661e14deda1.png",
+      "sourceWidth": 228,
+      "sourceHeight": 384,
+      "bounds": {
+        "x": -1,
+        "y": -5,
+        "width": 14,
+        "height": 29
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1,
+        "y": 0.4210526315789487,
+        "width": 14,
+        "height": 23.57894736842105
+      },
+      "source": "docs/station-remaster/projection-correction/futuristic-desk-source/rotations/west.png",
+      "sourceSha256": "a55cbb180db898abaef08969c0a1e4ca6b74f4c737c6efbc91cbde583549a267",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 42,
+        "top": 35,
+        "width": 38,
+        "height": 64
+      },
+      "outputSha256": "f661e14deda1d1a09059b21ddc4b9256c8e5db4c9ff075534a7e7ac7df22ff44",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 228,
+        "height": 384
+      },
+      "alphaCounts": {
+        "transparent": 25776,
+        "partial": 0,
+        "opaque": 61776
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/furniture_desk-w-f661e14deda1.png",
+      "retained": 61776
+    },
+    {
+      "id": "furniture_desk",
+      "view": "n",
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-n-f5ad07744c51.png",
+      "sourceWidth": 570,
+      "sourceHeight": 246,
+      "bounds": {
+        "x": -1,
+        "y": -7,
+        "width": 26,
+        "height": 19
+      },
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1,
+        "y": 0.7789473684210524,
+        "width": 26,
+        "height": 11.221052631578948
+      },
+      "source": "docs/station-remaster/projection-correction/futuristic-desk-source/rotations/north.png",
+      "sourceSha256": "6b1adf8f0cd88b47e56e76de0d42c0295fe4a1c7a4e785d7cfaf7faaddb54173",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 16,
+        "top": 44,
+        "width": 95,
+        "height": 41
+      },
+      "outputSha256": "f5ad07744c51e3ccd24743fefae5e3b2fc82b7904e6abd3b2d25f71941bb329b",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 570,
+        "height": 246
+      },
+      "alphaCounts": {
+        "transparent": 58464,
+        "partial": 0,
+        "opaque": 81756
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/furniture_desk-n-f5ad07744c51.png",
+      "retained": 81756
+    },
+    {
+      "id": "furniture_desk",
+      "view": "e",
+      "image": "frontend/assets/industrial/projection-correction/furniture_desk-e-07076a59f19a.png",
+      "sourceWidth": 216,
+      "sourceHeight": 384,
+      "bounds": {
+        "x": -1,
+        "y": -5,
+        "width": 14,
+        "height": 29
+      },
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": -1,
+        "y": -0.8888888888888857,
+        "width": 14,
+        "height": 24.888888888888886
+      },
+      "source": "docs/station-remaster/projection-correction/futuristic-desk-source/rotations/east.png",
+      "sourceSha256": "c6aecf22e3f7dfcf8377d1a2d7acb6d95308239142a784de0f305cf729e52aa1",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 48,
+        "top": 35,
+        "width": 36,
+        "height": 64
+      },
+      "outputSha256": "07076a59f19a30d6ea44ca4733e9e32436d3ed8b908755f259743f94a28edcbe",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 216,
+        "height": 384
+      },
+      "alphaCounts": {
+        "transparent": 22464,
+        "partial": 0,
+        "opaque": 60480
+      },
+      "liveAccepted": false,
+      "group": "furniture",
+      "output": "frontend/assets/industrial/projection-correction/furniture_desk-e-07076a59f19a.png",
+      "retained": 60480
+    },
+    {
+      "id": "laptop",
+      "view": "s",
+      "image": "frontend/assets/industrial/projection-correction/laptop-s-e68e4f7f650d.png",
+      "sourceWidth": 276,
+      "sourceHeight": 276,
+      "bounds": {
+        "x": 1,
+        "y": 1,
+        "width": 10,
+        "height": 11
+      },
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "contact": {
+        "x": 0.5,
+        "y": 1
+      },
+      "fit": {
+        "x": 1,
+        "y": 2,
+        "width": 10,
+        "height": 10
+      },
+      "source": "docs/station-remaster/projection-correction/laptop-source/rotations/south.png",
+      "sourceSha256": "6d3486df6818048fd516c92a8c1fb1ea29674d9135d5d1d9097607995e0cbdb8",
+      "pixelScale": 6,
+      "sourceCrop": {
+        "left": 9,
+        "top": 10,
+        "width": 46,
+        "height": 46
+      },
+      "outputSha256": "e68e4f7f650d1f5b0bdcc942bfe7b489d0cc6df4ff4c55c8306af1d1a6d65de7",
+      "alphaBounds": {
+        "x": 0,
+        "y": 0,
+        "width": 276,
+        "height": 276
+      },
+      "alphaCounts": {
+        "transparent": 8388,
+        "partial": 0,
+        "opaque": 67788
+      },
+      "liveAccepted": false,
+      "group": "workstation",
+      "output": "frontend/assets/industrial/projection-correction/laptop-s-e68e4f7f650d.png",
+      "retained": 67788
     }
   ]
 }

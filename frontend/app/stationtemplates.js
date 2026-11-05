@@ -20,40 +20,40 @@ const StationTemplates = (() => {
   /* a room's `line` stamps a shelf blueprint at (x, y) in room tiles: `label` names its INBOX (the guide finds its line
      by that name) and `briefs` fills each Bay's standing instructions by the Bay's shelf ROLE (one Bay per role). */
   const rooms = {
-    cozyWorkshop: { name: 'WORKROOM', kind: 'factory', floorStyle: 'walnut', floorMat: 'plank', props: [['plant',1,1],['plant',16,1],['desk',2,7],['industrial_drawerbank',12,7],['bookshelf',14,9]],
+    cozyWorkshop: { name: 'WORKROOM', kind: 'factory', floorStyle: 'walnut', floorMat: 'plank', props: [['plant',1,1],['plant',16,1],['console',2,7],['industrial_drawerbank',12,7],['bookshelf',14,9]],
       line: { bp: 'allowance_desk', x: 3, y: 1, label: 'COZY · FRONT DESK', briefs: {
         GENERALIST: 'Do what the incoming request asks, then summarize what you did in plain words. If something you need is missing, say exactly what it is.'
       } } },
     cozyLounge: { name: 'LOUNGE', kind: 'quarters', floorStyle: 'walnut', floorMat: 'plank', props: [['tv',2,1],['rug',1,2],['couch',1,5],['industrial_roundtable',11,4],['dinerchair',10,4,3],['dinerchair',13,4,1],['coffee',14,4],['bookshelf',12,1],['plant',16,1],['bunk',13,7],['plant',1,8]] },
     reading: { name: 'LIBRARY', kind: 'quarters', floorStyle: 'walnut', floorMat: 'plank', props: [['couch',1,1],['bookshelf',13,1],['plant',16,8],['industrial_roundtable',2,4]] },
-    creative: { name: 'DESIGN STUDIO', kind: 'lab', floorStyle: 'walnut', floorMat: 'plank', props: [['desk',2,1],['easel',11,1],['plant',0,1],['plant',16,1],['bookshelf',1,8],['industrial_drawerbank',1,6],['industrial_roundtable',12,7],['dinerchair',11,7,3],['dinerchair',14,7,1]] },
-    creativeReview: { name: 'DRAFT & REVIEW', kind: 'hab', floorStyle: 'ash', floorMat: 'plank', props: [['desk',3,1],['industrial_roundtable',10,2],['dinerchair',9,2,3],['dinerchair',12,2,1],['bookshelf',15,1],['plant',17,3]],
+    creative: { name: 'DESIGN STUDIO', kind: 'lab', floorStyle: 'walnut', floorMat: 'plank', props: [['console',2,1],['easel',11,1],['plant',0,1],['plant',16,1],['bookshelf',1,8],['industrial_drawerbank',1,6],['industrial_roundtable',12,7],['dinerchair',11,7,3],['dinerchair',14,7,1]] },
+    creativeReview: { name: 'DRAFT & REVIEW', kind: 'hab', floorStyle: 'ash', floorMat: 'plank', props: [['console',3,1],['industrial_roundtable',10,2],['dinerchair',9,2,3],['dinerchair',12,2,1],['bookshelf',15,1],['plant',17,3]],
       line: { bp: 'revision_loop', x: 0, y: 4, label: 'CREATIVE · DRAFT & REVIEW', briefs: {
         WRITER: 'Draft a response to the incoming creative brief. Follow its audience, format, tone, and constraints. Make a complete first draft and flag assumptions. If the reviewer sent it back, fix exactly what they asked for. Pass the draft and the original requirements to the reviewer.',
         REVIEWER: 'Review the incoming draft against the original creative brief. Check clarity, consistency, tone, and unsupported claims while preserving the requested voice. If it meets the brief, return the finished version (small corrections are fine) and end with VERDICT: approved. If it needs another pass, list exactly what to fix and end with VERDICT: revise.'
       } } },
-    review: { name: 'REVIEW', kind: 'hab', floorStyle: 'ash', floorMat: 'resin', props: [['desk',2,1],['whiteboard',11,0],['plant',16,1],['industrial_roundtable',7,4]] },
-    researchLab: { name: 'ANALYSIS', kind: 'lab', floorStyle: 'teal', floorMat: 'resin', props: [['desk',3,1],['research_samplecart',12,1],['plant',16,1],['bookshelf',2,8],['bookshelf',12,8]],
+    review: { name: 'REVIEW', kind: 'hab', floorStyle: 'ash', floorMat: 'resin', props: [['console',2,1],['whiteboard',11,0],['plant',16,1],['industrial_roundtable',7,4]] },
+    researchLab: { name: 'ANALYSIS', kind: 'lab', floorStyle: 'teal', floorMat: 'resin', props: [['console',3,1],['research_samplecart',12,1],['plant',16,1],['bookshelf',2,8],['bookshelf',12,8]],
       line: { bp: 'research_line', x: 0, y: 4, label: 'RESEARCH · DIG & WRITE', briefs: {
         RESEARCHER: 'Research the incoming question. Find three to five credible, recent sources and pull the key facts from each, with a link for every claim. Note where the sources disagree. Pass your notes and the original question to the writer.',
         WRITER: 'Turn the research notes into a short brief that answers the original question: the answer in one line first, then the key points with their links, then any open questions. Plain English, and no claim without a source.'
       } } },
-    engineering: { name: 'WORKSHOP', kind: 'factory', floorStyle: 'hull', floorMat: 'tread', props: [['desk',3,1],['fabricator',11,1],['industrial_drawerbank',2,8],['crate',13,8]] },
+    engineering: { name: 'WORKSHOP', kind: 'factory', floorStyle: 'hull', floorMat: 'tread', props: [['console',3,1],['fabricator',11,1],['industrial_drawerbank',2,8],['crate',13,8]] },
     /* BUILD & TEST — from PR #47 by @mvanhorn (Matt Van Horn): his Builder and Tester instructions and slugify sample,
        on the shelf's BUILD & TEST loop instead of a one-off belt run, so a failing change goes back to the Builder. */
-    buildTest: { name: 'BUILD & TEST', kind: 'factory', floorStyle: 'hull', floorMat: 'tread', props: [['desk',1,6],['desk',5,6],['rack',13,6],['industrial_roundtable',12,9],['dinerchair',11,9,3],['dinerchair',14,9,1],['plant',17,6]],
+    buildTest: { name: 'BUILD & TEST', kind: 'factory', floorStyle: 'hull', floorMat: 'tread', props: [['console',1,6],['console',5,6],['rack',13,6],['industrial_roundtable',12,9],['dinerchair',11,9,3],['dinerchair',14,9,1],['plant',17,6]],
       line: { bp: 'build_test', x: 1, y: 0, label: 'SOFTWARE · BUILD & TEST', briefs: {
         ENGINEER: 'Build what the incoming request asks for. Restate the acceptance criteria, make the smallest complete change that meets them, and note how you checked it. If the tester sent it back, fix exactly what failed. Pass the change, your checks, and the original request to the tester.',
         TESTER: 'Test the incoming change against the original request. Check each acceptance criterion and edge case, and say which checks you actually ran. If everything passes, deliver the final change with a short test note and end with VERDICT: pass. If anything fails, say exactly what failed and end with VERDICT: revise.'
       } } },
-    dispatch: { name: 'DISPATCH', kind: 'bridge', floorStyle: 'cobalt', floorMat: 'resin', props: [['consoleL',1,9],['desk',12,9],['plant',17,1]],
+    dispatch: { name: 'DISPATCH', kind: 'bridge', floorStyle: 'cobalt', floorMat: 'resin', props: [['console',1,9],['console',12,9],['plant',17,1]],
       line: { bp: 'triage_desk', x: 1, y: 0, label: 'OPERATIONS · TRIAGE', briefs: {
         ENGINEER: 'Handle the incoming coding request: make the change or answer the technical question, keep it small, and say how you checked it.',
         GENERALIST: 'Handle the incoming request: do what it asks, then summarize what you did in plain words and anything that still needs a decision.',
         RESEARCHER: 'Handle the incoming research request: find credible sources, answer the question plainly, and link every claim.'
       } } },
-    comms: { name: 'COMMS', kind: 'bridge', floorStyle: 'hull', floorMat: 'resin', props: [['consoleL',3,1],['screens',10,0],['rack',12,1],['plant',16,1]] },
-    archive: { name: 'ARCHIVE', kind: 'hab', floorStyle: 'walnut', floorMat: 'plank', props: [['bookshelf',2,1],['bookshelf',6,1],['bookshelf',10,1],['plant',16,1],['desk',3,7]] }
+    comms: { name: 'COMMS', kind: 'bridge', floorStyle: 'hull', floorMat: 'resin', props: [['console',3,1],['screens',10,0],['rack',12,1],['plant',16,1]] },
+    archive: { name: 'ARCHIVE', kind: 'hab', floorStyle: 'walnut', floorMat: 'plank', props: [['bookshelf',2,1],['bookshelf',6,1],['bookshelf',10,1],['plant',16,1],['console',3,7]] }
   };
   /* ROOM KITS (2026-09-29): the hand-designed rooms the presets are made of, offered one at a time to the agent's station
      builder ("add a Library"). Each is an 18 × 11 room: its kind, floor, furniture and, for some, a ready line with

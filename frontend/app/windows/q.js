@@ -46,7 +46,7 @@
       '</div>').join('');
     const roleDirectiveMarkup = Q.parseHierarchy(Q.hierarchy()).entries
       .filter(entry => entry.role !== 'commander-q')
-      .map(entry => '<div class="q-settings"><h4>' + esc(entry.name.toLocaleUpperCase()) + ' · LEVEL ' + entry.level + ' DIRECTIVE</h4>' +
+      .map(entry => '<div class="q-settings"><h4>' + esc(entry.name.toLocaleUpperCase()) + ' · CLEARANCE LEVEL ' + entry.level + ' DIRECTIVE</h4>' +
         '<p class="q-help">Saved in Q and included in the standing instructions for agents assigned to this roster role.</p>' +
         '<textarea class="q-textarea" data-q-role-directive="' + esc(entry.role) + '" maxlength="8000" placeholder="Add the role-specific directive when ready…">' + esc(Q.roleDirective(entry.role)) + '</textarea>' +
         '<button type="button" class="bb sm" data-q-action="save-role-directive" data-q-role="' + esc(entry.role) + '">SAVE ' + esc(entry.name.toLocaleUpperCase()) + ' DIRECTIVE</button></div>')
@@ -64,7 +64,7 @@
           '<textarea id="q-human-directive" class="q-textarea" maxlength="8000" placeholder="Describe how Q will lead and engage with the crew…">' + esc(Q.qDirective()) + '</textarea>' +
           '<button type="button" class="bb sm" data-q-action="save-q-directive">SAVE Q DIRECTIVE</button>' +
         '</section>' +
-        '<section class="q-settings"><h4>BRIDGE CREW HIERARCHY ROSTER</h4><p class="q-help">Only Q (you, Level 0) may change this roster; agent requests cannot edit it. Lower-numbered levels outrank higher-numbered levels, and unlisted agents rank below every listed role. Levels define rank only; other permissions are not defined yet. The roster is included in every agent’s Q reference; agents can request a copy with Q_HIERARCHY_REQUEST.</p>' +
+        '<section class="q-settings"><h4>BRIDGE CREW HIERARCHY ROSTER</h4><p class="q-help">Only Q (you, Clearance Level 0) may change this roster; agent requests cannot edit it. Lower-numbered clearance levels have precedence over higher-numbered levels, and unlisted agents have no assigned clearance level. Clearance levels describe Bridge reporting order; they do not grant tools or system permissions. The roster is included in every agent’s Q reference; agents can request a copy with Q_HIERARCHY_REQUEST.</p>' +
           '<textarea id="q-hierarchy" class="q-textarea" maxlength="6000">' + esc(Q.hierarchy()) + '</textarea>' +
           '<button type="button" class="bb sm" data-q-action="save-hierarchy">SAVE HIERARCHY ROSTER</button>' +
         '</section>' +

@@ -74,7 +74,7 @@ const XpStore = (() => {
     // established colour exception). Not a beat-slot card; coalesced + in-game-gated inside Chat.broadcast.
     if (typeof Chat !== 'undefined' && Chat.broadcast) {
       const nm = String((a && a.name) || 'AGENT').toUpperCase();
-      try { Chat.broadcast(nm + ' REACHED LEVEL ' + level, { highlight: nm, tint: (a && a.color) || null }); } catch (_) {}
+      try { Chat.broadcast(nm + ' REACHED RANK ' + level, { highlight: nm, tint: (a && a.color) || null }); } catch (_) {}
     }
     if (typeof Tutorial !== 'undefined' && Tutorial.onLevelUp) Tutorial.onLevelUp(level);   // first-touch coachmark: what leveling means
   }

@@ -55,6 +55,26 @@ for(const r of [0,1,2,3]) for(const width of [2,3]) {
  A.ok(runtime.occupied(p),'compute denial does not erase physical occupancy');
  worker.sitting=false;A.eq(runtime.occupied(p),false,'worker departing extinguishes display');
 }
+{
+ const station=WM.create(WM.starterDoc());
+ const table=station.addProp({t:'furniture_desk',x:6,y:4,w:1,h:2,r:1,block:true});
+ const laptop=station.addProp({t:'laptop',x:6,y:4,w:1,h:1,block:false});
+ A.ok(table.ok&&laptop.ok&&station.assignDesk(laptop.id,'hero').ok,'Laptop is assigned on the far row of a deep tabletop');
+ const geo=station.projectGeometry(),placed=geo.props.find(prop=>prop.id===laptop.id),host=geo.props.find(prop=>prop.id===table.id);
+ const hero={id:'hero',unplaced:false,sitting:true,state:'idle',working:false,target:null};
+ const runtime=Function('station','geo','agent','crew','PropSprites','PropAnchor','IndustrialTextures',
+  'const T=12,blocked=new Set();const computeOkFor=()=>true;\n'+helpers+
+  '\nreturn {seat:deskSeat,foot:seatFoot,occupied:workstationOccupied,lit:workstationLit};')
+  (station,geo,hero,[],props,PropAnchor,textures);
+ const seat=runtime.seat(placed);
+ A.ok(seat&&geo.walkable(seat.tx,seat.ty),'Laptop user sits on clear floor, not inside the table');
+ A.eq([seat.tx,seat.ty],[placed.x,host.y+host.h],'Laptop seat follows its host table depth and keyboard column');
+ const foot=runtime.foot(seat);Object.assign(hero,{px:foot.x,py:foot.y});
+ A.ok(runtime.occupied(placed),'seated Laptop user supplies truthful occupancy');
+ hero.working=true;A.ok(runtime.lit(placed),'assigned Laptop user can work normally');
+ station.removeProp(table.id);
+ A.eq(runtime.seat(placed),null,'Laptop without a supporting table has no floating work seat');
+}
 for(const id of ['desk','desk2']) for(const r of [0,1,2,3]) for(const m of [false,true]) {
  const fp=props.footprintAt(id,r),p={t:id,x:2,y:4,w:fp.w,h:fp.h,r,m};
  for(const state of [{occupied:false,still:false,work:false},{occupied:false,still:false,work:true},

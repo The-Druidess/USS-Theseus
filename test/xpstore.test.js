@@ -76,8 +76,8 @@ A.eq(researcher.stats.counters.positiveFeedback, 3, 'researcher records positive
 A.eq(world.pulse, [{ agentId: 'researcher', level: 2 }], 'level-up pulse is addressed to the researcher');
 A.ok(!world.pulse.some(p => p.agentId === 'agent'), 'no overseer pulse fires for a researcher level-up');
 A.eq(notices.length, 0, 'notification diet: a level-up never toasts (COMMS + pulse + sting carry it)');
-A.ok(broadcasts.some(b => /RESEARCHER REACHED LEVEL 2/.test(b.text)), 'the COMMS broadcast names the researcher');
-A.ok(!broadcasts.some(b => /OVERSEER REACHED LEVEL 2/.test(b.text)), 'the broadcast does not name the overseer');
+A.ok(broadcasts.some(b => /RESEARCHER REACHED RANK 2/.test(b.text)), 'the COMMS rank-up broadcast names the researcher');
+A.ok(!broadcasts.some(b => /OVERSEER REACHED RANK 2/.test(b.text)), 'the broadcast does not name the overseer');
 A.ok(world.setXp.some(x => x.agentId === 'researcher' && x.xp && x.xp.level === 2), 'world XP snapshot is stored under researcher');
 A.ok(!world.setXp.some(x => x.agentId === 'agent' && x.xp && x.xp.level === 2), 'researcher XP snapshot is not stored under overseer');
 A.ok(rosterSnapshots.some(list => list.some(a => a.id === 'researcher' && a.level === 2)), 'the left crew manifest receives the new researcher level immediately');

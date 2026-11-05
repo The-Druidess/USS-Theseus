@@ -6,14 +6,18 @@ const remasterContext={module:{exports:{}},IndustrialTextures:{enabled:()=>true,
 require('node:vm').runInNewContext(require('node:fs').readFileSync(require.resolve('../frontend/app/propsprites.js'),'utf8'),remasterContext);
 const T=require('../frontend/app/stationtemplates.js');
 const approved=require('./fixtures/station-default-approved.json');
+const retired=new Set(['desk','desk2','consoleL']);
+const approvedProps=approved.props.map(prop=>retired.has(prop.t)?{...prop,t:'console'}:prop);
+for(const kit of T.kits())assert(kit.props.every(([type])=>!retired.has(type)),kit.id+': room kit uses current equipment');
 assert.equal(T.catalog.length,7); // five work presets (each with a ready line) and two look-only presets
 assert.deepEqual(T.catalog.filter(c=>c.group==='work').map(c=>c.purpose).sort(),['code','general','ops','research','write'],'one work preset per onboarding purpose');
 for(const P of [legacySprites,remasterContext.module.exports])for(const item of T.catalog) {
   const doc=T.build(item.id,M,P,1000),s=M.create(doc);
+  assert(doc.props.every(prop=>!retired.has(prop.t)),item.id+': generated floor has no retired workstation types');
   assert.equal(s.rooms().filter(r=>r.kind!=='corridor').length,item.rooms);
   const home=doc.rooms[doc.meta.spawnRoomId];
   for(const [key,value] of Object.entries(approved.room))assert.deepEqual(home[key],value,item.id+': approved home '+key);
-  assert.deepEqual(doc.props.filter(p=>p.x>=0&&p.x<=17&&p.y>=0&&p.y<=10).map(({t,x,y,w,h})=>({t,x,y,w,h})),approved.props,item.id+': approved home furniture');
+  assert.deepEqual(doc.props.filter(p=>p.x>=0&&p.x<=17&&p.y>=0&&p.y<=10).map(({t,x,y,w,h})=>({t,x,y,w,h})),approvedProps,item.id+': approved home furniture with current equivalent equipment');
   for(const t of P.STARTER)assert.equal(doc.props.filter(p=>p.t===t).length,1);
   const validate=M.create({...structuredClone(doc),props:[]});
   for(const p of doc.props){

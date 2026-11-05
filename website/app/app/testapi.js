@@ -85,7 +85,7 @@
   }
 
   // ---- HUD truthfulness: displayed (DOM) vs reduced-over-events ----
-  // Parse a HUD chip's text into a number, honoring k/M/B suffixes ("234.9k" -> 234900, "Lv 3" -> 3).
+  // Parse a HUD chip's text into a number, honoring k/M/B suffixes ("234.9k" -> 234900, "Rank 3" -> 3).
   function parseNum(s) {
     if (s == null) return null;
     const m = String(s).match(/(-?\d+(?:\.\d+)?)\s*([kmb])?/i);
@@ -99,7 +99,7 @@
     const txt = (id) => { const el = document.getElementById(id); return el ? (el.textContent || '').trim() : null; };
     const s = txt('gt-station');
     return {
-      station: { text: s, value: parseNum(s) },     // STATION, e.g. "Lv 3"
+      station: { text: s, value: parseNum(s) },     // STATION, e.g. "Rank 3"
     };
   }
   const captureBaseline = () => { if (!baseline) baseline = displayedHud(); return baseline; };
@@ -124,7 +124,7 @@
     const level = journey && journey.progression && journey.progression.level;
     const known = Number.isFinite(level);
     const commander = { level: known ? level : null, source: known ? (stale ? 'saved' : 'current') : 'unavailable' };
-    const expectedText = known ? 'Lv ' + level + (stale ? ' · saved' : '') : '—';
+    const expectedText = known ? 'Rank ' + level + (stale ? ' · saved' : '') : '—';
     checks.push({ metric: 'stationLevel', displayed: displayed.station.value,
       expected: commander.level, mode: 'eq', expectedText, source: commander.source,
       ok: displayed.station.value === commander.level && displayed.station.text === expectedText });

@@ -32,14 +32,32 @@ for(const id of fx.ids){
  const c=fx.classify(id),b=fx.frameBounds(id);assert(b&&b.width>0&&b.height>0);
  for(const e of c.effects)for(const p of e.region){assert(p.every(Number.isFinite));assert(p[0]>=b.x-1e-8&&p[0]<=b.x+b.width+1e-8);assert(p[1]>=b.y-1e-8&&p[1]<=b.y+b.height+1e-8);}
 }
-for(const id of ['intake','bay','merger','rack','fabricator','comms_beacon','pub_publishpress']){
+for(const id of ['intake','bay','merger','rack','rackV','fabricator','comms_beacon','pub_publishpress','plugin_terminal']){
  assert.deepEqual(record(id,{now:100}),record(id,{now:3100}),id+' idle never clocks work');
  assert.notDeepEqual(record(id,{now:1300}),record(id,{now:1300,work:true}),id+' actual work changes its own region');
 }
 assert.deepEqual(record('filter',{now:900,work:true}),record('filter',{now:900}), 'generic work cannot fake parcel scan');
+assert.equal(fx.classify('rack').effects.length,10,'cube rack effects cover both indicators on all five server rows');
+assert.equal(fx.classify('rackV').effects.length,24,'tall rack effects cover both indicators on all twelve server rows');
 assert.notDeepEqual(record('filter',{now:900,scanning:true}),record('filter',{now:900}));
 assert.deepEqual(record('console',{now:500,occupied:false,work:true}),record('console',{now:500,occupied:false}), 'vacant workstation stays off');
 assert.notDeepEqual(record('console',{now:500,occupied:true}),record('console',{now:500,occupied:false}));
+assert.deepEqual(record('laptop',{now:500,occupied:false,work:true}),record('laptop',{now:500,occupied:false}),'vacant Laptop cannot invent a seated user');
+assert.notDeepEqual(record('laptop',{now:500,occupied:true}),record('laptop',{now:500,occupied:false}),'Laptop display follows its assigned seated user');
+assert(fx.classify('laptop').effects[0].region.every(point=>point[1]<.53),'Laptop display overlay stays clear of the keyboard');
+assert.equal(record('console',{occupied:false}).calls.some(call=>call[0]==='fillRect'),false,'idle Console preserves its supplied control-panel graphics');
+assert.deepEqual(fx.classify('console').effects[0].colour,[144,224,81],'Console sweep follows the green display palette');
+assert(fx.classify('console').effects[0].region.every(point=>point[1]>=.05&&point[1]<=.42),'revised Console sweep stays within the front display and clear of the pedestal');
+assert.equal(fx.classify('pixelrig').effects[0].kind,'lamp','artist workbench uses its painted edge light, not a fictional monitor');
+assert.deepEqual(record('pixelrig',{now:500,occupied:false,work:true}),record('pixelrig',{now:500,occupied:false}),'vacant artist workbench never invents occupancy');
+assert.notDeepEqual(record('pixelrig',{now:500,occupied:true}),record('pixelrig',{now:500,occupied:false}),'artist workbench edge follows actual occupancy');
+assert.deepEqual(record('pixelrig',{now:100,occupied:false}),record('pixelrig',{now:3100,occupied:false}),'idle artist workbench stays still');
+assert.equal(fx.classify('bench').effects.length,3,'bench overlays align with its three green source displays');
+assert.deepEqual(fx.classify('bridge_dispatch_pylon').effects,fx.classify('plugin_terminal').effects,'dispatch pylon and plugin terminal share identical green-core effects');
+assert.equal(record('bench',{occupied:false}).calls.some(call=>call[0]==='fillRect'),false,'idle bench preserves its painted display graphics');
+assert.deepEqual(record('bench',{now:500,occupied:false,work:true}),record('bench',{now:500,occupied:false}),'generic work cannot light a vacant bench');
+assert.notDeepEqual(record('bench',{now:500,occupied:true}),record('bench',{now:500,occupied:false}),'bench screens follow actual occupancy');
+assert.deepEqual(record('bench',{now:100,occupied:false}),record('bench',{now:3100,occupied:false}),'idle bench screens do not animate');
 for(const id of ['bridge_consolebank','bridge_tacticaltable']){
  assert.equal(record(id,{occupied:false}).calls.some(c=>c[0]==='fillRect'),false,id+' idle preserves painted glass');
  assert.deepEqual(record(id,{now:100,occupied:false}),record(id,{now:3100,occupied:false}),id+' static art does not invent activity');
@@ -47,6 +65,9 @@ for(const id of ['bridge_consolebank','bridge_tacticaltable']){
 }
 assert.deepEqual(record('jukebox',{now:500,work:true}),record('jukebox',{now:500}), 'work cannot invent a music connection');
 assert.notDeepEqual(record('jukebox',{now:500,live:true}),record('jukebox',{now:500}));
+assert.equal(fx.classify('jukebox','n').classification,'effects','jukebox back trim follows connection state');
+assert.notDeepEqual(record('jukebox',{live:true},{},'w'),record('jukebox',{live:false},{},'w'),'west-side indicator follows the Spotify connection');
+assert.notDeepEqual(record('jukebox',{live:true},{},'e'),record('jukebox',{live:false},{},'e'),'east-side indicator follows the Spotify connection');
 assert.deepEqual(record('workbench',{now:200,bad:true}),record('workbench',{now:200,bad:false}));
 assert.notDeepEqual(record('workbench',{now:200,fired:.5,bad:true}),record('workbench',{now:200,fired:.5,bad:false}));
 assert.deepEqual(record('workbench',{fired:Infinity}),record('workbench',{fired:0}));
@@ -56,7 +77,12 @@ assert.deepEqual(record('connector_portal',{bound:false,state:'online'}),record(
 for(const id of ['coffee','steamvent','fishtank','lavalamp','incubator','plasmaglobe','cryopod'])assert.deepEqual(record(id,{now:600}),record(id,{now:600,work:true,fired:1,bad:true}),id+' ambience ignores task telemetry');
 assert.deepEqual(record('trophycase',{trophies:0}),record('trophycase',{trophies:-2}));
 assert.notDeepEqual(record('trophycase',{trophies:0}),record('trophycase',{trophies:2}));
+assert.equal(fx.classify('trophycase').effects.find(e=>e.kind==='awards').slots.length,6,'trophy awards occupy the six source glass shelf positions');
+assert.equal(fx.classify('trophycase','w').classification,'none','trophy award markers stay on the south/front glass');
 assert.notDeepEqual(record('missionboard',{pins:0}),record('missionboard',{pins:2}));
+assert.equal(fx.classify('missionboard').effects.find(e=>e.kind==='pins').slots.length,15,'missionboard pin indicators align with all fifteen green cells');
+assert.equal(fx.classify('missionboard','w').classification,'none','missionboard pin indicators remain on the south/front view only');
+assert.equal(fx.classify('missionboard').effects.find(e=>e.kind==='pins').slots.length,15,'missionboard pin indicators align with all fifteen green cells');
 assert.notDeepEqual(record('airlock',{door:'closed'}),record('airlock',{door:'open'}));
 assert.notDeepEqual(record('airlock',{door:'closed'}),record('airlock',{door:'jammed'}));
 const r=record('filter'),b=r.box;
@@ -68,4 +94,4 @@ assert(fx.frameBounds('steamvent').y<0);assert(fx.frameBounds('treasury_pnl_holo
 global.OffscreenCanvas=class{constructor(w,h){allocations++;this.width=w;this.height=h;}getContext(){return {drawImage(){}};}};
 for(const id of ['fishtank','lavalamp','incubator']){const spec=manifest.props[id].views.s,p=fx.prepare(id,'s',{width:spec.sourceWidth,height:spec.sourceHeight},spec);assert(p?.image);assert(Math.max(p.width,p.height)<=256);fx.dispose(p);assert.equal(p.image,null);}
 assert.equal(allocations,3);delete global.OffscreenCanvas;
-console.log('PASS projection effects: 160 types/184 views, image bindings, source hashes, idle/occupied/work/scan/connection/result/count truth, crop mapping, reduced motion, frame bounds, context restore, bounded preparation.');
+console.log('PASS projection effects: '+Object.keys(manifest.props).length+' types/'+coverage.records.length+' views, image bindings, source hashes, idle/occupied/work/scan/connection/result/count truth, crop mapping, reduced motion, frame bounds, context restore, bounded preparation.');

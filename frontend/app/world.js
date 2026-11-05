@@ -3043,11 +3043,14 @@ const World = (() => {
   // south-facing seat contract, even when a save retains a remaster-mode rotation.
   function deskSeat(prop) {
     if (typeof PropAnchor === 'undefined' || !geo || !prop) return null;
+    const hostId = prop.t === 'laptop' && station.surfaceHostOf ? station.surfaceHostOf(prop) : null;
+    const host = hostId && geo.props.find(item => item.id === hostId);
+    if (prop.t === 'laptop' && !host) return null;
     const r = (prop.r | 0) & 3;
     const remaster = typeof IndustrialTextures !== 'undefined' && IndustrialTextures.isRemaster && IndustrialTextures.isRemaster();
     const turned = remaster && (prop.t === 'desk' || prop.t === 'desk2') && typeof PropSprites !== 'undefined'
       && PropSprites.facings && PropSprites.facings(prop.t).includes(r);
-    const effective = !turned && r ? Object.assign({}, prop, { r: 0 }) : prop;
+    const effective = host ? Object.assign({}, prop, { y: host.y, h: host.h, r: 0 }) : !turned && r ? Object.assign({}, prop, { r: 0 }) : prop;
     const a = PropAnchor.deriveAnchor(effective, geo, { approach: turned ? 'front' : 'south', sit: true, extra: blocked });
     if (!a) return null;
     const s = { tx: a.tx, ty: a.ty, face: a.face, cx: seatCx(prop, a.tx) };
@@ -6478,7 +6481,7 @@ const World = (() => {
       }
       PropSprites.setCtx(g);
       if(geo&&geo.props)for(const p of geo.props)if(propOnScreen(p))PropSprites.drawShadow(p,station&&station.mountOf?station.mountOf(p):null);
-      if(desk&&!deskPropId)PropSprites.drawShadow({t:'desk',x:desk.tx,y:desk.ty,w:desk.w,h:desk.h},null);
+      if(desk&&!deskPropId)PropSprites.drawShadow({t:'console',x:desk.tx,y:desk.ty,w:desk.w,h:desk.h},null);
     } finally {g.restore();PropSprites.setCtx(ctx);}
   }
 
@@ -6761,13 +6764,13 @@ const World = (() => {
       const work = !!(agent && agent.working);
       const live = { heat: work ? heatFor(agent.id) : 0, prog: work ? deskProgFor(agent.id) : null,
         occupied: bodyAtWorkstationSeat(agent, seat), still: reduceMotion() };
-      if (typeof PropSprites !== 'undefined' && PropSprites.has('desk')) {
+      if (typeof PropSprites !== 'undefined' && PropSprites.has('console')) {
         PropSprites.setCtx(ctx); PropSprites.setNow(now);
-        drawLitProp({ t: 'desk', x: desk.tx, y: desk.ty, w: desk.w, h: desk.h }, work, live);
+        drawLitProp({ t: 'console', x: desk.tx, y: desk.ty, w: desk.w, h: desk.h }, work, live);
       } else F_desk(desk.tx * T, desk.ty * T, desk.w * T, desk.h * T, { x: desk.tx, work, heat: live ? live.heat : 0, prog: live ? live.prog : null });
     } });
     if (desk && !deskPropId && typeof PropSprites !== 'undefined' && PropSprites.lightOf) {   // the auto-desk's CRT lights the deck while the hero works, like any placed workstation
-      const lt = PropSprites.lightOf({ t: 'desk', x: desk.tx, y: desk.ty, w: desk.w, h: desk.h }, !!(agent && agent.working), reduceMotion(), { occupied: bodyAtWorkstationSeat(agent, seat) });
+      const lt = PropSprites.lightOf({ t: 'console', x: desk.tx, y: desk.ty, w: desk.w, h: desk.h }, !!(agent && agent.working), reduceMotion(), { occupied: bodyAtWorkstationSeat(agent, seat) });
       if (lt) propLights.push(Object.assign({}, lt, { originX: (desk.tx + desk.w / 2) * T, originY: (desk.ty + desk.h / 2) * T }));
     }
     if (seat && !deskPropId) items.push({ y: seatFoot(seat).y + 1, draw: () => drawSeatChair(seat.tx, seat.ty, seat.cx, seat.cy, deskFace) });
@@ -7793,7 +7796,7 @@ const World = (() => {
     const name = floorDisplayName(who);
     // per-body XP: the hero keeps its exact xpByAgent-or-xpAgent fallback; a crew body reads its own snapshot
     const xp = xpByAgent.get(who.id) || (who === agent ? xpAgent : null);
-    const lvl = (xp && xp.level) ? ('Lv ' + xp.level) : null;
+    const lvl = (xp && xp.level) ? ('RANK ' + xp.level) : null;
     const frac = (xp && typeof xp.frac === 'number') ? Math.max(0, Math.min(1, xp.frac)) : 0;
 
     const nameSz = 17, lvlSz = 16;
@@ -11079,8 +11082,8 @@ const World = (() => {
       if (!b) return;
       b.levelUpAt = now;
       if (b === agent) levelUpAt = now;
-      // a brief "LEVEL N" caption rides the gold ripple — but never stomp a live, NON-EMPTY (real) message bubble
-      if (level != null && !(b.say && b.say.text && b.say.until > now)) b.say = { text: 'LEVEL ' + level, until: now + 2600 };
+      // a brief "RANK N" caption rides the gold ripple — but never stomp a live, NON-EMPTY (real) message bubble
+      if (level != null && !(b.say && b.say.text && b.say.until > now)) b.say = { text: 'RANK ' + level, until: now + 2600 };
     },
     // read-only introspection for live verification of idle behavior (no side effects)
     dbg: () => agent && { goal: agent.goal, quirkKind: agent.quirkKind, sitting: agent.sitting, state: agent.state, stilling: !!agent.stilling, firstWakeDone, wakePhase: agent.wakePhase, moving: !!agent.target, paused: fnow < (agent.pauseUntil || 0), pauseLook: agent.pauseLook, dir: agent.dir, attn: (agent.attn && fnow < agent.attn.until) ? { x: agent.attn.x, y: agent.attn.y, inMs: Math.round(agent.attn.until - fnow) } : null, drive: (fnow < (agent.driveUntil || 0)) ? agent.drive : null, tile: tileOf(agent.px, agent.py), idleUntil: Math.round((agent.idleUntil || 0) - fnow), quirkCd: Math.round(Math.max(0, (agent.quirkCd || 0) - fnow)), offbeatCd: Math.round(Math.max(0, (agent.offbeatCd || 0) - fnow)), fond: [...agent.fond.entries()], pendingMourn: pendingMourn && { tx: pendingMourn.tx, ty: pendingMourn.ty, fond: pendingMourn.fond }, decor: agentDecor.length, crew: crew.length, spendUsd: floor ? (floor.snapshot().spendUsd || 0) : 0, boxes: convey ? convey.boxCount() : 0, queueDepth: queueDepthNow(), bridge: { paused: bridgePaused, es: !!chanES, poll: !!connPollTimer, readyState: (chanES ? chanES.readyState : -1), lastEventMsAgo: (lastSseEventAt ? Math.round((typeof performance !== 'undefined' ? performance.now() : fnow) - lastSseEventAt) : null), linkDown: linkDown((typeof performance !== 'undefined') ? performance.now() : fnow) }, ttl: { runClocks: runStartByAgent.size, glyphs: glyphByAgent.size, serverLit: serverLit.size, runTtlMs: RUN_TTL_MS, awaitTtlMs: AWAIT_TTL_MS }, await: awaitPrompt ? { promptId: awaitPrompt.promptId, arrived: awaitArrived, source: awaitAnchor ? awaitAnchor.source : null, anchor: awaitAnchor ? { tx: awaitAnchor.tx, ty: awaitAnchor.ty } : null } : null, proposalsPinned: pinnedCount, social: socialBeat && { kind: socialBeat.kind, aId: socialBeat.aId, bId: socialBeat.bId }, chase: chaseId != null && { id: chaseId, phase: (bodyForAgent(chaseId) && bodyForAgent(chaseId).chase && bodyForAgent(chaseId).chase.phase) || null }, chaseGateIn: Math.round(Math.max(0, chaseGateUntil - fnow)), cursorFresh: (fnow - lastCursor.t) < CURSOR_FRESH_MS, cursorMoving: (fnow - cursorMoveT) < CURSOR_MOVING_MS },
