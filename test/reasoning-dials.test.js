@@ -16,7 +16,7 @@ const factory = require('../sidecar/providers/factory.js');
 const { makeOpenAICompatibleProvider, _internals: oc } = require('../sidecar/providers/openai-compatible.js');
 const Dock = require('../frontend/app/modeldock.js');
 
-const backend = fs.readFileSync(path.join(__dirname, '../sidecar/index.js'), 'utf8');
+const backend = fs.readFileSync(path.join(__dirname, '../sidecar/index.js'), 'utf8').replace(/\r\n/g, '\n');
 const pmStart = backend.indexOf('function publicModel(m)');
 const publicModel = vm.runInNewContext('(' + backend.slice(pmStart, backend.indexOf('\n}\n', pmStart) + 2) + ')');
 const I = Dock._internals;

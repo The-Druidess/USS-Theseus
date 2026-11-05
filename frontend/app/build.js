@@ -536,6 +536,7 @@ const Build = (() => {
   const grantLabelOf = c => ((typeof WorldModel !== 'undefined' && WorldModel.grantLabelForProp)
     ? (WorldModel.grantLabelForProp(c && c.id) || '') : '');
   const capOf = c => WorldModel.capForProp(c.id);
+  const capsOf = c => WorldModel.capabilitiesForProp ? WorldModel.capabilitiesForProp(c.id) : [capOf(c)];
   const sectionOf = c => EquipmentHelp.kind(c, capOf(c));
   const SECTION_NAMES = { decoration: 'FURNITURE', equipment: 'EQUIPMENT', abilities: 'ABILITIES' };
   const starterProps = () => PropSprites.STARTER.map(id => PropSprites.spec(id)).filter(Boolean);
@@ -547,11 +548,11 @@ const Build = (() => {
     selectTool('select');
   };
   function chooseAbility(cap, designs = false) {
-    const c = starterProps().find(p => capOf(p) === cap) || catalog().find(p => capOf(p) === cap);
+    const c = starterProps().find(p => capsOf(p).includes(cap)) || catalog().find(p => capsOf(p).includes(cap));
     if (!c) return;
     propSection = 'abilities'; propAbility = designs ? cap : ''; propCat = 'all'; propQuery = '';
     // Keep a selected alternate design when opening its family.
-    if (WorldModel.capForProp(propType) !== cap) propType = c.id;
+    if (!capsOf({id:propType}).includes(cap)) propType = c.id;
     hidePropCard(); renderPalette(); setHint(); sfx('click');
   }
   // one options bundle so the palette and the unit test match on IDENTICAL surfaces
@@ -566,7 +567,7 @@ const Build = (() => {
   function propsForGrid() {
     if (isSearching()) return pickable(PropSearch.matchProps(catalog(), propQuery, searchOpts()));
     if (propSection === 'abilities') return pickable(propAbility
-      ? catalog().filter(c => capOf(c) === propAbility) : starterProps());
+      ? catalog().filter(c => capsOf(c).includes(propAbility)) : starterProps());
     const list = pickable(catalog().filter(c => sectionOf(c) === propSection && (propCat === 'all' || c.cat === propCat)));
     if (propSection === 'decoration' && propCat === 'all') {
       const familiar = ['couch','industrial_roundtable','dinerchair','plant','rug','tv','bookshelf','coffee','bunk','easel'];
@@ -7794,7 +7795,7 @@ const Build = (() => {
     station: () => station || (opts && typeof opts.getStation === 'function' ? opts.getStation() : null),
     placeCapProp: (type) => {
       if (!running || !station) return { ok: false, reason: 'not-in-build' };
-      const t = type || 'workbench';   // a real cap-prop id (CAP_PROP_MAP): workbench→terminal, comms_dish→web
+      const t = !type || type === 'workbench' ? 'bench' : type;
       const s = propSpec(t);
       const tile = findPlaceableTile(t, s.w, s.h);
       if (!tile) return { ok: false, reason: 'no-valid-tile' };

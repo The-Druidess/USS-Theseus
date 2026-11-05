@@ -82,7 +82,7 @@ A.ok(/const w = at\('working'\);/.test(live) && /'Now: step ' \+ \(w\.i \+ 1\) \
 A.ok(/bayLive: id => \{ const w = lineWatch\(\);/.test(world) && /bayLive: id => \(opts\.world && opts\.world\.bayLive\) \? opts\.world\.bayLive\(id\) : null/.test(build), '…read from the floor\'s own bay lamps (LineWatch: WORKING only once the sidecar confirmed the run)');
 A.ok(/'Sending the job into the line…'/.test(live) && /'Handing the job on to the next step…'/.test(live), '…and between steps it says so — it never guesses a step');
 A.ok(/function markWorking\(id\)/.test(live) && /n\.classList\.toggle\('working', !!id && n\.dataset\.node === id\)/.test(live) && /markWorking\(null\); return;/.test(live), 'the diagram\'s tile of the working step wears the working lamp, cleared when the job is back');
-A.ok(/\.wf-node\.working \.dot \{ background: #ffb23e;/.test(css) && !/\.wf-node\.working \{[^}]*var\(--gold\)/.test(css), '…the floor lamp\'s working amber on the tile\'s own lamp — never the selection\'s gold');
+A.ok(/\.wf-node\.working \.dot \{ background: var\(--ph\);/.test(css) && !/\.wf-node\.working \{[^}]*var\(--gold\)/.test(css), '…the floor lamp uses the phosphor theme on its own lamp, never the selection\'s gold');
 /* ---------- nothing claims what an UNDO took back; the live lamp holds on every card ---------- */
 A.ok(/const fixInUse = x => \{ const p = prop\(x\.dockId\) \|\| \{\}; return \(x\.does == null \|\| \(p\.brief \|\| ''\) === x\.does\) && \(x\.hands == null \|\| \(p\.hands \|\| ''\) === x\.hands\); \};/.test(panel) && !/x\.applied/.test(panel),
   'a fix says IN USE only while the step says exactly what it suggested (an UNDO puts USE THIS back)');

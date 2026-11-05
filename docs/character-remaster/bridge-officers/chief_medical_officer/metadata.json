@@ -1,0 +1,146 @@
+{
+  "group_id": "72e132e9-86db-49bb-826d-be9a6702b839",
+  "states": [
+    {
+      "character": {
+        "id": "e8ca4dbc-96ef-4b3c-a679-1d23742d5496",
+        "name": "idle",
+        "prompt": "text",
+        "size": {
+          "width": 144,
+          "height": 144
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-28T16:46:28.104776+00:00"
+      },
+      "folder": "idle",
+      "frames": {
+        "rotations": {
+          "south": "idle/rotations/south.png",
+          "south-east": "idle/rotations/south-east.png",
+          "east": "idle/rotations/east.png",
+          "north-east": "idle/rotations/north-east.png",
+          "north": "idle/rotations/north.png",
+          "north-west": "idle/rotations/north-west.png",
+          "west": "idle/rotations/west.png",
+          "south-west": "idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Walk": {
+            "south": [
+              "idle/animations/Walk/south/frame_000.png",
+              "idle/animations/Walk/south/frame_001.png",
+              "idle/animations/Walk/south/frame_002.png",
+              "idle/animations/Walk/south/frame_003.png",
+              "idle/animations/Walk/south/frame_004.png",
+              "idle/animations/Walk/south/frame_005.png"
+            ],
+            "west": [
+              "idle/animations/Walk/west/frame_000.png",
+              "idle/animations/Walk/west/frame_001.png",
+              "idle/animations/Walk/west/frame_002.png",
+              "idle/animations/Walk/west/frame_003.png",
+              "idle/animations/Walk/west/frame_004.png",
+              "idle/animations/Walk/west/frame_005.png"
+            ],
+            "east": [
+              "idle/animations/Walk/east/frame_000.png",
+              "idle/animations/Walk/east/frame_001.png",
+              "idle/animations/Walk/east/frame_002.png",
+              "idle/animations/Walk/east/frame_003.png",
+              "idle/animations/Walk/east/frame_004.png",
+              "idle/animations/Walk/east/frame_005.png"
+            ],
+            "south-east": [
+              "idle/animations/Walk/south-east/frame_000.png",
+              "idle/animations/Walk/south-east/frame_001.png",
+              "idle/animations/Walk/south-east/frame_002.png",
+              "idle/animations/Walk/south-east/frame_003.png",
+              "idle/animations/Walk/south-east/frame_004.png",
+              "idle/animations/Walk/south-east/frame_005.png"
+            ],
+            "south-west": [
+              "idle/animations/Walk/south-west/frame_000.png",
+              "idle/animations/Walk/south-west/frame_001.png",
+              "idle/animations/Walk/south-west/frame_002.png",
+              "idle/animations/Walk/south-west/frame_003.png",
+              "idle/animations/Walk/south-west/frame_004.png",
+              "idle/animations/Walk/south-west/frame_005.png"
+            ],
+            "north-west": [
+              "idle/animations/Walk/north-west/frame_000.png",
+              "idle/animations/Walk/north-west/frame_001.png",
+              "idle/animations/Walk/north-west/frame_002.png",
+              "idle/animations/Walk/north-west/frame_003.png",
+              "idle/animations/Walk/north-west/frame_004.png",
+              "idle/animations/Walk/north-west/frame_005.png"
+            ],
+            "north-east": [
+              "idle/animations/Walk/north-east/frame_000.png",
+              "idle/animations/Walk/north-east/frame_001.png",
+              "idle/animations/Walk/north-east/frame_002.png",
+              "idle/animations/Walk/north-east/frame_003.png",
+              "idle/animations/Walk/north-east/frame_004.png",
+              "idle/animations/Walk/north-east/frame_005.png"
+            ],
+            "north": [
+              "idle/animations/Walk/north/frame_000.png",
+              "idle/animations/Walk/north/frame_001.png",
+              "idle/animations/Walk/north/frame_002.png",
+              "idle/animations/Walk/north/frame_003.png",
+              "idle/animations/Walk/north/frame_004.png",
+              "idle/animations/Walk/north/frame_005.png"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "character": {
+        "id": "d33ff919-b2be-4104-b298-bf4b1ac7c763",
+        "name": "Seated",
+        "prompt": "text",
+        "size": {
+          "width": 144,
+          "height": 144
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-28T21:37:32.571558+00:00"
+      },
+      "folder": "Seated",
+      "frames": {
+        "rotations": {
+          "south": "Seated/rotations/south.png",
+          "south-east": "Seated/rotations/south-east.png",
+          "east": "Seated/rotations/east.png",
+          "north-east": "Seated/rotations/north-east.png",
+          "north": "Seated/rotations/north.png",
+          "north-west": "Seated/rotations/north-west.png",
+          "west": "Seated/rotations/west.png",
+          "south-west": "Seated/rotations/south-west.png"
+        },
+        "animations": {
+          "Seated_typing": {
+            "south": [
+              "Seated/animations/Seated_typing/south/frame_000.png",
+              "Seated/animations/Seated_typing/south/frame_001.png",
+              "Seated/animations/Seated_typing/south/frame_002.png",
+              "Seated/animations/Seated_typing/south/frame_003.png",
+              "Seated/animations/Seated_typing/south/frame_004.png",
+              "Seated/animations/Seated_typing/south/frame_005.png",
+              "Seated/animations/Seated_typing/south/frame_006.png",
+              "Seated/animations/Seated_typing/south/frame_007.png",
+              "Seated/animations/Seated_typing/south/frame_008.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-11-02T05:10:57.828616"
+}

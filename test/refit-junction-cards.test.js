@@ -20,7 +20,7 @@ const path = require('path');
 const WM = require('../frontend/app/worldmodel.js');
 const P = require('../frontend/app/pipeline.js');
 
-const src = f => fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', f), 'utf8');
+const src = f => fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', f), 'utf8').replace(/\r\n/g, '\n');
 const build = src('build.js');
 const panelSrc = src('workflowpanel.js');   // the JOINER/LOOP/INBOX/STEP editing moved into the docked Workflow panel (2026-09-22)
 
@@ -168,7 +168,7 @@ A.ok(!/sample job dispatched — watch the line/.test(fin), 'the old fire-and-fo
 A.ok(/data-live="gets"/.test(panelSrc) && /data-live="to"/.test(panelSrc) && /function refreshLineFacts/.test(build) && /WorkflowPanel\.refresh\(\)/.test(build), 'the GETS/TO line facts are addressable and refresh off the recompiled plan');
 A.ok(/renderFinCard\(\);\n\s*refreshLineFacts\(\);/.test(build), 'line facts refresh after every plan recompile (click-connect lands on the open panel)');
 A.ok(/esc\(nameOf\(p\.agentId\)\) \+ ' needs an assigned workstation in this room/.test(panelSrc), 'the workstation requirement names the assigned agent and room');
-A.ok(/station\.addProp\(\{ t: 'desk', x, y, w: 2, h: 1, agentId: p\.agentId \}\)/.test(build) && /H\.requisitionPcFor\(S\.sel\)/.test(panelSrc), 'the one-click fix places a real desk in the room, bound to the agent (object=capability)');
+A.ok(/station\.addProp\(\{ t: 'console', x, y, w: 2, h: 1, agentId: p\.agentId \}\)/.test(build) && /H\.requisitionPcFor\(S\.sel\)/.test(panelSrc), 'the one-click fix places a real Console in the room, bound to the agent (object=capability)');
 A.ok(/esc\(String\(a\.name \|\| a\.id\)\.toUpperCase\(\)\)/.test(panelSrc) && /H\.flashTip\('bay → ' \+ nameOf\(b\.dataset\.aid\)/.test(panelSrc), 'assignment shows the display name, never the raw id');
 
 // FINISH card follows the focused line; coach bubbles stack

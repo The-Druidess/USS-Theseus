@@ -2,10 +2,10 @@
 'use strict';
 const PropCatalogData = {
   "version": 1,
-  "catalogTypes": 161,
-  "supportedViews": 209,
+  "catalogTypes": 166,
+  "supportedViews": 235,
   "source": "frontend/assets/industrial/projection-correction/manifest.json",
-  "sourceSha256": "33b4b3030043946fc04d26a5334ab239e14d2a90c489fbaf023e516ab65a6774",
+  "sourceSha256": "c6888e8a503770c3223436a48acdf2d21850672f23ec838026a4a32c079268e5",
   "categories": [
     {
       "id": "workstation",
@@ -50,6 +50,10 @@ const PropCatalogData = {
     {
       "id": "decor",
       "label": "DECOR"
+    },
+    {
+      "id": "yours",
+      "label": "MADE BY YOU"
     }
   ],
   "views": [
@@ -890,7 +894,36 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "console.png",
+      "image": "console-s-9f5f3f957919.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "laptop:s",
+      "id": "laptop",
+      "face": "s",
+      "r": 0,
+      "label": "LAPTOP",
+      "category": "workstation",
+      "tier": "functional",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 1,
+        "y": 1,
+        "width": 10,
+        "height": 11
+      },
+      "placement": "surface",
+      "requiredMount": "surface",
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "laptop-s-e68e4f7f650d.png",
       "surface": false,
       "animated": true
     },
@@ -948,7 +981,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "pixelrig.png",
+      "image": "pixelrig-s-e575a02eac65.png",
       "surface": false,
       "animated": true
     },
@@ -977,7 +1010,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "bench.png",
+      "image": "bench-s-7c665ada2175.png",
       "surface": false,
       "animated": true
     },
@@ -1267,7 +1300,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "bridge_dispatch_pylon.png",
+      "image": "plugin_terminal-s-4859253042c3.png",
       "surface": false,
       "animated": true
     },
@@ -1499,7 +1532,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "rack.png",
+      "image": "rack-s-e2e47b49dc94.png",
       "surface": false,
       "animated": true
     },
@@ -1707,6 +1740,93 @@ const PropCatalogData = {
       "animated": true
     },
     {
+      "key": "missionboard:w",
+      "id": "missionboard",
+      "face": "w",
+      "r": 1,
+      "label": "MISSION BOARD",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "missionboard-w.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "missionboard:n",
+      "id": "missionboard",
+      "face": "n",
+      "r": 2,
+      "label": "MISSION BOARD",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "missionboard-n.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "missionboard:e",
+      "id": "missionboard",
+      "face": "e",
+      "r": 3,
+      "label": "MISSION BOARD",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 3,
+        "h": 1
+      },
+      "bounds": {
+        "x": -1,
+        "y": -13,
+        "width": 38,
+        "height": 25
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "missionboard-e.png",
+      "surface": false,
+      "animated": true
+    },
+    {
       "key": "trophycase:s",
       "id": "trophycase",
       "face": "s",
@@ -1732,6 +1852,93 @@ const PropCatalogData = {
       "nativeMirror": false,
       "nativeTurn": false,
       "image": "trophycase.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "trophycase:w",
+      "id": "trophycase",
+      "face": "w",
+      "r": 1,
+      "label": "TROPHY CASE",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "trophycase-w.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "trophycase:n",
+      "id": "trophycase",
+      "face": "n",
+      "r": 2,
+      "label": "TROPHY CASE",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "trophycase-n.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "trophycase:e",
+      "id": "trophycase",
+      "face": "e",
+      "r": 3,
+      "label": "TROPHY CASE",
+      "category": "command",
+      "tier": "functional",
+      "footprint": {
+        "w": 2,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -6,
+        "width": 26,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "trophycase-e.png",
       "surface": false,
       "animated": true
     },
@@ -2253,7 +2460,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "bridge_dispatch_pylon.png",
+      "image": "plugin_terminal-s-4859253042c3.png",
       "surface": false,
       "animated": true
     },
@@ -2717,7 +2924,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "rackV.png",
+      "image": "rackV-s-547438d6c97b.png",
       "surface": false,
       "animated": true
     },
@@ -3384,7 +3591,94 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "jukebox.png",
+      "image": "jukebox-s-37720212de9f.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "jukebox:w",
+      "id": "jukebox",
+      "face": "w",
+      "r": 1,
+      "label": "JUKEBOX",
+      "category": "lounge",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "jukebox-w-6667183f8f9e.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "jukebox:n",
+      "id": "jukebox",
+      "face": "n",
+      "r": 2,
+      "label": "JUKEBOX",
+      "category": "lounge",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "jukebox-n-023705609109.png",
+      "surface": false,
+      "animated": true
+    },
+    {
+      "key": "jukebox:e",
+      "id": "jukebox",
+      "face": "e",
+      "r": 3,
+      "label": "JUKEBOX",
+      "category": "lounge",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -3,
+        "width": 18,
+        "height": 27
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "jukebox-e-ecedf70b21d7.png",
       "surface": false,
       "animated": true
     },
@@ -4201,6 +4495,122 @@ const PropCatalogData = {
       "animated": false
     },
     {
+      "key": "furniture_desk:s",
+      "id": "furniture_desk",
+      "face": "s",
+      "r": 0,
+      "label": "DESK",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": -1,
+        "y": -7,
+        "width": 26,
+        "height": 19
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "furniture_desk-s-0f98311fb7a8.png",
+      "surface": true,
+      "animated": false
+    },
+    {
+      "key": "furniture_desk:w",
+      "id": "furniture_desk",
+      "face": "w",
+      "r": 1,
+      "label": "DESK",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -5,
+        "width": 14,
+        "height": 29
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "furniture_desk-w-f661e14deda1.png",
+      "surface": true,
+      "animated": false
+    },
+    {
+      "key": "furniture_desk:n",
+      "id": "furniture_desk",
+      "face": "n",
+      "r": 2,
+      "label": "DESK",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": -1,
+        "y": -7,
+        "width": 26,
+        "height": 19
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "furniture_desk-n-f5ad07744c51.png",
+      "surface": true,
+      "animated": false
+    },
+    {
+      "key": "furniture_desk:e",
+      "id": "furniture_desk",
+      "face": "e",
+      "r": 3,
+      "label": "DESK",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 2
+      },
+      "bounds": {
+        "x": -1,
+        "y": -5,
+        "width": 14,
+        "height": 29
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "furniture_desk-e-07076a59f19a.png",
+      "surface": true,
+      "animated": false
+    },
+    {
       "key": "lowtable:s",
       "id": "lowtable",
       "face": "s",
@@ -4719,6 +5129,354 @@ const PropCatalogData = {
       "nativeMirror": false,
       "nativeTurn": false,
       "image": "podchair-e.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_cushion_chair:s",
+      "id": "red_cushion_chair",
+      "face": "s",
+      "r": 0,
+      "label": "RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_cushion_chair-s-91aaf8cf9bce.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_cushion_chair:w",
+      "id": "red_cushion_chair",
+      "face": "w",
+      "r": 1,
+      "label": "RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_cushion_chair-w-0a5c9343a88f.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_cushion_chair:n",
+      "id": "red_cushion_chair",
+      "face": "n",
+      "r": 2,
+      "label": "RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_cushion_chair-n-ec4097d6e053.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_cushion_chair:e",
+      "id": "red_cushion_chair",
+      "face": "e",
+      "r": 3,
+      "label": "RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_cushion_chair-e-a54a6586c2f7.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_captains_chair:s",
+      "id": "red_captains_chair",
+      "face": "s",
+      "r": 0,
+      "label": "RED CAPTAIN'S CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_captains_chair-s-3e9ffdc38c64.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_captains_chair:w",
+      "id": "red_captains_chair",
+      "face": "w",
+      "r": 1,
+      "label": "RED CAPTAIN'S CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_captains_chair-w-7733126a9ba3.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_captains_chair:n",
+      "id": "red_captains_chair",
+      "face": "n",
+      "r": 2,
+      "label": "RED CAPTAIN'S CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_captains_chair-n-5ed31d422977.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "red_captains_chair:e",
+      "id": "red_captains_chair",
+      "face": "e",
+      "r": 3,
+      "label": "RED CAPTAIN'S CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "red_captains_chair-e-9f59dc6081a8.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "simple_red_cushion_chair:s",
+      "id": "simple_red_cushion_chair",
+      "face": "s",
+      "r": 0,
+      "label": "SIMPLE RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "simple_red_cushion_chair-s-4def3258d076.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "simple_red_cushion_chair:w",
+      "id": "simple_red_cushion_chair",
+      "face": "w",
+      "r": 1,
+      "label": "SIMPLE RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "simple_red_cushion_chair-w-874a3d34c005.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "simple_red_cushion_chair:n",
+      "id": "simple_red_cushion_chair",
+      "face": "n",
+      "r": 2,
+      "label": "SIMPLE RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "simple_red_cushion_chair:e",
+      "id": "simple_red_cushion_chair",
+      "face": "e",
+      "r": 3,
+      "label": "SIMPLE RED CUSHION CHAIR",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -5,
+        "width": 12,
+        "height": 17
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "simple_red_cushion_chair-e-60c67969e536.png",
       "surface": false,
       "animated": false
     },

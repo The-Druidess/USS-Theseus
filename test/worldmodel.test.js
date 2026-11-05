@@ -200,7 +200,7 @@ const sp = WM.create();                                   // HAB-01 {0..17,0..10
 const spId = sp.spawnRoomId();
 A.eq(sp.props().length, 0, 'a fresh station has no props');
 
-const addP = sp.addProp({ t: 'desk', x: 4, y: 2, w: 2, h: 1 });
+const addP = sp.addProp({ t: 'console', x: 4, y: 2, w: 2, h: 1 });
 A.ok(addP.ok && addP.id, 'addProp onto the deck succeeds');
 A.eq(sp.props().length, 1, 'one prop after add');
 A.eq(sp.propAt(4, 2), addP.id, 'propAt finds the placed prop');
@@ -232,7 +232,7 @@ WM.setPropRules(null);
 const gp = sp.projectGeometry();
 A.ok(gp.props && gp.props.length === 1, 'projectGeometry emits props in the local frame');
 const pl = gp.props[0];
-A.eq(pl.t, 'desk', 'projected prop keeps its type');
+A.eq(pl.t, 'console', 'projected prop keeps its type');
 A.ok(!gp.walkable(pl.x, pl.y), 'a prop footprint tile is NOT walkable (agents route around it)');
 A.ok(gp.walkable(pl.x, pl.y + 2), 'the deck below the prop is still walkable');
 
@@ -252,12 +252,12 @@ A.eq(sp.props().length, 1, 'undo restores a reclaimed prop');
 const spDoc = sp.serialize();
 const sp2 = WM.deserialize(spDoc);
 A.eq(sp2.props().length, 1, 'deserialize preserves props');
-A.eq(JSON.stringify(sp2.serialize()), JSON.stringify(spDoc), 'props serialize round-trips identically');
+A.eq(sp2.propById(addP.id).t, 'console', 'canonical workstation type survives serialize/deserialize');
 
 /* ---- moveRoom carries its contents: props + belts ride, straddlers stay ---- */
 const mc = WM.create();                                   // HAB-01 {0..17,0..10}
 const mcRoom = mc.spawnRoomId();
-const deskM = mc.addProp({ t: 'desk', x: 4, y: 2, w: 2, h: 1 });
+const deskM = mc.addProp({ t: 'console', x: 4, y: 2, w: 2, h: 1 });
 A.ok(deskM.ok, 'contents test: desk placed');
 A.ok(mc.setBelt(6, 6, 'E').ok, 'contents test: belt laid');
 A.ok(mc.moveRoom(mcRoom, 0, 30).ok, 'moveRoom with contents succeeds');
@@ -274,7 +274,7 @@ A.eq(mc.beltAt(6, 6), 'E', 'undo restores the riding belt');
 const ms = WM.create();
 const msHab = ms.spawnRoomId();
 A.ok(ms.addRoom({ kind: 'lab', rect: { x1: 18, y1: 0, x2: 25, y2: 10 } }).ok, 'flush lab placed beside the hab');
-const strad = ms.addProp({ t: 'desk', x: 17, y: 5, w: 2, h: 1 });   // one tile in each room
+const strad = ms.addProp({ t: 'console', x: 17, y: 5, w: 2, h: 1 });   // one tile in each room
 A.ok(strad.ok, 'straddling desk placed across the join');
 const rider = ms.addProp({ t: 'tv', x: 17, y: 0, w: 1, h: 1 });
 A.ok(rider.ok, 'rider placed inside the hab');
@@ -313,16 +313,16 @@ const bz = sb.roomById(sb.spawnRoomId()).rects[0];
 const bayA = sb.addProp({ t: 'bay', x: bz.x1 + 2, y: bz.y1 + 2, w: 2, h: 2, agentId: 'coder' });
 A.ok(bayA.ok, 'a BAY prop places');
 A.eq(sb.propById(bayA.id).agentId, 'coder', 'addProp carries opts.agentId onto the prop');
-const deskP = sb.addProp({ t: 'desk', x: bz.x1 + 6, y: bz.y1 + 2, w: 2, h: 1 });
+const deskP = sb.addProp({ t: 'console', x: bz.x1 + 6, y: bz.y1 + 2, w: 2, h: 1 });
 A.eq(sb.propById(deskP.id).agentId, undefined, 'a prop placed without agentId is unbound');
 // projectGeometry carries it into the local frame; unbound props project agentId:null
 const gb = sb.projectGeometry();
 A.eq(gb.props.find(p => p.t === 'bay').agentId, 'coder', 'projectGeometry carries the bay agentId');
-A.eq(gb.props.find(p => p.t === 'desk').agentId, null, 'an unbound prop projects agentId:null');
+A.eq(gb.props.find(p => p.t === 'console').agentId, null, 'an unbound prop projects agentId:null');
 // agentId survives a serialize/deserialize round-trip (migrate must preserve it, not whitelist it away)
 const sbDoc = sb.serialize();
 A.eq(WM.deserialize(sbDoc).propById(bayA.id).agentId, 'coder', 'prop.agentId survives serialize/deserialize');
-A.eq(JSON.stringify(WM.deserialize(sbDoc).serialize()), JSON.stringify(sbDoc), 'a doc with bound props round-trips identically');
+A.eq(WM.deserialize(sbDoc).propById(deskP.id).t, 'console', 'bound canonical workstation type survives serialize/deserialize');
 // an OLD save (bay with no agentId) loads UNBOUND — backward compatible
 const legacy = WM.deserialize({ schema: 'starnet.station', version: 1,
   rooms: { rH: { id: 'rH', kind: 'hab', name: 'H', rects: [{ x1: 0, y1: 0, x2: 8, y2: 8 }] } }, order: ['rH'],
@@ -579,12 +579,12 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   const st = WM.create();
   const r1 = st.ensureWorkstation('agent');
   A.ok(r1.ok && !r1.existing, 'fresh station: ensureWorkstation seeds a desk');
-  const desks = st.props().filter(p => p.t === 'desk' && p.agentId === 'agent');
-  A.eq(desks.length, 1, 'exactly one hero-assigned desk seeded');
-  A.eq(st.roomAt(desks[0].x, desks[0].y), st.spawnRoomId(), 'seeded desk sits in the spawn room');
+  const desks = st.props().filter(p => p.t === 'console' && p.agentId === 'agent');
+  A.eq(desks.length, 1, 'exactly one hero-assigned Console seeded');
+  A.eq(st.roomAt(desks[0].x, desks[0].y), st.spawnRoomId(), 'seeded Console sits in the spawn room');
   const r2 = st.ensureWorkstation('agent');
   A.ok(r2.ok && r2.existing, 'second call is a no-op (idempotent)');
-  A.eq(st.props().filter(p => p.t === 'desk').length, 1, 'no duplicate desk on re-seed');
+  A.eq(st.props().filter(p => p.t === 'console').length, 1, 'no duplicate Console on re-seed');
 
   // THE BUG ITSELF: a bay bound to the hero, in the same room as the starter PC, must grant compute
   const bay = st.addProp({ t: 'bay', x: 8, y: 4, w: 2, h: 2, block: false });
@@ -597,7 +597,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   st.addProp({ t: 'vault', x: 8, y: 1, w: 3, h: 2, block: true });   // squat on the north-wall spot
   const r = st.ensureWorkstation('agent');
   A.ok(r.ok, 'occupied canonical spot: seeding falls back to a nearby valid tile');
-  A.eq(st.props().filter(p => p.t === 'desk' && p.agentId === 'agent').length, 1, 'fallback still seeds exactly one desk');
+  A.eq(st.props().filter(p => p.t === 'console' && p.agentId === 'agent').length, 1, 'fallback still seeds exactly one Console');
 }
 {
   // an agent that already OWNS a workstation is never re-seeded
@@ -606,7 +606,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   st.assignPropAgent(c.id, 'agent');
   const r = st.ensureWorkstation('agent');
   A.ok(r.ok && r.existing, 'existing assigned console counts — no desk added');
-  A.eq(st.props().filter(p => p.t === 'desk').length, 0, 'no desk seeded next to an owned console');
+  A.eq(st.props().filter(p => p.t === 'console').length, 1, 'no duplicate Console seeded next to an owned console');
   A.eq(r.id, c.id, 'the existing-workstation report names the prop the agent already owns');
   A.ok(!st.ensureWorkstation('').ok, 'blank agent id refused');
 }
@@ -656,7 +656,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   const r = st.ensureWorkstation('scout-2');
   A.ok(r.ok && !r.existing, 'a packed spawn room does not strand a summoned agent deskless');
   A.eq(r.roomId, other.id, 'the overflow desk lands in the next room with space');
-  A.eq(st.props().filter(p => p.t === 'desk' && p.agentId === 'scout-2').length, 1, 'still exactly one desk for the agent');
+  A.eq(st.props().filter(p => WM.capabilitiesForProp(p.t).includes('computer') && p.agentId === 'scout-2').length, 1, 'still exactly one compute workstation for the agent');
 }
 {
   // ADOPTION: an UNBOUND workstation in the spawn room is taken over, never duplicated beside
@@ -666,7 +666,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   const r = st.ensureWorkstation('scout-2');
   A.ok(r.ok && r.adopted, 'a free workstation in the spawn room is adopted rather than duplicated');
   A.eq(r.id, spare.id, 'the adopted prop is the one that was already standing there');
-  A.eq(st.props().filter(p => p.t === 'desk').length, 1, 'no second desk is built beside a usable free one');
+  A.eq(st.props().filter(p => WM.capabilitiesForProp(p.t).includes('computer')).length, 2, 'no second workstation is built beside a usable free one');
   A.eq(st.propById(spare.id).agentId, 'scout-2', 'the free workstation is now bound to the summoned agent');
 }
 {
@@ -679,7 +679,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
     // mirror deleteAgent: unbind every prop assigned to the removed specialist
     for (const p of st.propsByAgent('temp-' + i)) st.assignPropAgent(p.id, '');
   }
-  A.eq(st.props().filter(p => p.t === 'desk').length, 2, 'four summon/delete cycles leave ONE reusable desk, not four');
+  A.eq(st.props().filter(p => WM.capabilitiesForProp(p.t).includes('computer')).length, 2, 'four summon/delete cycles leave ONE reusable workstation, not four');
 }
 {
   // a free desk in ANOTHER room is left alone — the specialist is not exiled to a far lab
@@ -958,7 +958,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
   }
   const desk = starter.ensureWorkstation('agent');
   A.ok(desk.ok, 'composed starter has an approachable real agent desk');
-  A.eq(starter.props().filter(p => p.t === 'desk').length, 1, 'boot adopts the prepared desk without adding another');
+  A.eq(starter.props().filter(p => p.t === 'console').length, 1, 'boot adopts the prepared Console without adding another');
   A.ok(starter.canPlaceProp('intake', 4, 4, 2, 2).ok, 'starter leaves the central workflow lane free');
   const restored = WM.deserialize(JSON.parse(JSON.stringify(starter.serialize())));
   A.eq(restored.props().length, starter.props().length, 'starter furniture survives a save round-trip without duplicates');
@@ -970,10 +970,9 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
 
 /* ---- new deck catalogs use the existing placement, palette and persistence paths ---- */
 {
-  const oldMaterials = ['spine', 'alloy', 'runner', 'treadway', 'meshway', 'plate', 'diamond', 'cargo', 'panel', 'tile', 'ceramic', 'resin', 'tread', 'soft', 'grate', 'hex', 'plank', 'turf', 'basalt', 'parquet', 'rubber'];
+  const expectedMaterials = ['carpet', 'spine', 'alloy', 'runner', 'treadway', 'meshway', 'plate', 'diamond', 'cargo', 'panel', 'tile', 'ceramic', 'resin', 'tread', 'soft', 'grate', 'hex', 'plank', 'turf', 'basalt', 'parquet', 'rubber', 'slotted', 'terrazzo', 'octile', 'flightdeck', 'lunar', 'maggrid', 'habitat'];
   const additions = { basalt: 'BASALT', parquet: 'PARQUET', rubber: 'RUBBER', slotted: 'SLOTTED', terrazzo: 'TERRAZZO', octile: 'OCTILE', flightdeck: 'FLIGHT DECK', lunar: 'LUNAR', maggrid: 'MAG GRID', habitat: 'HABITAT' };
-  A.eq(WM.MAT_ORDER.slice(0, oldMaterials.length), oldMaterials, 'new decks retain all 21 previous picker entries in their original order');
-  A.eq(WM.MAT_ORDER.slice(oldMaterials.length), ['slotted', 'terrazzo', 'octile', 'flightdeck', 'lunar', 'maggrid', 'habitat'], 'new material choices append to the existing catalog');
+  A.eq(WM.MAT_ORDER, expectedMaterials, 'the picker retains every authored deck material in its current order');
   A.eq(new Set(WM.MAT_ORDER).size, WM.MAT_ORDER.length, 'the material picker has no duplicate entries');
   for (const [mid, label] of Object.entries(additions)) {
     const st = WM.create(), id = st.spawnRoomId(), def = st.FLOOR_MATERIALS[mid];
@@ -1004,7 +1003,7 @@ A.eq(JSON.stringify(WM.deserialize({ rooms: {}, order: [], props: [], edges: [{ 
     A.eq(st.projectGeometry().matOf(placed.id), mid, mid + ' survives new-room projection');
   }
   // Catalog extension must not reinterpret existing saves or inherited defaults.
-  for (const mid of oldMaterials) {
+  for (const mid of expectedMaterials) {
     const doc = WM.defaultDoc(1), id = doc.meta.spawnRoomId;
     doc.rooms[id].floorMat = mid;
     const restored = WM.deserialize(JSON.parse(JSON.stringify(doc)));

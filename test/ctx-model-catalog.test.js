@@ -22,7 +22,7 @@ const path = require('path');
 const vm = require('vm');
 
 const SRC = path.join(__dirname, '..', 'frontend', 'app', 'harness.js');
-const source = fs.readFileSync(SRC, 'utf8');
+const source = fs.readFileSync(SRC, 'utf8').replace(/\r\n/g, '\n');
 
 /* ---------- slice the real bodies out of harness.js ---------- */
 

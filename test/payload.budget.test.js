@@ -84,7 +84,7 @@ const BUDGET = {
   env.STARNET_BUILD_DESCRIBE = 'v0.12.5-1587-gac98203c2-dirty';
   const fixture = SidecarFixture.create({ prefix: 'starnet-payload-budget-', timeoutMs: 20000, env });
   const starter = [];
-  for (const p of WM.starterDoc().props) { const c = WM.capForProp(p.t); if (c && c !== 'computer' && c !== 'connector' && starter.indexOf(c) < 0) starter.push(c); }
+  for (const p of WM.starterDoc().props) for (const c of WM.capabilitiesForProp(p.t)) { if (c !== 'computer' && c !== 'connector' && starter.indexOf(c) < 0) starter.push(c); }
   async function measure(isTask) {
     bodies.length = 0;
     const r = await fixture.request('/api/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({

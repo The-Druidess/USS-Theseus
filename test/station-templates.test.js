@@ -7,7 +7,7 @@ require('node:vm').runInNewContext(require('node:fs').readFileSync(require.resol
 const T=require('../frontend/app/stationtemplates.js');
 const approved=require('./fixtures/station-default-approved.json');
 const retired=new Set(['desk','desk2','consoleL']);
-const approvedProps=approved.props.map(prop=>retired.has(prop.t)?{...prop,t:'console'}:prop);
+const approvedProps=approved.props.map(prop=>prop.t==='workbench'?{...prop,t:'bench',x:3,y:2,w:4,h:1}:retired.has(prop.t)?{...prop,t:'console'}:prop);
 for(const kit of T.kits())assert(kit.props.every(([type])=>!retired.has(type)),kit.id+': room kit uses current equipment');
 assert.equal(T.catalog.length,7); // five work presets (each with a ready line) and two look-only presets
 assert.deepEqual(T.catalog.filter(c=>c.group==='work').map(c=>c.purpose).sort(),['code','general','ops','research','write'],'one work preset per onboarding purpose');

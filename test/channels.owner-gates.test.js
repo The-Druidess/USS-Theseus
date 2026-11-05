@@ -181,7 +181,7 @@ const msg = (userId, text, chatType, chatId) => ({ channel: 'telegram', chatId: 
   }
   {
     // production seam guard: runOnceCore reads Full Power ONLY through the withheld-aware helpers
-    const idx = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8');
+    const idx = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8').replace(/\r\n/g, '\n');
     A.ok(/const hostPowerWithheld = hostPowerWithheldFor\(o\);/.test(idx), 'runOnceCore computes the run-origin verdict');
     A.ok(/const agentFullAccessNow = \(\) => !hostPowerWithheld && /.test(idx), 'per-agent Full Access is withheld from non-owner channel runs');
     A.ok(/const stationBypassNow = \(\) => !hostPowerWithheld && \(FULL_ACCESS \|\| masterBypassOn\(\)\);/.test(idx), 'the station master bypass is withheld too');

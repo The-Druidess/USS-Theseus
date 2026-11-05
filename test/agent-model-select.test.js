@@ -7,6 +7,7 @@
      · plumbing: ModelDock exposes a pure catalog(); World.relabel follows a rename; the picker script loads */
 'use strict';
 const A = require('./_assert.js');
+const QTerminalStore = require('../frontend/app/qterminal.js');
 const fs = require('fs'); const path = require('path');
 const app = (f) => fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', f), 'utf8');
 const appjs = app('app.js'), ui = app('stationui.js'), mkt = app('marketplace.js'), dock = app('modeldock.js'), world = app('world.js'), chat = app('chat.js');
@@ -121,7 +122,7 @@ A.ok(/selectAgent:\s*selectAgent/.test(appjs), 'selectAgent is exposed on the Ap
 // still switch/mint below. Windows widened 900→2000 / 1100→2200 for the guard block that lands first.
 A.ok(/function selectAgent[\s\S]{0,1000}!\(cur\.history\s*&&\s*cur\.history\.length\)[\s\S]{0,220}Workstreams\.setAgent\(cur\.id,\s*id\)/.test(appjs), 'selectAgent rebinds a brand-new EMPTY session in place (empty-history guard + setAgent)');
 A.ok(/function selectAgent[\s\S]{0,2000}Workstreams\.create\(a\.name,\s*\{\s*agentId:\s*id/.test(appjs), 'selectAgent MINTS a stream bound to the agent when it has none (never rebinds a convo with content)');
-A.ok(/function selectAgent[\s\S]{0,2200}switchWorkstream\(ws\.id\)/.test(appjs), 'selectAgent switches to the agent\'s own workstream when the current one has content');
+A.ok(/function selectAgent[\s\S]{0,4000}switchWorkstream\(ws\.id\)/.test(appjs), 'selectAgent switches to the agent\'s own workstream when the current one has content');
 // the header model readout stays truthful when the model changes via the footer dock or the dossier pin.
 A.ok(/refreshIdBar:\s*renderIdBar/.test(chat), 'chat.js exposes refreshIdBar so other surfaces can re-sync the header model');
 A.ok(/function applyQuickModel[\s\S]{0,2200}Chat\.refreshIdBar\(\)/.test(appjs), 'the footer dock model change re-syncs the COMMS header readout');
@@ -166,13 +167,14 @@ for (const file of ['frontend/app/stationui.js', 'website/app/app/stationui.js']
 }
 for (const file of ['frontend/app/app.js', 'website/app/app/app.js']) {
   const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+  const treasurer = source.match(/function isTreasurerAgent\(a\) \{[\s\S]*?\n  \}/)[0];
   const restore = source.match(/function rehydrateRoster\(savedAgents\) \{[\s\S]*?\n  \}/)[0];
   const agents = new Map();
-  new Function('agents', 'agent', 'DATA', 'executionProfileOf', 'agentDocs', 'composeSystemPrompt', 'registerAgent', restore + '; rehydrateRoster(' + JSON.stringify([
+  new Function('agents', 'agent', 'DATA', 'executionProfileOf', 'agentDocs', 'composeSystemPrompt', 'registerAgent', 'QTerminalStore', treasurer + '\n' + restore + '; rehydrateRoster(' + JSON.stringify([
     { id: 'inherited', model: null, provider: null, reasoningEffort: null },
     { id: 'legacy', model: '' },
     { id: 'pinned', model: 'fixture/byok', provider: 'openrouter', reasoningEffort: 'low' }
-  ]) + ');')(agents, { model: 'fixture/managed', provider: 'starnet', reasoningEffort: 'high' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {});
+  ]) + ');')(agents, { model: 'fixture/managed', provider: 'starnet', reasoningEffort: 'high' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {}, QTerminalStore);
   for (const id of ['inherited', 'legacy']) {
     A.eq(agents.get(id).model, null, file + ': ' + id + ' stays unpinned after reload');
     A.eq(agents.get(id).provider, null, file + ': ' + id + ' does not acquire the managed provider on reload');

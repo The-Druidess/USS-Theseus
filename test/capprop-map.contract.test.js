@@ -24,7 +24,7 @@ const MAP = WM.CAP_PROP_MAP;
 // intent: adding a genuinely-new cap prop means adding it here too (that's the point — new grants get a lock).
 const EXPECTED = {
   // a workstation = compute
-  console: 'computer', consoleL: 'computer', desk: 'computer', desk2: 'computer', pixelrig: 'computer', bench: 'computer',
+  console: 'computer', laptop: 'computer', consoleL: 'computer', desk: 'computer', desk2: 'computer', pixelrig: 'computer', bench: 'computer',
   // a locked cabinet = files
   war_intelcab: 'cabinet', safe: 'cabinet', vault: 'cabinet', rack: 'cabinet', shelf: 'cabinet',
   // a comms dish = web
@@ -44,6 +44,7 @@ const EXPECTED = {
 const mapIds = Object.keys(MAP).sort();
 const expIds = Object.keys(EXPECTED).sort();
 A.eq(mapIds, expIds, 'CAP_PROP_MAP enumerates exactly the documented cap-prop ids (a new/removed grant must update this lock)');
+A.eq(WM.capabilitiesForProp('bench'), ['computer','workbench'], 'Bench also supplies the existing Terminal capability');
 
 // (1) every shipped CAP_PROP_MAP entry resolves to a REGISTERED CAP_REGISTRY objectType (no dangling capability).
 for (const propId of mapIds) {

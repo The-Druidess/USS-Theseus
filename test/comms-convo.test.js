@@ -9,7 +9,7 @@ const A = require('./_assert.js');
 const fs = require('fs');
 const path = require('path');
 
-const src = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8').replace(/\r\n/g, '\n');
 const css = fs.readFileSync(path.join(__dirname, '../frontend/css/comms-convo.css'), 'utf8');
 const html = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
 

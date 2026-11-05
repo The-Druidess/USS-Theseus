@@ -7,7 +7,7 @@ const sharp = require('sharp');
 const QTerminalStore = require('../frontend/app/qterminal.js');
 
 const root = path.join(__dirname, '..');
-const source = path.join(root, 'frontend', 'assets', 'sprites', 'theseus_quark_candidate');
+const source = path.join(root, 'docs', 'character-remaster', 'quark-source');
 const runtime = path.join(root, 'frontend', 'assets', 'sprites', 'theseus_quark_review');
 const directions = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
 const cardinal = ['south', 'east', 'north', 'west'];

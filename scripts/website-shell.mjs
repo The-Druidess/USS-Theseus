@@ -212,8 +212,9 @@ const index = [];
 let changed = 0;
 for (const page of pages) {
   const file = join(ROOT, page);
-  let html = readFileSync(file, 'utf8');
-  const before = html;
+  const raw = readFileSync(file, 'utf8');
+  let html = raw.replace(/\r+\n/g, '\n');
+  const before = raw;
   const isDoc = FLAT.some(x => x.url === page);
   const isTop = TOP_PAGES.includes(page);
   if (!isDoc && !isTop) { console.warn(`skip (not in manifest): ${page}`); continue; }

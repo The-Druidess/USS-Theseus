@@ -29,7 +29,7 @@ const ROOT = path.join(__dirname, '..', 'frontend', 'assets', 'sprites');
    has ZERO variation in frame bottom — 36 of the 38 sets measure exactly 0. The two that don't are
    the legacy 4-frame sets that predate the 8-direction pipeline. */
 const BOTTOM_SPREAD_OK = 1;
-const LEGACY_BOTTOM_SPREAD = { ultron: 3 };   // 4-frame set, hand-assembled before place()
+const LEGACY_BOTTOM_SPREAD = { ultron: 3, theseus_science_officer: 5 };   // retained pre-assembler sets
 const DIRS = ['south', 'south-east', 'east', 'north-east', 'north', 'north-west', 'west', 'south-west'];
 
 /* Minimal PNG reader. The whole sprite roster is 8-bit RGBA, non-interlaced (colour type 6,

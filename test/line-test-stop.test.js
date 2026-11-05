@@ -15,7 +15,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { killAll } = require('../sidecar/halt.js');
-const read = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
+const read = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8').replace(/\r\n/g, '\n');
 const sidecar = read('sidecar/index.js'), build = read('frontend/app/build.js'), panel = read('frontend/app/workflowpanel.js'), station = read('frontend/app/stationui.js');
 // a function's source, from its head to the closing brace at the head's own indent (top-level or inside an IIFE)
 function fnBody(src, head) {

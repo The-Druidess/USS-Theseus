@@ -183,7 +183,7 @@
       license: String(meta.license || '').trim(),
       version: String(meta.version || '').trim(),
       default: meta.default === true,                 // ships ENABLED out of the box (kept to a few lean, broadly-usable recipes)
-      body: String(body || '').trim()
+      body: String(body || '').replace(/\r\n/g, '\n').trim()
     };
   }
   function parse(text, fallbackSlug) { const fm = parseFrontmatter(text); return normalize(fm.meta, fm.body, fallbackSlug); }

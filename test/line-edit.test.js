@@ -22,7 +22,12 @@ const P = require('../frontend/app/pipeline.js');
 const WM = require('../frontend/app/worldmodel.js');
 const LE = require('../frontend/app/lineedit.js');
 
-const fresh = () => WM.create(WM.starterDoc());
+const fresh = () => {
+  const station = WM.create(WM.starterDoc());
+  const bench = station.props().find(prop => prop.t === 'bench');
+  if (bench) station.removeProp(bench.id);
+  return station;
+};
 const snapOf = st => JSON.stringify(st.toJSON ? st.toJSON() : { props: st.props(), belts: st.belts(), links: st.links() });
 const byRole = (st, role) => st.props().filter(p => p.t === 'bay' && p.role === role).map(p => p.id);
 const one = (st, t) => st.props().filter(p => p.t === t).map(p => p.id);

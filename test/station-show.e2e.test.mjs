@@ -56,7 +56,7 @@ function startMock() {
       let p = {}; try { p = JSON.parse(body); } catch (_) {}
       const msgs = p.messages || [];
       let lastUser = -1; for (let k = msgs.length - 1; k >= 0; k--) if (msgs[k] && msgs[k].role === 'user') { lastUser = k; break; }
-      const mine = lastUser >= 0 && JSON.stringify(msgs[lastUser].content || '').indexOf(mock.phase) >= 0 && (p.tools || []).length > 0;
+      const mine = lastUser >= 0 && JSON.stringify(msgs[lastUser].content || '').indexOf(mock.phase) >= 0 && (p.tools || []).some(tool => tool.function && /^(tool_search|station_show)$/.test(tool.function.name));
       const answered = msgs.slice(lastUser + 1).filter(m => m && m.role === 'tool');
       mock.seen.push({ user: lastUser >= 0 ? JSON.stringify(msgs[lastUser].content || '').slice(0, 90) : null, tools: (p.tools || []).length, answered: answered.length });
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' });
@@ -142,11 +142,12 @@ try {
   check('screen: the last place shown (the Recruitment Bay) is on top', !!bay && /RECRUITMENT BAY/.test(bay.title), JSON.stringify(bay));
 
   // a buried window is RAISED when shown again — the Commander sees it, not a window behind another
-  mock.results = []; mock.phase = MARK + '-AGAIN';
-  mock.script = [{ name: 'station_show', args: { place: 'deliverables' } }];
   for (let i = 0; i < 360 && await evalJS(cdp, 'Chat.isBusy && Chat.isBusy()'); i++) await sleep(500);   // the first ask's run has ended
+  mock.results = []; mock.phase = MARK + '-AGAIN';
+  mock.script = [{ name: 'tool_search', args: { query: 'open a window to show the Commander' } }, { name: 'station_show', args: { place: 'deliverables' } }];
   await evalJS(cdp, `(() => { const t = document.getElementById('chat-input'); t.value = ${JSON.stringify(MARK + '-AGAIN show me my deliverables again')}; t.dispatchEvent(new Event('input', { bubbles: true })); document.getElementById('chat-send').click(); return true; })()`);
-  for (let i = 0; i < 360 && mock.results.length < 1; i++) await sleep(500);
+  for (let i = 0; i < 360 && mock.results.length < mock.script.length; i++) await sleep(500);
+  check('the second ask reopens DELIVERABLES', /^OPEN on the Commander's screen: MY WORK › DELIVERABLES/.test(mock.results[1] || ''), (mock.results[1] || '').slice(0, 200));
   const top = ((await evalJS(cdp, SCREEN)) || []).sort((a, b) => b.z - a.z)[0];
   check('a buried DELIVERABLES is raised to the top', !!top && isDlv(top), JSON.stringify(top));
   const count = ((await evalJS(cdp, SCREEN)) || []).filter(w => /^MY WORK/.test(w.title)).length;

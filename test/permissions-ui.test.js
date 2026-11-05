@@ -111,7 +111,7 @@ ok(/OVERRIDDEN BY WHOLE-STATION FULL POWER/.test(src) && /The whole-station Full
   'an overridden row says so in plain words instead of contradicting the glance');
 ok(/Turn that switch off and it goes back to stopping for your yes/.test(src),
   'the stored setting stays visible as what it returns to (never hidden)');
-ok(/paintBypass\(snap\);[\s\S]{0,220}paintCrew\(\);/.test(src),
+ok(/paintBypass\(snap\);[\s\S]{0,500}paintCrew\(\);/.test(src),
   'flipping the master switch repaints every crew row, not just the card');
 // the advanced Docker housekeeping is no longer the first thing under the crew header
 ok(/id="perm-bypass" class="perm-master"/.test(src), 'the master switch is a CARD, not a key-list row');

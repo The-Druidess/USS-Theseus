@@ -74,7 +74,7 @@ function boot(opts) {
     document: { addEventListener: () => {} },
     fetch: async (url, init) => { acks.push(JSON.parse(init.body)); return { ok: true }; },
     Workstreams: { activeId: () => opts.active || 'ws1' },
-    Channels: { isBusy: id => id === 'ws1' && !opts.idle, runIdOf: id => id === 'ws1' ? 'run1' : null },
+    Channels: { isBusy: id => id === 'ws1' && !opts.idle, runIdOf: opts.runIdOf || (id => id === 'ws1' ? 'run1' : null) },
     App: { agents: () => crew, openSummonBay: () => { calls.push('summon'); setTimeout(() => open.add('marketplace'), 250); }, openRecipes: () => { calls.push('recipes'); open.add('marketplace'); } },
     Marketplace: { currentTab: () => opts.tab || null },
     Build: { open: () => { calls.push('build'); open.add('build'); }, isOpen: () => open.has('build') },
@@ -99,6 +99,24 @@ function boot(opts) {
   let env = boot(), r = await env.run({ place: 'deliverables' });
   ok(/^OPEN on the Commander's screen: MY WORK › DELIVERABLES/.test(r.content), 'a window opens and the answer names it in UI words');
   eq(env.calls, [['term', 'deliverables', undefined]], 'through showTerm, once');
+
+  let confirmations = 0;
+  env = boot({ runIdOf: () => ++confirmations < 3 ? null : 'run1' });
+  r = await env.run({ place: 'deliverables' });
+  ok(/^OPEN on the Commander's screen:/.test(r.content), 'a foreground command waits for delayed run-start confirmation');
+
+  for (const [why, change] of [
+    ['focus changed', options => { options.active = 'ws2'; }],
+    ['run ended', options => { options.idle = true; }],
+    ['replacement run confirmed', options => { options.runIdOf = () => 'replacement'; }]
+  ]) {
+    let pending = true;
+    const options = { runIdOf: () => { if (!pending) return 'replacement'; pending = false; change(options); return null; } };
+    env = boot(options); r = await env.run({ place: 'settings' });
+    ok(/^REFUSED: the Commander is not looking at this conversation/.test(r.content) && !env.calls.length, 'delayed confirmation refuses when ' + why);
+  }
+  env = boot({ runIdOf: () => null }); r = await env.run({ place: 'settings' });
+  ok(/^REFUSED:/.test(r.content) && !env.calls.length, 'an unconfirmed run times out without opening anything');
 
   env = boot(); r = await env.run({ place: 'settings-spending' });
   eq(env.calls, [['term', 'settings', 'budget']], 'a settings section lands on its console section');

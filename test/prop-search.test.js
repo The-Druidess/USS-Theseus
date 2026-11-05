@@ -69,7 +69,7 @@ A.eq(ids('decor').length, cosmetic.length, '"DECOR" returns the whole cosmetic t
 
 /* ---- the GRANT badge printed on a tile is typeable ---- */
 A.ok(ids('compute').indexOf('desk') >= 0, 'the COMPUTE badge finds the props that grant it');
-A.ok(ids('compute').every(id => WorldModel.grantLabelForProp(id) === 'COMPUTE'),
+A.ok(ids('compute').every(id => WorldModel.capabilitiesForProp(id).includes('computer')),
   '"compute" returns ONLY props that actually grant COMPUTE');
 // a two-word grant still works, because tokens are ANDed across the same haystack
 A.ok(ids('live tools').length > 0, 'a two-word grant ("LIVE TOOLS") is searchable');

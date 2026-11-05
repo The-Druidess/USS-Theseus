@@ -29,7 +29,7 @@ const seatOf = (st, aid) => { const p = st.props().find(q => q.agentId === aid &
   A.eq(visible.filter(item => item.cat === 'workstation' && item.seat).map(item => item.id),
     ['console', 'laptop', 'pixelrig', 'bench'], 'picker offers active workstation designs including Laptop');
   const starter = M.starterDoc();
-  A.eq(starter.props.filter(prop => M.capForProp(prop.t) === 'computer').map(prop => prop.t), ['console'], 'fresh stations start with Console');
+  A.eq(starter.props.filter(prop => M.capForProp(prop.t) === 'computer').map(prop => prop.t), ['console','bench'], 'fresh stations start with Console and a combined Bench');
   const fresh = M.create(M.defaultDoc());
   const seeded = fresh.ensureWorkstation('agent');
   A.ok(seeded.ok && fresh.propById(seeded.id).t === 'console', 'new agents receive Console instead of a retired Desk');

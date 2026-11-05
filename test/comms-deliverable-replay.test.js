@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const A = require('./_assert.js');
 
-const src = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8').replace(/\r\n/g, '\n');
 
 // ---- the record every replay depends on: Workstreams files {title, kind, runId, t} on the stream ----
 {

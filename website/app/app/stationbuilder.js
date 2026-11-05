@@ -910,7 +910,7 @@
     'arcade machine': 'arcade', 'arcade cabinet': 'arcade', 'arcade game': 'arcade', 'pinball machine': 'pinball', 'coffee machine': 'coffee', espresso: 'coffee', carpet: 'rug', 'big rug': 'rug_large', 'large rug': 'rug_large', 'small rug': 'rug_small',
     speakers: 'speaker', 'dj booth': 'djbooth', dj: 'djbooth', 'punching bag': 'punchbag', 'heavy bag': 'punchbag', 'bench press': 'benchpress', weights: 'benchpress', 'weapon rack': 'weaponrack',
     'big screen': 'bigscreen', projector: 'bigscreen', monitor: 'screens', monitors: 'screens', computer: 'console', pc: 'console', workstation: 'console', 'computer desk': 'console', 'poker table': 'pokertable', 'card table': 'pokertable',
-    'bar stool': 'stool', 'hologram pet': 'holopet', pet: 'holopet', globe: 'plasmaglobe', 'plasma ball': 'plasmaglobe', 'server rack': 'rack', server: 'gigs_servercart', board: 'whiteboard',
+    workbench: 'bench', 'terminal bench': 'bench', 'bar stool': 'stool', 'hologram pet': 'holopet', pet: 'holopet', globe: 'plasmaglobe', 'plasma ball': 'plasmaglobe', 'server rack': 'rack', server: 'gigs_servercart', board: 'whiteboard',
     box: 'boxes', 'tool box': 'toolbox', vent: 'industrial_floorvent', partition: 'industrial_partition', 'room divider': 'industrial_partition', divider: 'industrial_partition', planter: 'industrial_planter',
     bench: 'industrial_bench', 'park bench': 'industrial_bench', 'office chair': 'chair', counter: 'bar', 'cryo pod': 'cryopod', 'model ship': 'modelship', 'mission board': 'missionboard', 'trophy case': 'trophycase' };
   const NOT_PIECE = /^(intake|bay|outbox|filter|merger|splitter|joiner|loop|airlock)$/;
@@ -1876,8 +1876,9 @@
      reachable. The desks are laid on `probe` unbound; station.build seats each recruit at its own. Answers the spots it
      could find (fewer than asked when the room is full: those recruits get the usual desk in the main room). */
   const MAX_RECRUITS = 12;
-  function recruitDesks(probe, env, roomId, n) {
-    const S = env.PropSprites, sp = S && S.spec('console'); if (!sp || n < 1) return [];
+  function recruitDesks(probe, env, roomId, n, footprint) {
+    const S = env.PropSprites, spec = S && S.spec('console'); if (!spec || n < 1) return [];
+    const sp = footprint ? Object.assign({}, spec, footprint) : spec;
     const rm = probe.rooms().find(r => r.id === roomId); if (!rm) return [];
     const R = rm.rects[0], g = probe.projectGeometry(), belts = probe.serialize().belts || {}, lane = new Set();
     for (const d of doorTiles(probe, g, roomId)) for (let k = 0; k < 3; k++) lane.add((d.x + d.dx * k) + ',' + (d.y + d.dy * k));
@@ -3459,7 +3460,8 @@
         let k = 0;
         for (const rid of targets) {
           if (k >= moved.length) break;
-          for (const d of recruitDesks(scratch, env, rid, Math.min(2, moved.length - k))) {   // two to a room: spread, never a pile
+          const batch = moved.slice(k, k + 2), footprint = { w: Math.max(...batch.map(p => p.w || 1)), h: Math.max(...batch.map(p => p.h || 1)) };
+          for (const d of recruitDesks(scratch, env, rid, batch.length, footprint)) {   // two to a room: spread, never a pile
             const p = moved[k++], m = { id: p.id, dx: d.x - p.x, dy: d.y - p.y };
             const r = fp.moveProp(m.id, m.dx, m.dy);
             if (r && r.ok) { moves.push(m); const rm = fp.rooms().find(x => x.id === rid); if (rm && reseated.indexOf(rm.name) < 0) reseated.push(rm.name); }

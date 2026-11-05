@@ -86,7 +86,7 @@ if(src.includes('function invalidateRefitLeisure(')){
  const store=require('../sidecar/station-store').makeStationStore();
  A.ok(store.setSaveDoc({station:st.serialize()}).ok,'station save accepts the turned workstation');
  const restored=WM.deserialize(store.getStation()).projectGeometry().props.find(p=>p.id===added.id);
- A.eq([restored.r,restored.w,restored.h,restored.agentId],[3,1,2,'agent'],'facing, effective footprint and assignment survive the real station save/model seam');
+A.eq([restored.t,restored.r,restored.w,restored.h,restored.agentId],['console',null,1,2,'agent'],'legacy Desk 2 keeps its footprint and assignment while unsupported facing clears');
 }
 /* A doorway re-enters entity depth order using its detailed art when available. */
 {

@@ -33,8 +33,8 @@ for (const id of STARTER) {
    on the shelf, so the two onboarding routes can never drift apart silently. */
 const WM = require('../frontend/app/worldmodel.js');
 A.ok(!STARTER.includes('bay'), 'STARTER has NO bay (conveyor gear, not a necessity)');
-A.ok(!STARTER.some(id => { const c = PS.spec(id); return c && c.seat; }),
-  'STARTER has no seat workstation');
+A.ok(!STARTER.some(id => { const c = PS.spec(id); return c && c.seat && WM.capabilitiesForProp(id).every(cap => cap === 'computer'); }),
+  'STARTER workstations must also grant a real tool capability');
 A.ok(STARTER.includes('studio'), 'STARTER carries the STUDIO (the power users miss)');
 for (const id of STARTER) {
   A.ok(!!(WM.grantLabelForProp && WM.grantLabelForProp(id)),

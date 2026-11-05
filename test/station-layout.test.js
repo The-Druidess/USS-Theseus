@@ -137,7 +137,7 @@ const detail = async (o, line) => (await layout(o, { line: line || 'draft & revi
     A.eq(L.today, null, 'no numbers are claimed for a line the router reports nothing on');
     A.ok(/call station\.layout with line/.test(r.more), 'the overview says how to get one line in full');
     A.ok(r.rooms.indexOf('DRAFT & REVIEW') >= 0 && r.rooms.length === 3, 'rooms by name, corridors left out: ' + JSON.stringify(r.rooms));
-    A.eq(r.workstations.filter(w => w.type === 'desk').map(w => w.agent).sort(), ['Ada', 'Rex'], 'workstations name their holders');
+    A.eq(r.workstations.filter(w => WorldModel.capabilitiesForProp(w.type).includes('computer')).map(w => w.agent).sort(), ['Ada', 'Rex'], 'workstations name their holders');
     A.ok(!('loneBays' in r) && !('otherIssues' in r), 'nothing empty is sent');
   }
 

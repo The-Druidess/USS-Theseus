@@ -1,0 +1,148 @@
+{
+  "group_id": "0542b078-e166-4220-814e-1594a42a1429",
+  "states": [
+    {
+      "character": {
+        "id": "6990cad1-f746-49e1-8c52-5e7fa6298b39",
+        "name": "Idle",
+        "prompt": "text",
+        "size": {
+          "width": 144,
+          "height": 144
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-27T22:59:27.666774+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Walking": {
+            "south": [
+              "Idle/animations/Walking/south/frame_000.png",
+              "Idle/animations/Walking/south/frame_001.png",
+              "Idle/animations/Walking/south/frame_002.png",
+              "Idle/animations/Walking/south/frame_003.png",
+              "Idle/animations/Walking/south/frame_004.png",
+              "Idle/animations/Walking/south/frame_005.png"
+            ]
+          },
+          "Walking-e0f1a6fe": {
+            "south-west": [
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/south-west/frame_005.png"
+            ],
+            "north": [
+              "Idle/animations/Walking-e0f1a6fe/north/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/north/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/north/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/north/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/north/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/north/frame_005.png"
+            ],
+            "north-west": [
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/north-west/frame_005.png"
+            ],
+            "east": [
+              "Idle/animations/Walking-e0f1a6fe/east/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/east/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/east/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/east/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/east/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/east/frame_005.png"
+            ],
+            "north-east": [
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/north-east/frame_005.png"
+            ],
+            "west": [
+              "Idle/animations/Walking-e0f1a6fe/west/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/west/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/west/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/west/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/west/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/west/frame_005.png"
+            ],
+            "south-east": [
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_000.png",
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_001.png",
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_002.png",
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_003.png",
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_004.png",
+              "Idle/animations/Walking-e0f1a6fe/south-east/frame_005.png"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "character": {
+        "id": "7ef0d068-fda1-4b43-8ad8-e2015eefe67c",
+        "name": "Seated",
+        "prompt": "text",
+        "size": {
+          "width": 144,
+          "height": 144
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-10-28T01:36:17.127518+00:00"
+      },
+      "folder": "Seated",
+      "frames": {
+        "rotations": {
+          "south": "Seated/rotations/south.png",
+          "south-east": "Seated/rotations/south-east.png",
+          "east": "Seated/rotations/east.png",
+          "north-east": "Seated/rotations/north-east.png",
+          "north": "Seated/rotations/north.png",
+          "north-west": "Seated/rotations/north-west.png",
+          "west": "Seated/rotations/west.png",
+          "south-west": "Seated/rotations/south-west.png"
+        },
+        "animations": {
+          "Seated": {
+            "south": [
+              "Seated/animations/Seated/south/frame_000.png",
+              "Seated/animations/Seated/south/frame_001.png",
+              "Seated/animations/Seated/south/frame_002.png",
+              "Seated/animations/Seated/south/frame_003.png",
+              "Seated/animations/Seated/south/frame_004.png",
+              "Seated/animations/Seated/south/frame_005.png",
+              "Seated/animations/Seated/south/frame_006.png",
+              "Seated/animations/Seated/south/frame_007.png",
+              "Seated/animations/Seated/south/frame_008.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-11-02T05:10:12.364342"
+}

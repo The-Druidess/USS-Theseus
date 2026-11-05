@@ -27,7 +27,7 @@ const path = require('node:path');
 const A = require('./_assert.js');
 
 const root = path.resolve(__dirname, '..');
-const svgPath = path.join(root, 'frontend', 'assets', 'brand', 'starnet-wordmark.svg');
+const svgPath = path.join(root, 'frontend', 'assets', 'brand', 'uss-theseus.svg');
 const svg = fs.readFileSync(svgPath, 'utf8');
 const css = fs.readFileSync(path.join(root, 'frontend', 'css', 'style.css'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'frontend', 'index.html'), 'utf8');
@@ -46,8 +46,8 @@ const paths = svg.match(/<path\b[^>]*\bd="([^"]+)"/g) || [];
 A.ok(paths.length >= 1, 'wordmark SVG contains at least one <path> with a d attribute');
 const d = (svg.match(/<path\b[^>]*\bd="([^"]+)"/) || [])[1] || '';
 A.ok(d.length > 200, 'the wordmark path carries real geometry, not a stub');
-A.ok(/fill="currentColor"/.test(svg),
-  'the path fills with currentColor so the same asset works inline; the mask path only reads its alpha');
+A.ok(/fill="#fff"/.test(svg),
+  'the supplied banner uses an opaque monochrome fill; the mask path reads its alpha');
 
 // ---- 2. the CSS aspect-ratio still matches the SVG's viewBox --------------------------------
 const vb = (svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/) || []).slice(1).map(Number);
@@ -60,8 +60,8 @@ A.ok(ar.length === 2, '.logo-img declares an explicit aspect-ratio (a masked <sp
 A.ok(Math.abs((ar[0] / ar[1]) - (vb[0] / vb[1])) < 0.002,
   `.logo-img aspect-ratio ${ar[0]}/${ar[1]} matches the SVG viewBox ${vb[0]}x${vb[1]} (retrace changed the viewBox? copy it into style.css)`);
 
-A.ok(/mask:\s*url\(\.\.\/assets\/brand\/starnet-wordmark\.svg\)/.test(rule),
-  '.logo-img masks with starnet-wordmark.svg');
+A.ok(/mask:\s*url\(\.\.\/assets\/brand\/uss-theseus\.svg/.test(rule),
+  '.logo-img masks with the supplied Theseus banner');
 A.ok(/-webkit-mask:\s*url\(/.test(rule), '.logo-img keeps the -webkit-mask prefix alongside the standard property');
 A.ok(/background-color:\s*var\(--ph\)/.test(rule),
   '.logo-img paints var(--ph) so the mark re-tints with the theme instead of being a fixed colour');
@@ -73,8 +73,8 @@ const markEl = (html.match(/<[a-z]+[^>]*class="logo-img"[^>]*>/) || [])[0] || ''
 A.ok(markEl, 'index.html still mounts an element with class="logo-img"');
 A.ok(/^<span/.test(markEl),
   'the mark is a <span> — an <img> cannot take var(--ph), and it was the img that had no size until it decoded');
-A.ok(/aria-label="STARNET"/.test(markEl) && /role="img"/.test(markEl),
-  'the masked span still names itself STARNET for assistive tech (a background image has no alt text)');
+A.ok(/aria-label="DRUIDESS — USS THESEUS — EST\. 2026"/.test(markEl) && /role="img"/.test(markEl),
+  'the masked span names the supplied Theseus banner for assistive tech');
 
 // ---- 4. z-order: under the CRT glass, over the screen ---------------------------------------
 const logoRule = (css.match(/#logo\s*\{[^}]*\}/) || [])[0] || '';

@@ -5,7 +5,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "frontend" / "assets" / "sprites" / "theseus_quark_candidate"
+SOURCE = ROOT / "docs" / "character-remaster" / "quark-source"
 SET = "theseus_quark_review"
 DESTINATIONS = [
     ROOT / "frontend" / "assets" / "sprites",

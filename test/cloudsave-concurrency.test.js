@@ -99,6 +99,20 @@ function client({ beforePost = async () => {}, onReload = () => {}, cache = new 
     recovered.workstreams.push({ id: 'after-immediate-reload' }); afterReload.push(recovered);
     assert.equal(await afterReload.flush({ force: true }), true, 'next autosave uses the durable revision after immediate reload');
     assert.equal(afterReload.health().conflict, null);
-    console.log('cloudsave-concurrency: two clients, conflict export, update refusal, offline restart and queued cache acknowledgements PASS');
+    const owner = client(), stale = client();
+    const ownerBase = await owner.reconcile(null), staleBase = await stale.reconcile(null);
+    ownerBase.workstreams.push({id:'remote-reviewed-edit'});ownerBase._saveDirty=true;ownerBase.updatedAt=30000;
+    owner.push(ownerBase);assert.equal(await owner.flush({force:true}),true);
+    staleBase.workstreams.push({id:'local-reviewed-edit'});staleBase._saveDirty=true;staleBase.updatedAt=30001;
+    stale.push(staleBase);assert.equal(await stale.flush({force:true}),false);
+    assert(stale.health().conflict,'rejected writes remain visibly conflicted');
+    const reviewed = await stale.reconcile(null);
+    reviewed.workstreams.push({id:'local-reviewed-edit'});reviewed._saveDirty=true;reviewed.updatedAt=30002;
+    stale.push(reviewed);assert.equal(await stale.flush({force:true}),true);
+    assert.equal(stale.health().conflict,null,'a confirmed reviewed merge clears the obsolete conflict receipt');
+    assert.equal((await stale.flushForUpdate()).ok,true,'resolved conflicts no longer block safe update/reload');
+    assert(store.load('agent').workstreams.some(row=>row.id==='remote-reviewed-edit'));
+    assert(store.load('agent').workstreams.some(row=>row.id==='local-reviewed-edit'));
+    console.log('cloudsave-concurrency: two clients, conflict export, update refusal, offline restart, reviewed reconciliation and queued cache acknowledgements PASS');
   } finally { fs.rmSync(root, { recursive: true, force: true }); }
 })().catch(e => { console.error(e); process.exitCode = 1; });

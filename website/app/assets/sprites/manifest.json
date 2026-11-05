@@ -1,5 +1,29 @@
 {
   "sprites": {
+    "approved_q_throne.sit.south": [
+      "approved_q_throne/seated-south.png"
+    ],
+    "approved_q_throne.sit.south-east": [
+      "approved_q_throne/seated-south-east.png"
+    ],
+    "approved_q_throne.sit.east": [
+      "approved_q_throne/seated-east.png"
+    ],
+    "approved_q_throne.sit.north-east": [
+      "approved_q_throne/seated-north-east.png"
+    ],
+    "approved_q_throne.sit.north": [
+      "approved_q_throne/seated-north.png"
+    ],
+    "approved_q_throne.sit.north-west": [
+      "approved_q_throne/seated-north-west.png"
+    ],
+    "approved_q_throne.sit.west": [
+      "approved_q_throne/seated-west.png"
+    ],
+    "approved_q_throne.sit.south-west": [
+      "approved_q_throne/seated-south-west.png"
+    ],
     "theseus_science_officer.rot.south": [
       "theseus_science_officer/rot_south.png"
     ],
@@ -12774,6 +12798,487 @@
       "theseus_quark_review/type_north_1.png",
       "theseus_quark_review/type_north_2.png",
       "theseus_quark_review/type_north_3.png"
+    ],
+    "theseus_bridge_security_v1.rot.south": [
+      "theseus_bridge_security_v1/rot_south_0-50707bd3ce24.png"
+    ],
+    "theseus_bridge_security_v1.walk.south": [
+      "theseus_bridge_security_v1/walk_south_0-23ebef543a45.png",
+      "theseus_bridge_security_v1/walk_south_1-091b78d1ae7e.png",
+      "theseus_bridge_security_v1/walk_south_2-ed73510e4917.png",
+      "theseus_bridge_security_v1/walk_south_3-f00edc4a831c.png",
+      "theseus_bridge_security_v1/walk_south_4-ae5110137d56.png",
+      "theseus_bridge_security_v1/walk_south_5-2839c6bb4969.png"
+    ],
+    "theseus_bridge_security_v1.sit.south": [
+      "theseus_bridge_security_v1/sit_south_0-141c6a291608.png"
+    ],
+    "theseus_bridge_security_v1.rot.south-east": [
+      "theseus_bridge_security_v1/rot_south-east_0-604301806ff1.png"
+    ],
+    "theseus_bridge_security_v1.walk.south-east": [
+      "theseus_bridge_security_v1/walk_south-east_0-682a201a791b.png",
+      "theseus_bridge_security_v1/walk_south-east_1-bc0d4c11e751.png",
+      "theseus_bridge_security_v1/walk_south-east_2-b794400245fd.png",
+      "theseus_bridge_security_v1/walk_south-east_3-d82d8695a90e.png",
+      "theseus_bridge_security_v1/walk_south-east_4-bc4fc53bb683.png",
+      "theseus_bridge_security_v1/walk_south-east_5-dcf56b62c5bb.png"
+    ],
+    "theseus_bridge_security_v1.sit.south-east": [
+      "theseus_bridge_security_v1/sit_south-east_0-74b60697d07a.png"
+    ],
+    "theseus_bridge_security_v1.rot.east": [
+      "theseus_bridge_security_v1/rot_east_0-faadfece4937.png"
+    ],
+    "theseus_bridge_security_v1.walk.east": [
+      "theseus_bridge_security_v1/walk_east_0-9de5085449fd.png",
+      "theseus_bridge_security_v1/walk_east_1-135c92c086cd.png",
+      "theseus_bridge_security_v1/walk_east_2-e4115d01a135.png",
+      "theseus_bridge_security_v1/walk_east_3-b87f46f05f8c.png",
+      "theseus_bridge_security_v1/walk_east_4-100b0add85a1.png",
+      "theseus_bridge_security_v1/walk_east_5-b14b0100dcb1.png"
+    ],
+    "theseus_bridge_security_v1.sit.east": [
+      "theseus_bridge_security_v1/sit_east_0-94dc01b22fe8.png"
+    ],
+    "theseus_bridge_security_v1.rot.north-east": [
+      "theseus_bridge_security_v1/rot_north-east_0-2bdf3bde9ed1.png"
+    ],
+    "theseus_bridge_security_v1.walk.north-east": [
+      "theseus_bridge_security_v1/walk_north-east_0-1aefeb31d909.png",
+      "theseus_bridge_security_v1/walk_north-east_1-14370b5f2e13.png",
+      "theseus_bridge_security_v1/walk_north-east_2-c14ff41573ee.png",
+      "theseus_bridge_security_v1/walk_north-east_3-23f2760d5476.png",
+      "theseus_bridge_security_v1/walk_north-east_4-f5b01d5eaf55.png",
+      "theseus_bridge_security_v1/walk_north-east_5-914ca0ef7771.png"
+    ],
+    "theseus_bridge_security_v1.sit.north-east": [
+      "theseus_bridge_security_v1/sit_north-east_0-019a506fe74c.png"
+    ],
+    "theseus_bridge_security_v1.rot.north": [
+      "theseus_bridge_security_v1/rot_north_0-8dfa6eadad58.png"
+    ],
+    "theseus_bridge_security_v1.walk.north": [
+      "theseus_bridge_security_v1/walk_north_0-5b8c21ebc578.png",
+      "theseus_bridge_security_v1/walk_north_1-b6d2157d1635.png",
+      "theseus_bridge_security_v1/walk_north_2-69aa8386e62a.png",
+      "theseus_bridge_security_v1/walk_north_3-d2e431194e01.png",
+      "theseus_bridge_security_v1/walk_north_4-a82491db6c14.png",
+      "theseus_bridge_security_v1/walk_north_5-56535edac796.png"
+    ],
+    "theseus_bridge_security_v1.sit.north": [
+      "theseus_bridge_security_v1/sit_north_0-5ce9a47df627.png"
+    ],
+    "theseus_bridge_security_v1.rot.north-west": [
+      "theseus_bridge_security_v1/rot_north-west_0-ca513375b606.png"
+    ],
+    "theseus_bridge_security_v1.walk.north-west": [
+      "theseus_bridge_security_v1/walk_north-west_0-ed0b22ff8944.png",
+      "theseus_bridge_security_v1/walk_north-west_1-f3983a80d161.png",
+      "theseus_bridge_security_v1/walk_north-west_2-543100ed8526.png",
+      "theseus_bridge_security_v1/walk_north-west_3-11a71ed09f13.png",
+      "theseus_bridge_security_v1/walk_north-west_4-25fea740f3d2.png",
+      "theseus_bridge_security_v1/walk_north-west_5-f4455cd8e2b5.png"
+    ],
+    "theseus_bridge_security_v1.sit.north-west": [
+      "theseus_bridge_security_v1/sit_north-west_0-b1344e90d70d.png"
+    ],
+    "theseus_bridge_security_v1.rot.west": [
+      "theseus_bridge_security_v1/rot_west_0-655614663006.png"
+    ],
+    "theseus_bridge_security_v1.walk.west": [
+      "theseus_bridge_security_v1/walk_west_0-663a6f37a60d.png",
+      "theseus_bridge_security_v1/walk_west_1-c443a60c19f7.png",
+      "theseus_bridge_security_v1/walk_west_2-ce21c88dae48.png",
+      "theseus_bridge_security_v1/walk_west_3-ff9d6a6448a9.png",
+      "theseus_bridge_security_v1/walk_west_4-c25661a8de43.png",
+      "theseus_bridge_security_v1/walk_west_5-234cf25ecba0.png"
+    ],
+    "theseus_bridge_security_v1.sit.west": [
+      "theseus_bridge_security_v1/sit_west_0-5c2e1ef7b060.png"
+    ],
+    "theseus_bridge_security_v1.rot.south-west": [
+      "theseus_bridge_security_v1/rot_south-west_0-a7b3a0fa8939.png"
+    ],
+    "theseus_bridge_security_v1.walk.south-west": [
+      "theseus_bridge_security_v1/walk_south-west_0-ca0cda665f31.png",
+      "theseus_bridge_security_v1/walk_south-west_1-50326478c7ba.png",
+      "theseus_bridge_security_v1/walk_south-west_2-221ebe20e863.png",
+      "theseus_bridge_security_v1/walk_south-west_3-5c7193306c01.png",
+      "theseus_bridge_security_v1/walk_south-west_4-5186e1a1cf24.png",
+      "theseus_bridge_security_v1/walk_south-west_5-1e31b3194193.png"
+    ],
+    "theseus_bridge_security_v1.sit.south-west": [
+      "theseus_bridge_security_v1/sit_south-west_0-9b23e2c5c499.png"
+    ],
+    "theseus_bridge_medical_v1.rot.south": [
+      "theseus_bridge_medical_v1/rot_south_0-3d6a93166037.png"
+    ],
+    "theseus_bridge_medical_v1.walk.south": [
+      "theseus_bridge_medical_v1/walk_south_0-03a58a0a70f9.png",
+      "theseus_bridge_medical_v1/walk_south_1-9f93d8a5501d.png",
+      "theseus_bridge_medical_v1/walk_south_2-3d0f1805bfc6.png",
+      "theseus_bridge_medical_v1/walk_south_3-e1da95d446fc.png",
+      "theseus_bridge_medical_v1/walk_south_4-e1937a38d8c1.png",
+      "theseus_bridge_medical_v1/walk_south_5-9256ac1e6672.png"
+    ],
+    "theseus_bridge_medical_v1.sit.south": [
+      "theseus_bridge_medical_v1/sit_south_0-21bc336dae87.png"
+    ],
+    "theseus_bridge_medical_v1.type.south": [
+      "theseus_bridge_medical_v1/type_south_0-21bc336dae87.png",
+      "theseus_bridge_medical_v1/type_south_1-ff4794df8a66.png",
+      "theseus_bridge_medical_v1/type_south_2-b928305b3bbd.png",
+      "theseus_bridge_medical_v1/type_south_3-3f41d9115f22.png",
+      "theseus_bridge_medical_v1/type_south_4-054289fbd399.png",
+      "theseus_bridge_medical_v1/type_south_5-d73e8b9c91ef.png",
+      "theseus_bridge_medical_v1/type_south_6-7c1b58f89317.png",
+      "theseus_bridge_medical_v1/type_south_7-8f230fbbedd5.png",
+      "theseus_bridge_medical_v1/type_south_8-ae5aaf45b7d5.png"
+    ],
+    "theseus_bridge_medical_v1.rot.south-east": [
+      "theseus_bridge_medical_v1/rot_south-east_0-d953952e455b.png"
+    ],
+    "theseus_bridge_medical_v1.walk.south-east": [
+      "theseus_bridge_medical_v1/walk_south-east_0-52b07e746246.png",
+      "theseus_bridge_medical_v1/walk_south-east_1-dedd2288f363.png",
+      "theseus_bridge_medical_v1/walk_south-east_2-d034a5e67d76.png",
+      "theseus_bridge_medical_v1/walk_south-east_3-addd22ff346e.png",
+      "theseus_bridge_medical_v1/walk_south-east_4-8baf9cd21306.png",
+      "theseus_bridge_medical_v1/walk_south-east_5-29ab2ff68681.png"
+    ],
+    "theseus_bridge_medical_v1.sit.south-east": [
+      "theseus_bridge_medical_v1/sit_south-east_0-4933484a257f.png"
+    ],
+    "theseus_bridge_medical_v1.rot.east": [
+      "theseus_bridge_medical_v1/rot_east_0-60bfc8a79230.png"
+    ],
+    "theseus_bridge_medical_v1.walk.east": [
+      "theseus_bridge_medical_v1/walk_east_0-ff639224a207.png",
+      "theseus_bridge_medical_v1/walk_east_1-036beafa94e1.png",
+      "theseus_bridge_medical_v1/walk_east_2-26f067938fe0.png",
+      "theseus_bridge_medical_v1/walk_east_3-d0e12dccee0b.png",
+      "theseus_bridge_medical_v1/walk_east_4-dade51afaff0.png",
+      "theseus_bridge_medical_v1/walk_east_5-6ee5cb2d720d.png"
+    ],
+    "theseus_bridge_medical_v1.sit.east": [
+      "theseus_bridge_medical_v1/sit_east_0-a7bebd304eb7.png"
+    ],
+    "theseus_bridge_medical_v1.rot.north-east": [
+      "theseus_bridge_medical_v1/rot_north-east_0-dbe465278eef.png"
+    ],
+    "theseus_bridge_medical_v1.walk.north-east": [
+      "theseus_bridge_medical_v1/walk_north-east_0-4ead9f39b7d3.png",
+      "theseus_bridge_medical_v1/walk_north-east_1-cd4390f4db15.png",
+      "theseus_bridge_medical_v1/walk_north-east_2-56eb591c6f5c.png",
+      "theseus_bridge_medical_v1/walk_north-east_3-69d912fce0aa.png",
+      "theseus_bridge_medical_v1/walk_north-east_4-1389eeae3f38.png",
+      "theseus_bridge_medical_v1/walk_north-east_5-7632731c5b1f.png"
+    ],
+    "theseus_bridge_medical_v1.sit.north-east": [
+      "theseus_bridge_medical_v1/sit_north-east_0-4505e1dcd003.png"
+    ],
+    "theseus_bridge_medical_v1.rot.north": [
+      "theseus_bridge_medical_v1/rot_north_0-05ad88609981.png"
+    ],
+    "theseus_bridge_medical_v1.walk.north": [
+      "theseus_bridge_medical_v1/walk_north_0-f5ea256bb870.png",
+      "theseus_bridge_medical_v1/walk_north_1-e7041be57dd9.png",
+      "theseus_bridge_medical_v1/walk_north_2-1604f156d35e.png",
+      "theseus_bridge_medical_v1/walk_north_3-58740484cd24.png",
+      "theseus_bridge_medical_v1/walk_north_4-074623accbe2.png",
+      "theseus_bridge_medical_v1/walk_north_5-0c0fd46f85d2.png"
+    ],
+    "theseus_bridge_medical_v1.sit.north": [
+      "theseus_bridge_medical_v1/sit_north_0-5a6e32ac0167.png"
+    ],
+    "theseus_bridge_medical_v1.rot.north-west": [
+      "theseus_bridge_medical_v1/rot_north-west_0-c3b8db055850.png"
+    ],
+    "theseus_bridge_medical_v1.walk.north-west": [
+      "theseus_bridge_medical_v1/walk_north-west_0-8bc6d9705473.png",
+      "theseus_bridge_medical_v1/walk_north-west_1-0663b1ea4093.png",
+      "theseus_bridge_medical_v1/walk_north-west_2-035bdb7c2fb6.png",
+      "theseus_bridge_medical_v1/walk_north-west_3-15293b062946.png",
+      "theseus_bridge_medical_v1/walk_north-west_4-afd80c012f74.png",
+      "theseus_bridge_medical_v1/walk_north-west_5-f060f725e81d.png"
+    ],
+    "theseus_bridge_medical_v1.sit.north-west": [
+      "theseus_bridge_medical_v1/sit_north-west_0-540c33497899.png"
+    ],
+    "theseus_bridge_medical_v1.rot.west": [
+      "theseus_bridge_medical_v1/rot_west_0-136c6dc68fa8.png"
+    ],
+    "theseus_bridge_medical_v1.walk.west": [
+      "theseus_bridge_medical_v1/walk_west_0-5dc382dbf9e1.png",
+      "theseus_bridge_medical_v1/walk_west_1-48ab0436fa65.png",
+      "theseus_bridge_medical_v1/walk_west_2-38d63d8f9ecf.png",
+      "theseus_bridge_medical_v1/walk_west_3-1bca4e9527de.png",
+      "theseus_bridge_medical_v1/walk_west_4-a450f81d9260.png",
+      "theseus_bridge_medical_v1/walk_west_5-ebe790db1392.png"
+    ],
+    "theseus_bridge_medical_v1.sit.west": [
+      "theseus_bridge_medical_v1/sit_west_0-e2ba71297cba.png"
+    ],
+    "theseus_bridge_medical_v1.rot.south-west": [
+      "theseus_bridge_medical_v1/rot_south-west_0-0aad7c6f5521.png"
+    ],
+    "theseus_bridge_medical_v1.walk.south-west": [
+      "theseus_bridge_medical_v1/walk_south-west_0-60655131bf16.png",
+      "theseus_bridge_medical_v1/walk_south-west_1-bb39a39cfe42.png",
+      "theseus_bridge_medical_v1/walk_south-west_2-51961d78e6e4.png",
+      "theseus_bridge_medical_v1/walk_south-west_3-02b193ae47d8.png",
+      "theseus_bridge_medical_v1/walk_south-west_4-0d782ff9fd51.png",
+      "theseus_bridge_medical_v1/walk_south-west_5-e67c3d70e4ca.png"
+    ],
+    "theseus_bridge_medical_v1.sit.south-west": [
+      "theseus_bridge_medical_v1/sit_south-west_0-81efd76488ee.png"
+    ],
+    "theseus_bridge_first_v1.rot.south": [
+      "theseus_bridge_first_v1/rot_south_0-a9b374933a10.png"
+    ],
+    "theseus_bridge_first_v1.walk.south": [
+      "theseus_bridge_first_v1/walk_south_0-f226a9a0e484.png",
+      "theseus_bridge_first_v1/walk_south_1-9ed9f4134bfc.png",
+      "theseus_bridge_first_v1/walk_south_2-2cb79e475494.png",
+      "theseus_bridge_first_v1/walk_south_3-994fbd26b422.png",
+      "theseus_bridge_first_v1/walk_south_4-e4ffe3e53f90.png",
+      "theseus_bridge_first_v1/walk_south_5-db967154c8dc.png"
+    ],
+    "theseus_bridge_first_v1.sit.south": [
+      "theseus_bridge_first_v1/sit_south_0-6dfce6b3e829.png"
+    ],
+    "theseus_bridge_first_v1.type.south": [
+      "theseus_bridge_first_v1/type_south_0-347927de0d64.png",
+      "theseus_bridge_first_v1/type_south_1-559b8c141b7f.png",
+      "theseus_bridge_first_v1/type_south_2-83934af89a88.png",
+      "theseus_bridge_first_v1/type_south_3-8c1ae9a7e84c.png",
+      "theseus_bridge_first_v1/type_south_4-ad4612887625.png",
+      "theseus_bridge_first_v1/type_south_5-7ff901a41693.png",
+      "theseus_bridge_first_v1/type_south_6-30347ee672ca.png",
+      "theseus_bridge_first_v1/type_south_7-083d6efaac1e.png",
+      "theseus_bridge_first_v1/type_south_8-c7762d083b04.png"
+    ],
+    "theseus_bridge_first_v1.rot.south-east": [
+      "theseus_bridge_first_v1/rot_south-east_0-01f888553ccd.png"
+    ],
+    "theseus_bridge_first_v1.walk.south-east": [
+      "theseus_bridge_first_v1/walk_south-east_0-46d8f0228191.png",
+      "theseus_bridge_first_v1/walk_south-east_1-042b61eef652.png",
+      "theseus_bridge_first_v1/walk_south-east_2-740d7cd4f59d.png",
+      "theseus_bridge_first_v1/walk_south-east_3-ce18407f299c.png",
+      "theseus_bridge_first_v1/walk_south-east_4-8c30824dcc29.png",
+      "theseus_bridge_first_v1/walk_south-east_5-f002dec26c43.png"
+    ],
+    "theseus_bridge_first_v1.sit.south-east": [
+      "theseus_bridge_first_v1/sit_south-east_0-0fd2a0f18ceb.png"
+    ],
+    "theseus_bridge_first_v1.rot.east": [
+      "theseus_bridge_first_v1/rot_east_0-0a829a311094.png"
+    ],
+    "theseus_bridge_first_v1.walk.east": [
+      "theseus_bridge_first_v1/walk_east_0-2a8f4fad0175.png",
+      "theseus_bridge_first_v1/walk_east_1-99ed984e8b11.png",
+      "theseus_bridge_first_v1/walk_east_2-b8bfb52bfdfd.png",
+      "theseus_bridge_first_v1/walk_east_3-0bfbd5e487bf.png",
+      "theseus_bridge_first_v1/walk_east_4-773461d31069.png",
+      "theseus_bridge_first_v1/walk_east_5-0f2a6dc2d540.png"
+    ],
+    "theseus_bridge_first_v1.sit.east": [
+      "theseus_bridge_first_v1/sit_east_0-6fec3baa4488.png"
+    ],
+    "theseus_bridge_first_v1.rot.north-east": [
+      "theseus_bridge_first_v1/rot_north-east_0-d1ef442b48b9.png"
+    ],
+    "theseus_bridge_first_v1.walk.north-east": [
+      "theseus_bridge_first_v1/walk_north-east_0-e641e9398051.png",
+      "theseus_bridge_first_v1/walk_north-east_1-0e5ef117b10c.png",
+      "theseus_bridge_first_v1/walk_north-east_2-104254d79db1.png",
+      "theseus_bridge_first_v1/walk_north-east_3-9d176d1b8b8b.png",
+      "theseus_bridge_first_v1/walk_north-east_4-bbc12e4dff80.png",
+      "theseus_bridge_first_v1/walk_north-east_5-13689b931fa6.png"
+    ],
+    "theseus_bridge_first_v1.sit.north-east": [
+      "theseus_bridge_first_v1/sit_north-east_0-efffc82215ba.png"
+    ],
+    "theseus_bridge_first_v1.rot.north": [
+      "theseus_bridge_first_v1/rot_north_0-2f2294da4461.png"
+    ],
+    "theseus_bridge_first_v1.walk.north": [
+      "theseus_bridge_first_v1/walk_north_0-a0915dd43d98.png",
+      "theseus_bridge_first_v1/walk_north_1-2e0eef90985c.png",
+      "theseus_bridge_first_v1/walk_north_2-e75625db0dde.png",
+      "theseus_bridge_first_v1/walk_north_3-a2712f37e71a.png",
+      "theseus_bridge_first_v1/walk_north_4-1e5c12c8fcc6.png",
+      "theseus_bridge_first_v1/walk_north_5-a0a8c419477d.png"
+    ],
+    "theseus_bridge_first_v1.sit.north": [
+      "theseus_bridge_first_v1/sit_north_0-2436897389bc.png"
+    ],
+    "theseus_bridge_first_v1.rot.north-west": [
+      "theseus_bridge_first_v1/rot_north-west_0-104d6ec47399.png"
+    ],
+    "theseus_bridge_first_v1.walk.north-west": [
+      "theseus_bridge_first_v1/walk_north-west_0-a43ac454d662.png",
+      "theseus_bridge_first_v1/walk_north-west_1-430cfd269af2.png",
+      "theseus_bridge_first_v1/walk_north-west_2-8dc161d1b510.png",
+      "theseus_bridge_first_v1/walk_north-west_3-4f7312a98496.png",
+      "theseus_bridge_first_v1/walk_north-west_4-c79055d698df.png",
+      "theseus_bridge_first_v1/walk_north-west_5-8fb83f3ba07e.png"
+    ],
+    "theseus_bridge_first_v1.sit.north-west": [
+      "theseus_bridge_first_v1/sit_north-west_0-d86c9903c23e.png"
+    ],
+    "theseus_bridge_first_v1.rot.west": [
+      "theseus_bridge_first_v1/rot_west_0-d7ab104b7131.png"
+    ],
+    "theseus_bridge_first_v1.walk.west": [
+      "theseus_bridge_first_v1/walk_west_0-2765d68f8b6b.png",
+      "theseus_bridge_first_v1/walk_west_1-4b927705fe82.png",
+      "theseus_bridge_first_v1/walk_west_2-365b199f08ca.png",
+      "theseus_bridge_first_v1/walk_west_3-407e677a6be2.png",
+      "theseus_bridge_first_v1/walk_west_4-b7e7decc8676.png",
+      "theseus_bridge_first_v1/walk_west_5-44c9f36638cb.png"
+    ],
+    "theseus_bridge_first_v1.sit.west": [
+      "theseus_bridge_first_v1/sit_west_0-f065f51504f8.png"
+    ],
+    "theseus_bridge_first_v1.rot.south-west": [
+      "theseus_bridge_first_v1/rot_south-west_0-d55e01dafa65.png"
+    ],
+    "theseus_bridge_first_v1.walk.south-west": [
+      "theseus_bridge_first_v1/walk_south-west_0-f659bc92715d.png",
+      "theseus_bridge_first_v1/walk_south-west_1-9a572cb17fc4.png",
+      "theseus_bridge_first_v1/walk_south-west_2-6c470a7c72e9.png",
+      "theseus_bridge_first_v1/walk_south-west_3-2547e610a493.png",
+      "theseus_bridge_first_v1/walk_south-west_4-395aa1c2b2d0.png",
+      "theseus_bridge_first_v1/walk_south-west_5-287d4dcc5322.png"
+    ],
+    "theseus_bridge_first_v1.sit.south-west": [
+      "theseus_bridge_first_v1/sit_south-west_0-732faa8fc64b.png"
+    ],
+    "theseus_bridge_science_v2.rot.south": [
+      "theseus_bridge_science_v2/rot_south_0-d0ef0325933b.png"
+    ],
+    "theseus_bridge_science_v2.walk.south": [
+      "theseus_bridge_science_v2/walk_south_0-010f54eafbe4.png",
+      "theseus_bridge_science_v2/walk_south_1-5b67a2cc4c98.png",
+      "theseus_bridge_science_v2/walk_south_2-d6338be8471c.png",
+      "theseus_bridge_science_v2/walk_south_3-8f0d5a39ee89.png",
+      "theseus_bridge_science_v2/walk_south_4-690f6fc91494.png",
+      "theseus_bridge_science_v2/walk_south_5-e745aba5febc.png"
+    ],
+    "theseus_bridge_science_v2.sit.south": [
+      "theseus_bridge_science_v2/sit_south_0-e8d9f480774b.png"
+    ],
+    "theseus_bridge_science_v2.type.south": [
+      "theseus_bridge_science_v2/type_south_0-964b663d4c36.png",
+      "theseus_bridge_science_v2/type_south_1-c3a728d37f7b.png",
+      "theseus_bridge_science_v2/type_south_2-049dc39a97b1.png",
+      "theseus_bridge_science_v2/type_south_3-7168041fef1a.png",
+      "theseus_bridge_science_v2/type_south_4-98ef5b7317ab.png",
+      "theseus_bridge_science_v2/type_south_5-9f9059fbe59e.png",
+      "theseus_bridge_science_v2/type_south_6-8888b379eedc.png",
+      "theseus_bridge_science_v2/type_south_7-bce9e09e4408.png",
+      "theseus_bridge_science_v2/type_south_8-20329ac79b48.png"
+    ],
+    "theseus_bridge_science_v2.rot.south-east": [
+      "theseus_bridge_science_v2/rot_south-east_0-dfc193dfa6f0.png"
+    ],
+    "theseus_bridge_science_v2.walk.south-east": [
+      "theseus_bridge_science_v2/walk_south-east_0-db581b161ca9.png",
+      "theseus_bridge_science_v2/walk_south-east_1-283f5f6b0a13.png",
+      "theseus_bridge_science_v2/walk_south-east_2-b893cd6a070e.png",
+      "theseus_bridge_science_v2/walk_south-east_3-ead50d583b7d.png",
+      "theseus_bridge_science_v2/walk_south-east_4-9dfe4b468c6d.png",
+      "theseus_bridge_science_v2/walk_south-east_5-e9530c015324.png"
+    ],
+    "theseus_bridge_science_v2.sit.south-east": [
+      "theseus_bridge_science_v2/sit_south-east_0-585c40979ed2.png"
+    ],
+    "theseus_bridge_science_v2.rot.east": [
+      "theseus_bridge_science_v2/rot_east_0-638b425e9a2c.png"
+    ],
+    "theseus_bridge_science_v2.walk.east": [
+      "theseus_bridge_science_v2/walk_east_0-02d5b35db0c1.png",
+      "theseus_bridge_science_v2/walk_east_1-a368d4d08632.png",
+      "theseus_bridge_science_v2/walk_east_2-4f9e348730aa.png",
+      "theseus_bridge_science_v2/walk_east_3-879f3767cf19.png",
+      "theseus_bridge_science_v2/walk_east_4-033d09b440ce.png",
+      "theseus_bridge_science_v2/walk_east_5-ba10860f5d87.png"
+    ],
+    "theseus_bridge_science_v2.sit.east": [
+      "theseus_bridge_science_v2/sit_east_0-7799494526f8.png"
+    ],
+    "theseus_bridge_science_v2.rot.north-east": [
+      "theseus_bridge_science_v2/rot_north-east_0-308671b230c8.png"
+    ],
+    "theseus_bridge_science_v2.walk.north-east": [
+      "theseus_bridge_science_v2/walk_north-east_0-65d619e141a2.png",
+      "theseus_bridge_science_v2/walk_north-east_1-4120ffb89584.png",
+      "theseus_bridge_science_v2/walk_north-east_2-0e3289b617c4.png",
+      "theseus_bridge_science_v2/walk_north-east_3-cb1c7a7a0c34.png",
+      "theseus_bridge_science_v2/walk_north-east_4-431763aaa327.png",
+      "theseus_bridge_science_v2/walk_north-east_5-8e34b1bb23ce.png"
+    ],
+    "theseus_bridge_science_v2.sit.north-east": [
+      "theseus_bridge_science_v2/sit_north-east_0-121ab8b53dda.png"
+    ],
+    "theseus_bridge_science_v2.rot.north": [
+      "theseus_bridge_science_v2/rot_north_0-f2e8c664123c.png"
+    ],
+    "theseus_bridge_science_v2.walk.north": [
+      "theseus_bridge_science_v2/walk_north_0-01ba87c248bd.png",
+      "theseus_bridge_science_v2/walk_north_1-eafc38537ecb.png",
+      "theseus_bridge_science_v2/walk_north_2-a3ec451adc0c.png",
+      "theseus_bridge_science_v2/walk_north_3-deb39257eb31.png",
+      "theseus_bridge_science_v2/walk_north_4-1b92da838652.png",
+      "theseus_bridge_science_v2/walk_north_5-f83683e81919.png"
+    ],
+    "theseus_bridge_science_v2.sit.north": [
+      "theseus_bridge_science_v2/sit_north_0-10231e8fd9ab.png"
+    ],
+    "theseus_bridge_science_v2.rot.north-west": [
+      "theseus_bridge_science_v2/rot_north-west_0-324570ba64c9.png"
+    ],
+    "theseus_bridge_science_v2.walk.north-west": [
+      "theseus_bridge_science_v2/walk_north-west_0-6b2c13ba1f2a.png",
+      "theseus_bridge_science_v2/walk_north-west_1-8c1f5a66247f.png",
+      "theseus_bridge_science_v2/walk_north-west_2-2e89bc9ec214.png",
+      "theseus_bridge_science_v2/walk_north-west_3-714b60b931d5.png",
+      "theseus_bridge_science_v2/walk_north-west_4-1ed1432f423a.png",
+      "theseus_bridge_science_v2/walk_north-west_5-75499d1d8f80.png"
+    ],
+    "theseus_bridge_science_v2.sit.north-west": [
+      "theseus_bridge_science_v2/sit_north-west_0-c17bf4cf3202.png"
+    ],
+    "theseus_bridge_science_v2.rot.west": [
+      "theseus_bridge_science_v2/rot_west_0-69a4c7662646.png"
+    ],
+    "theseus_bridge_science_v2.walk.west": [
+      "theseus_bridge_science_v2/walk_west_0-c7f6faaa0adf.png",
+      "theseus_bridge_science_v2/walk_west_1-ac777e418904.png",
+      "theseus_bridge_science_v2/walk_west_2-cf5b1110e2af.png",
+      "theseus_bridge_science_v2/walk_west_3-bdb9180a362b.png",
+      "theseus_bridge_science_v2/walk_west_4-4ec4e26c720f.png",
+      "theseus_bridge_science_v2/walk_west_5-3ae9132ef809.png"
+    ],
+    "theseus_bridge_science_v2.sit.west": [
+      "theseus_bridge_science_v2/sit_west_0-2b58edcdd661.png"
+    ],
+    "theseus_bridge_science_v2.rot.south-west": [
+      "theseus_bridge_science_v2/rot_south-west_0-e474aac9592e.png"
+    ],
+    "theseus_bridge_science_v2.walk.south-west": [
+      "theseus_bridge_science_v2/walk_south-west_0-79103b719139.png",
+      "theseus_bridge_science_v2/walk_south-west_1-0827a2e6c0ff.png",
+      "theseus_bridge_science_v2/walk_south-west_2-6f6e922a309f.png",
+      "theseus_bridge_science_v2/walk_south-west_3-90ebc636c437.png",
+      "theseus_bridge_science_v2/walk_south-west_4-193701c539ac.png",
+      "theseus_bridge_science_v2/walk_south-west_5-81895f8a21ed.png"
+    ],
+    "theseus_bridge_science_v2.sit.south-west": [
+      "theseus_bridge_science_v2/sit_south-west_0-c28616a9a8f8.png"
     ]
   }
 }

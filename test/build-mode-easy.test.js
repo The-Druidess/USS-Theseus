@@ -26,7 +26,7 @@
 const A = require('./_assert.js');
 const fs = require('fs');
 const path = require('path');
-const rd = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8');
+const rd = p => fs.readFileSync(path.join(__dirname, '..', p), 'utf8').replace(/\r\n/g, '\n');
 const build = rd('frontend/app/build.js'), easy = rd('frontend/css/refit-easy.css'), kit = rd('frontend/css/refit-kit.css'), html = rd('frontend/index.html');
 const fn = name => { const i = build.indexOf('function ' + name + '('); if (i < 0) return ''; const j = build.indexOf('\n  }\n', i); return build.slice(i, j + 4); };
 

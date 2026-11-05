@@ -1063,7 +1063,7 @@
         const spec = {
           name: String(a.name || '').trim().slice(0, 40),
           specId: String(a.specId || '').trim().slice(0, 40),
-          purpose: String(a.purpose || '').trim().slice(0, 400),
+          purpose: String(a.purpose || ''),
           persona: String(a.persona || '').trim().slice(0, 40),
           skin: String(a.skin || '').trim().slice(0, 40)
         };

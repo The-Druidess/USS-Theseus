@@ -16,11 +16,12 @@ const app = p => fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', p
   const src = app('app.js');
   // rehydrateRoster is extracted and run standalone (here and by other tests): the validator is inline in it
   const restore = src.match(/function rehydrateRoster\(savedAgents\) \{[\s\S]*?\n  \}/)[0];
+  const treasurer = src.match(/function isTreasurerAgent\(a\) \{[\s\S]*?\n  \}/)[0];
   A.ok(/color: \/\^#\[0-9a-f\]\{3,8\}\$\/i\.test\(String\(s\.color/.test(restore), 'rehydrateRoster validates the saved colour inline');
   const reload = (rows, SUITS) => {
     const agents = new Map();
     new Function('agents', 'agent', 'DATA', 'executionProfileOf', 'agentDocs', 'composeSystemPrompt', 'registerAgent', 'SUITS',
-      restore + '; rehydrateRoster(' + JSON.stringify(rows) + ');')(agents, { model: 'm' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {}, SUITS);
+      treasurer + '\n' + restore + '; rehydrateRoster(' + JSON.stringify(rows) + ');')(agents, { model: 'm' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {}, SUITS);
     return agents;
   };
   const got = reload([

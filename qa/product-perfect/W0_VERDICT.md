@@ -2,7 +2,40 @@
 
 > Audit base: `ef16fa087ad872f9d266ecde8b72ef813cb9ca82` (2026-07-12). This is static/code authority only; it does not substitute for clean-installed or attended live proof.
 
-## Current machine verdict
+## Pending source review (2026-11-05)
+
+Current planning authority is **BLOCKED**, not the historical PASS below. The
+candidate is `43a709272261e3de7d42e55f1e9e6e8a69d25d33`; the accepted source lock
+still names `ed94053bd997d69d422d35ced16b754378659ba3`.
+
+Read-only preparation found 50 changed locked files, four added paths, and no
+removed paths: 377 accepted files versus 381 at HEAD. Added paths are
+`frontend/app/qterminal.js`, `frontend/app/windows/q.js`,
+`frontend/app/windows/treasurer.js`, and `frontend/css/q-terminal.css`.
+The HEAD path-set SHA-256 is
+`a4fb9adf939e31cab4e3ed1983761f6b10a1b59fad3d40f0bc15868ad63abaf1`.
+
+Replacing only the source lock in an in-memory test-only proposal passes schema,
+source-byte, and existing locator checks at HEAD. This is diagnostic evidence,
+not an accepted ledger or a semantic review of every changed feature. Terminal
+authority remains BLOCKED with 66 reasons; no claim, disposition, or live-proof
+status was promoted. Uncommitted repairs, including the conversation-focus guard,
+are not part of this HEAD snapshot and require review in the eventual candidate.
+
+The owner requested review preparation without a commit. Leave `claims.json`
+unchanged. To finish after separate authorization:
+
+1. Review and selectively commit the intended source repairs; obtain a clean
+	worktree without discarding unrelated work.
+2. Run `node scripts/qa/product-perfect/relock-surface.mjs` against that committed
+	source. Do not copy the provisional HEAD hash above into a newer candidate.
+3. Review the generated lock diff, preserve unresolved verdicts, and commit the
+	ledger update separately.
+4. Run `node test/qa-product-perfect-claims.test.js` and
+	`node scripts/qa/product-perfect/claims.mjs --planning`. Terminal product proof
+	remains a separate requirement even after planning passes.
+
+## Historical machine verdict
 
 - Planning: **PASS** — 37 finite material claim families, 17 W2–W6 grep-verdict rows, 5 protected exceptions, and 162 exact public-surface files.
 - Terminal: **BLOCKED** — open FIX/COMPLETE/NARROW work, point-of-use experimental labels, and required live receipts remain intentionally pending.

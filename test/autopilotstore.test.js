@@ -72,7 +72,7 @@ A.eq(AutopilotStore._state().armed, false, 'reset clears the idle/armed state fo
 A.ok(typeof global.U === 'undefined', 'AutopilotStore ran with no U.bus present — it never subscribes or emits');
 
 /* ---------- source-guards for the browser-flow wiring (not node-loadable) ---------- */
-const chatSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8');
+const chatSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/chat.js'), 'utf8').replace(/\r\n/g, '\n');
 A.ok(chatSrc.indexOf('function offerCuriosity') > 0, 'chat.js defines offerCuriosity (the idle earn-context hand-off)');
 const offerBody = chatSrc.slice(chatSrc.indexOf('function offerCuriosity'), chatSrc.indexOf('function offerCuriosity') + 900);
 A.ok(/CuriosityStore\.consider\(\)/.test(offerBody), 'offerCuriosity routes through CuriosityStore (shares the per-session anti-nag cap)');
@@ -80,7 +80,7 @@ A.ok(/if \(activeNudge\) return false/.test(offerBody), 'offerCuriosity stands d
 A.ok(/Dialogue\.isOpen/.test(offerBody), 'offerCuriosity stands down when a focused panel is open');
 A.ok(/offerCuriosity/.test(chatSrc.slice(chatSrc.lastIndexOf('return {'))), 'chat.js exports offerCuriosity');
 
-const appSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/app.js'), 'utf8');
+const appSrc = fs.readFileSync(path.join(__dirname, '../frontend/app/app.js'), 'utf8').replace(/\r\n/g, '\n');
 A.ok(/AutopilotStore\.init\(/.test(appSrc), 'app.js initialises AutopilotStore');
 A.ok(/offerCuriosity:\s*\(\)\s*=>/.test(appSrc), 'app.js wires Chat.offerCuriosity into the autopilot earn branch');
 A.ok(/chat:\s*\(o\)\s*=>/.test(appSrc), 'app.js wires Harness.chat into the autopilot act branch (reason-only runs)');

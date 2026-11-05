@@ -172,7 +172,7 @@ const Tutorial = (() => {
   const KIT_SPEC = [
     { grant: 'FILES',    prop: 'war_intelcab',    label: 'INTEL CAB',   power: 'FILES',      got: 'files equipment placed. it supports reading and writing files within your allowed folders.' },
     { grant: 'WEB',      prop: 'comms_dish',      label: 'DISH',        power: 'the WEB',    got: 'web equipment placed. it supports search and browsing; service setup and access settings still apply.' },
-    { grant: 'TERMINAL', prop: 'workbench',       label: 'WORKBENCH',   power: 'a TERMINAL', got: 'terminal equipment placed. it supports commands and checks, subject to your access settings.' },
+    { grant: 'TERMINAL', prop: 'bench',           label: 'BENCH',       power: 'COMPUTE + TERMINAL', got: 'Bench placed. it provides a work position plus commands and checks, subject to your access settings.' },
     { grant: 'MEMORY',   prop: 'gigs_servercart', label: 'SERVER CART', power: 'MEMORY',     got: 'memory equipment placed. it supports saving and retrieving notes and procedures.' }
   ];
   let KIT = KIT_SPEC.slice();   // resolveKit() rebuilds this with live labels/categories at kit start
@@ -957,7 +957,7 @@ const Tutorial = (() => {
     } else if (grant) {                          // cabinet/dish/workbench/server: a REAL unlock on the solo station
       msg = 'that placed ' + grant + ' equipment. one matching prop covers that ability in its workspace; you don’t need every variant. select it to see who can use it and whether access is already available.';
     } else {                                     // inert decor
-      msg = 'nice. the gear that grants a power wears its name — a workbench gives me a TERMINAL, a dish reaches the WEB, a cabinet opens FILES. the rest is yours to decorate.';
+      msg = 'nice. Bench provides COMPUTE + TERMINAL, a dish reaches the WEB, and a cabinet opens FILES. the rest is yours to decorate.';
     }
     showCoach('prop', '#refit-palette', msg);
   }
@@ -1199,7 +1199,7 @@ const Tutorial = (() => {
         ['comms_dish', 'DISH', 'Web search and page access. Uplinks and beacons provide the same capability.'],
         ['gigs_servercart', 'SERVER', 'Persistent notebook and reusable skill procedures. Relay stacks and cores also provide memory.'],
         ['connector_portal', 'CONNECTOR PORTAL', 'Tools from a bound connector. Connect the service in ABILITIES and check its status; placing a portal alone does not sign you in.'],
-        ['workbench', 'WORKBENCH', 'Run terminal commands and verification tools under the agent’s configured permissions and reach.'],
+        ['bench', 'BENCH · COMPUTE + TERMINAL', 'Assign an agent to work here; terminal commands and verification still follow configured permissions and reach.'],
         ['studio', 'MEDIA STUDIO', 'Image generation and image analysis. Available providers and their configuration determine which operations can run.'],
         ['jukebox', 'JUKEBOX', 'Spotify search and playback controls. Requires Spotify to be connected in ABILITIES.']
       ];

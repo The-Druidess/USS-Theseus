@@ -162,6 +162,7 @@ const CloudSave = (() => {
           if (body.ok === false) throw new Error('save refused: ' + (body.error || (body.unreadable ? 'existing record unreadable' : body.stale ? 'stale write' : 'unknown')));
         }
         if (!body || body.ok !== true) throw new Error('save acknowledgement missing');
+        conflict = null;
         markOk();
         return true;
       })

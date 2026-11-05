@@ -151,7 +151,7 @@ function makeStore() {
 
 // ---- G. the prompt seam: index only where skill.view is on the wire; bodies inline otherwise ----
 {
-  const idx = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8');
+  const idx = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8').replace(/\r\n/g, '\n');
   const once = (needle, label) => A.eq(idx.split(needle).length - 1, 1, label + ' (exactly one occurrence)');
   once("? (coreNames.indexOf('skill.view') >= 0\n        ? skillsCatalog.composeIndex(skillLibrary(), recipeOpts)\n        : skillsCatalog.compose(skillLibrary(), recipeOpts))",
     'index.js composes the recipe INDEX only when skill.view is advertised on this run, else the bodies stay inline');

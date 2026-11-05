@@ -8,7 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const src = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8').replace(/\r\n/g, '\n');
 const start = src.indexOf("    if (typeof document !== 'undefined' && !document.__proseLinksWired) {");
 A.ok(start > 0, 'chat.js wires one document-level handler for prose links outside COMMS');
 // the block ends at the matching close of the if: the line "    }" right after the listener's "      });"

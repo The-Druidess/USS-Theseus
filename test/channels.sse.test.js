@@ -167,7 +167,7 @@ A.eq(runTeeView('agent.reasoning', { agentId: 'a1', runId: 'r1', on: true }), nu
 {
   const fs = require('fs');
   const path = require('path');
-  const src = fs.readFileSync(path.join(__dirname, '../sidecar/index.js'), 'utf8');
+  const src = fs.readFileSync(path.join(__dirname, '../sidecar/index.js'), 'utf8').replace(/\r\n/g, '\n');
   const i = src.indexOf('const emit = o.broadcast');
   A.ok(i > 0, 'index.js has the broadcast-opted tee');
   const seg = src.slice(i, i + 400);
@@ -197,7 +197,7 @@ A.eq(runTeeView('agent.reasoning', { agentId: 'a1', runId: 'r1', on: true }), nu
 {
   const fs = require('fs');
   const path = require('path');
-  const world = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'world.js'), 'utf8');
+  const world = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'world.js'), 'utf8').replace(/\r\n/g, '\n');
 
   const openAt = world.indexOf('const open = () => {');
   A.ok(openAt > 0, 'world.js owns the channel-bridge open()');

@@ -19,6 +19,16 @@ function makePortraits(deps) {
   let table = null;            // skin -> sprite set
   let fallback = 'blank';
   const cache = new Map();     // skin -> { skin, mime, data } | null
+  let manifest = null;
+  const tracks = new Map();
+
+  function loadManifest() {
+    if (!manifest) {
+      try { manifest = JSON.parse(fs.readFileSync(path.join(frontend, 'assets', 'sprites', 'manifest.json'), 'utf8')).sprites || {}; }
+      catch (e) { note('remote.portraits.manifest', e); manifest = {}; }
+    }
+    return manifest;
+  }
 
   function load() {
     if (table) return table;
@@ -42,7 +52,12 @@ function makePortraits(deps) {
     const set = t.get(key);
     if (set) {
       try {
-        const buf = fs.readFileSync(path.join(frontend, 'assets', 'sprites', set, 'rot_south.png'));
+        const frames = loadManifest()[set + '.rot.south'];
+        const root = path.resolve(frontend, 'assets', 'sprites');
+        const frame = Array.isArray(frames) ? frames[0] : null;
+        const file = frame && path.resolve(root, String(frame));
+        if (!file || file.indexOf(root + path.sep) !== 0 || !/\.png$/i.test(file)) throw new Error('south portrait frame is not listed in the sprite manifest');
+        const buf = fs.readFileSync(file);
         if (buf.length && buf.length <= MAX_BYTES) out = { skin: key, mime: 'image/png', data: buf.toString('base64') };
       } catch (e) { note('remote.portraits.read', e); }
     }
@@ -52,17 +67,11 @@ function makePortraits(deps) {
 
   /* One sprite TRACK (every frame of e.g. "approved_android.walk.south-east"), for the phone to draw a moving crew
      member with the same drawings the stage uses. Only names the frontend's own sprite manifest lists. */
-  let manifest = null;
-  const tracks = new Map();
   function framesFor(key) {
     const k = String(key || '');
     if (!/^[A-Za-z0-9_]{1,40}\.[a-z_]{1,20}\.[a-z-]{1,20}$/.test(k)) return null;
     if (tracks.has(k)) return tracks.get(k);
-    if (!manifest) {
-      try { manifest = JSON.parse(fs.readFileSync(path.join(frontend, 'assets', 'sprites', 'manifest.json'), 'utf8')).sprites || {}; }
-      catch (e) { note('remote.portraits.manifest', e); manifest = {}; }
-    }
-    const list = Array.isArray(manifest[k]) ? manifest[k].slice(0, 32) : null;
+    const list = Array.isArray(loadManifest()[k]) ? loadManifest()[k].slice(0, 32) : null;
     let out = null;
     if (list && list.length) {
       const root = path.join(frontend, 'assets', 'sprites');

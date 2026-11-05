@@ -128,7 +128,11 @@ const WorldModel = (() => {
   const CAP_LABEL = {
     computer: 'COMPUTE', cabinet: 'FILES', dish: 'WEB', notebook: 'MEMORY', connector: 'LIVE TOOLS', workbench: 'TERMINAL', studio: 'IMAGES', jukebox: 'SPOTIFY', plugin: 'PLUGIN TOOLS'
   };
-  function grantLabelForProp(propType) { const c = CAP_PROP_MAP[propType]; return c ? (CAP_LABEL[c] || c) : null; }   // prop -> plain power word (or null = inert decor)
+  function capabilitiesForProp(propType) {
+    const cap = CAP_PROP_MAP[propType];
+    return propType === 'bench' ? ['computer', 'workbench'] : cap ? [cap] : [];
+  }
+  function grantLabelForProp(propType) { const caps = capabilitiesForProp(propType); return caps.length ? caps.map(cap => CAP_LABEL[cap] || cap).join(' + ') : null; }
 
   /* the paint palette — each is a floor BASE colour; every other floor detail
      (seams / rivets / vents / hatches) is derived from it via U.shade in the bake.
@@ -3371,9 +3375,8 @@ const WorldModel = (() => {
       const soloRoom = Object.keys(owners).length <= 1;   // one agent in the room -> an unbound PC is unambiguously this agent's
       const seen = {}, out = [];
       for (const p of doc.props) {
-        const cap = CAP_PROP_MAP[p.t];
-        if (!cap) continue;
         if (roomAt(p.x, p.y) !== room) continue;
+        for (const cap of capabilitiesForProp(p.t)) {
         if (cap === 'computer') {
           if (!(p.agentId === agentId || (!p.agentId && soloRoom))) continue;   // not THIS agent's dedicated PC
           if (seen.computer) continue;
@@ -3396,6 +3399,7 @@ const WorldModel = (() => {
         }
         if (seen[cap]) continue;
         seen[cap] = true; out.push(cap);
+        }
       }
       return out;
     }
@@ -3563,6 +3567,7 @@ const WorldModel = (() => {
       // agent-bay binding queries
       propsByType, propsByAgent, pipelineEdges, setPipelineEdges, addPipelineEdge, removePipelineEdge, agentRoomId, bayObjects,
       capForProp: t => CAP_PROP_MAP[t] || null,   // a prop type's capability objectType (single source for the UI)
+      capabilitiesForProp,
       undo, redo, canUndo, canRedo, replaceLayout, setCommanderSeat,
       // projection + io
       projectGeometry, serialize, onChange,
@@ -3660,6 +3665,28 @@ const WorldModel = (() => {
     // trunkRoomId (the integration-hub room that never seals) — additive; default to the spawn room.
     if (!doc.meta.trunkRoomId || !doc.rooms[doc.meta.trunkRoomId])
       doc.meta.trunkRoomId = doc.meta.spawnRoomId || doc.order.find(id => doc.rooms[id] && doc.rooms[id].kind !== 'corridor') || null;
+    for (const prop of doc.props) {
+      if (prop.t !== 'workbench') continue;
+      const room = doc.order.map(id => doc.rooms[id]).find(candidate => candidate.rects.some(rect => prop.x >= rect.x1 && prop.x <= rect.x2 && prop.y >= rect.y1 && prop.y <= rect.y2));
+      if (!room) continue;
+      const fits = (x,y) => {
+        for (let column=x;column<x+4;column++) {
+          if (!room.rects.some(rect => column>=rect.x1&&column<=rect.x2&&y>=rect.y1&&y<=rect.y2) || doc.belts[column+','+y]) return false;
+        }
+        return !doc.props.some(other => other!==prop && !(propRules && propRules(other.t)?.flat) && x<other.x+other.w && x+4>other.x && y<other.y+other.h && y+1>other.y);
+      };
+      let spot = fits(prop.x,prop.y) ? {x:prop.x,y:prop.y} : null;
+      if (!spot) {
+        let distance=Infinity;
+        for (const rect of room.rects) for (let y=rect.y1;y<=rect.y2;y++) for (let x=rect.x1;x<=rect.x2;x++) {
+          const next=Math.abs(x-prop.x)+Math.abs(y-prop.y);
+          if (next<distance && fits(x,y)) { spot={x,y};distance=next; }
+        }
+      }
+      if (!spot) continue;
+      prop.t='bench';prop.x=spot.x;prop.y=spot.y;prop.w=4;prop.h=1;
+      delete prop.r;delete prop.m;
+    }
     return doc;
   }
 
@@ -3687,7 +3714,7 @@ const WorldModel = (() => {
         { id: 'p' + doc._nid++, t: 'war_intelcab', x: 1, y: 0, w: 1, h: 2, block: true },
         { id: 'p' + doc._nid++, t: 'gigs_servercart', x: 1, y: 9, w: 1, h: 1, block: true },
         { id: 'p' + doc._nid++, t: 'comms_dish', x: 14, y: 0, w: 2, h: 2, block: true },
-        { id: 'p' + doc._nid++, t: 'workbench', x: 3, y: 1, w: 2, h: 1, block: true },
+        { id: 'p' + doc._nid++, t: 'bench', x: 3, y: 2, w: 4, h: 1, block: true },
         { id: 'p' + doc._nid++, t: 'studio', x: 14, y: 8, w: 2, h: 2, block: true },
         { id: 'p' + doc._nid++, t: 'plant', x: 0, y: 0, w: 1, h: 1, block: false },
         { id: 'p' + doc._nid++, t: 'plant', x: 17, y: 0, w: 1, h: 1, block: false }
@@ -3699,7 +3726,7 @@ const WorldModel = (() => {
     // install the prop-type -> {mount, surface} lookup once for every station this module makes
     setPropRules,
     // capability legibility — prop -> plain power word (WEB/FILES/…); one owned source for the palette tile + Field Manual
-    CAP_PROP_MAP, CAP_LABEL, capForProp: t => CAP_PROP_MAP[t] || null, grantLabelForProp,
+    CAP_PROP_MAP, CAP_LABEL, capForProp: t => CAP_PROP_MAP[t] || null, capabilitiesForProp, grantLabelForProp,
     // starter-line blueprints — the static catalog the REFIT LINES palette + headless tests read
     BLUEPRINTS,
     // bay-role catalog (guided workflows): placard copy + summon-class wiring for role-carrying docks

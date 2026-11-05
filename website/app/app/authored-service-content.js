@@ -11,7 +11,7 @@ const AuthoredServiceContent = (() => {
   const specs={
     outbox:{width:1095,height:1139,mouth:rect(315,104,457,325),cargo:[[360,549],[725,549],[745,929],[338,929]],status:rect(906,283,114,50)},
     connector_portal:{width:602,height:1622,status:rect(168,220,209,69),sockets:[rect(223,422,98,90),rect(196,717,152,87),rect(220,1017,108,90)]},
-    jukebox:{width:783,height:1395,status:rect(296,626,190,42),tubes:[rect(53,394,41,197),rect(682,394,44,197)]},
+    jukebox:{width:216,height:252,status:rect(56,112,104,58),tubes:[rect(8,38,43,182),rect(165,38,43,182)]},
     // Ellipse extends beneath the rim; destination-over makes that real painted
     // hardware the mask. Its center was checked against the transparent opening.
     airlock:{width:1176,height:1132,iris:rect(230,206,716,718)},

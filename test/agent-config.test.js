@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const { makeStationTools } = require('../sidecar/tools/builtin/station.js');
+const { makeOrchestrationTools } = require('../sidecar/tools/builtin/orchestration.js');
 const app = fs.readFileSync(require.resolve('../frontend/app/app.js'), 'utf8');
 const commands = fs.readFileSync(require.resolve('../frontend/app/stationcommands.js'), 'utf8');
 const extract = name => app.match(new RegExp('  function ' + name + '\\([^]*?\\n  \\}'))[0];
@@ -66,7 +67,7 @@ function boot(failure) {
     { ...edit, agentId: 'unknown' },
     { ...edit, field: 'executionProfile', text: 'this-computer' },
     { ...edit, previousText: undefined },
-    { ...edit, text: 'x'.repeat(20001) }
+    { ...edit, field: 'manual', text: 'x'.repeat(20001) }
   ]) assert.match((await env.tools.agentConfigureTool.run(args)).content, /^REFUSED:/);
   assert.equal(env.worker.docs.purpose, 'Review drafts');
   assert.equal(env.hero.docs.purpose, 'Coordinate');
@@ -80,6 +81,41 @@ function boot(failure) {
   assert.match((await makeStationTools({}).agentConfigureTool.run(edit)).content, /^REFUSED:/);
   assert.equal(env.tools.agentConfigureTool.requiresConsent, true);
   assert.equal(env.tools.agentConfigureTool.capability, 'orchestrator');
+  assert.equal(env.tools.agentConfigureTool.schema.properties.text.maxLength, undefined, 'Purpose is not capped by the tool schema');
+  const longEnv = boot();
+  const directive = 'BEGIN PURPOSE\n' + 'Preserve every directive line for this agent.\n'.repeat(3000) + 'END PURPOSE';
+  assert(directive.length > 100000);
+  const longEdit = { agentId: 'worker', field: 'purpose', previousText: 'Old purpose', text: directive };
+  assert.equal(JSON.parse((await longEnv.tools.agentConfigureTool.run(longEdit)).content).durable, true);
+  assert.equal(longEnv.worker.docs.purpose, directive, 'full directive reaches the selected agent');
+  assert.equal(longEnv.worker.purpose, directive, 'purpose mirror is not truncated');
+  assert(longEnv.worker.systemPrompt.includes(directive), 'full directive is composed into the agent prompt');
+  assert.equal(longEnv.state().save.agents.find(agent => agent.id === 'worker').docs.purpose, directive, 'full directive survives durable serialization/read-back');
+  assert.equal(JSON.parse((await longEnv.tools.agentConfigTool.run({ agentId: 'worker' })).content).docs.purpose, directive, 'team.config returns the complete directive');
+  assert.equal(longEnv.hero.docs.purpose, 'Coordinate', 'long directives never overwrite another agent');
+  let summoned;
+  const orchestration = makeOrchestrationTools({});
+  await orchestration.summonTool.run({ name: 'Purpose probe', purpose: directive }, {
+    summon: async spec => { summoned = spec; return { agentId: 'purpose-probe' }; }
+  });
+  assert.equal(summoned.purpose, directive, 'custom-agent creation preserves the complete Purpose directive');
+  const heroDirective = 'ORCHESTRATOR\n' + directive;
+  assert.equal(JSON.parse((await longEnv.tools.agentConfigureTool.run({ agentId: 'agent', field: 'purpose', previousText: 'Coordinate', text: heroDirective })).content).durable, true);
+  assert.equal(longEnv.hero.docs.purpose, heroDirective, 'orchestrators accept the same full-length Purpose documents');
+  assert(longEnv.hero.systemPrompt.includes(heroDirective));
+  assert.equal(longEnv.worker.docs.purpose, directive, 'orchestrator edits preserve specialist directives');
+  const backend = fs.readFileSync(require.resolve('../sidecar/index.js'), 'utf8');
+  const normalizeRoster = backend.match(/function replaceAgentRoster\([^]*?\n\}/)[0];
+  const rosterContext = { agentRoster: new Map(), agentRosterRaw: new Map(), normalizeProviderId: value => value,
+    executionProfiles: { normalizeId: value => value }, process: { env: {} } };
+  vm.createContext(rosterContext);
+  vm.runInContext(normalizeRoster, rosterContext);
+  rosterContext.replaceAgentRoster([{ agentId: 'worker', system: longEnv.worker.systemPrompt }, { agentId: 'agent', system: longEnv.hero.systemPrompt }]);
+  assert(rosterContext.agentRoster.get('worker').system.includes(directive), 'delegated specialist roster retains the full Purpose');
+  assert(rosterContext.agentRoster.get('agent').system.includes(heroDirective), 'backend orchestrator roster retains the full Purpose');
+  const ui = fs.readFileSync(require.resolve('../frontend/app/stationui.js'), 'utf8');
+  const editor = ui.match(/  function fileCard\([^]*?\n  \}/)[0];
+  assert.doesNotMatch(editor, /\bmaxlength\b|\bmaxLength\b/, 'Purpose editor has no character cap');
   const registered = [];
   env.tools.register({ register: t => registered.push(t.name) });
   assert.ok(registered.includes('team.config') && registered.includes('team.configure'));

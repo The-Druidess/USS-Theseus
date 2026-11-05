@@ -53,7 +53,7 @@ const starter = require('../frontend/app/worldmodel.js').starterDoc();
 starter.meta.createdAt = 0;
 const starterRevision = 'starter-' + require('crypto').createHash('sha256')
   .update(JSON.stringify(starter)).digest('hex').slice(0, 16);
-starter.props.find(p => p.t === 'desk').agentId = upgradedSave.agent.id;
+starter.props.find(p => p.t === 'console').agentId = upgradedSave.agent.id;
 A.eq(upgradedSave.station, starter,
   'the complete website layout comes from the current product starter factory, including materials and all eight props');
 A.eq(upgradedRoom.floorStyle, 'hull', 'the website demo uses the standard starter floor style');

@@ -8,12 +8,12 @@ const AuthoredPropContent = (() => {
   const finite = n => typeof n === 'number' && Number.isFinite(n);
   const count = n => finite(n) && n >= 0 ? Math.min(Number.MAX_SAFE_INTEGER, Math.floor(n)) : 0;
   const specs = {
-    missionboard: { width:1610,height:965,left:0,top:0,
-      panels:[[190,325,360,230],[650,325,333,230],[1080,325,320,230]],
-      header:[208,84,1188,65] },
-    trophycase: { width:1150,height:1367,left:0,top:0,
-      shelves:[[250,330,620,134],[250,610,620,110],[250,860,620,110]],
-      crown:[235,45,620,98], plaque:[285,1205,550,45] },
+    missionboard: { width:1116,height:984,left:0,top:0,
+      panels:[[130,168,260,350],[428,168,260,350],[726,168,260,350]],
+      header:[140,82,836,70] },
+    trophycase: { width:174,height:216,left:0,top:0,
+      shelves:[[14,56,146,49],[14,113,146,51]],
+      crown:[10,8,154,39], plaque:[39,176,96,23] },
     comms_inbox: { width:1536,height:1020,left:0,top:0,
       trays:[[211,101,974,174],[217,450,1008,65],[225,684,1020,49]] },
     calwall: { width:2167,height:619,left:1,top:54,
@@ -75,19 +75,20 @@ const AuthoredPropContent = (() => {
   }
   function mission(g,s,time) {
     const p=specs.missionboard.panels,n=count(s.pins),np=count(s.proposals);
+    const sx=1116/1610,sy=984/965,px=v=>v*sx,py=v=>v*sy,ps=v=>v*Math.min(sx,sy);
     // Total remains exact when physical cards reach their capacity.
-    lettering(g,'OPEN '+n,236,117,56,n?'#d1e3b3':'#6d6b47',470);
-    if(np) lettering(g,'PROPOSED '+np,724,117,45,'#e4c77d',470);
+    lettering(g,'OPEN '+n,px(236),py(117),ps(56),n?'#d1e3b3':'#6d6b47',px(470));
+    if(np) lettering(g,'PROPOSED '+np,px(724),py(117),ps(45),'#e4c77d',px(470));
     if(s.hot===true) {
       const a=s.still?.18:.16+.07*(.5+.5*Math.sin(time/850));
-      rect(g,1329,98,30,30,'rgba(239,208,105,'+a+')');
-      poly(g,[[1336,106],[1352,106],[1352,121],[1336,121]],'#e0be65');
+      rect(g,px(1329),py(98),px(30),py(30),'rgba(239,208,105,'+a+')');
+      poly(g,[[px(1336),py(106)],[px(1352),py(106)],[px(1352),py(121)],[px(1336),py(121)]],'#e0be65');
     }
-    clip(g,p[0],()=>{lettering(g,'QUESTS',p[0][0]+12,p[0][1]+19,29,'#939b84',220);cardRail(g,p[0],n,'quest');});
-    clip(g,p[1],()=>{if(np){lettering(g,'PROPOSALS',p[1][0]+12,p[1][1]+19,29,'#c2a76a',260);cardRail(g,p[1],np,'proposal');}});
+    clip(g,p[0],()=>{lettering(g,'QUESTS',p[0][0]+px(12),p[0][1]+py(19),ps(29),'#939b84',px(220));cardRail(g,p[0],n,'quest');});
+    clip(g,p[1],()=>{if(np){lettering(g,'PROPOSALS',p[1][0]+px(12),p[1][1]+py(19),ps(29),'#c2a76a',px(260));cardRail(g,p[1],np,'proposal');}});
     clip(g,p[2],()=>{
-      if(s.jam===true) {paper(g,1114,358,99,147,'jam',0);lettering(g,'JAM',1240,427,45,'#dfa469',140);}
-      else if(s.hot===true) {poly(g,[[1177,398],[1204,360],[1231,398],[1204,436]],'#b49749');lettering(g,'GAP',1260,420,36,'#d4bb78',117);}
+      if(s.jam===true) {paper(g,px(1114),py(358),px(99),py(147),'jam',0);lettering(g,'JAM',px(1240),py(427),ps(45),'#dfa469',px(140));}
+      else if(s.hot===true) {poly(g,[[px(1177),py(398)],[px(1204),py(360)],[px(1231),py(398)],[px(1204),py(436)]],'#b49749');lettering(g,'GAP',px(1260),py(420),ps(36),'#d4bb78',px(117));}
     });
   }
   function cup(g,x,y,w,h,index) {
@@ -108,26 +109,26 @@ const AuthoredPropContent = (() => {
   }
   function trophy(g,s) {
     const n=count(s.trophies),stage=count(s.journeyStage),p=specs.trophycase;
-    for(let row=0;row<3;row++) clip(g,p.shelves[row],()=>{
-      for(let col=0;col<2;col++)if(row*2+col<Math.min(n,6)) {
-        const r=p.shelves[row];cup(g,r[0]+88+col*292,r[1]+6,137,r[3]-17,row*2+col);
+    for(let row=0;row<p.shelves.length;row++) clip(g,p.shelves[row],()=>{
+      const r=p.shelves[row],cupWidth=40,gap=(r[2]-3*cupWidth)/4;
+      for(let col=0;col<3;col++)if(row*3+col<Math.min(n,6)) {
+        cup(g,r[0]+gap+(cupWidth+gap)*col,r[1]+4,cupWidth,r[3]-8,row*3+col);
       }
-      // Re-author the original pane's diagonal catches over content, entirely
-      // within clear shelf apertures; rails, frame and door hardware remain art.
-      if(n>row*2) {
-        poly(g,[[817,320],[883,320],[760,974],[694,974]],'rgba(204,225,223,.12)');
-        poly(g,[[254,320],[308,320],[250,462],[216,462]],'rgba(220,233,228,.09)');
+      // Glass catches stay inside the two current display apertures.
+      if(n>row*3) {
+        poly(g,[[r[0]+r[2]*.73,r[1]+3],[r[0]+r[2]*.86,r[1]+3],[r[0]+r[2]*.55,r[1]+r[3]-3],[r[0]+r[2]*.45,r[1]+r[3]-3]],'rgba(204,225,223,.12)');
+        poly(g,[[r[0]+r[2]*.12,r[1]+4],[r[0]+r[2]*.2,r[1]+4],[r[0]+r[2]*.1,r[1]+r[3]*.4],[r[0]+r[2]*.06,r[1]+r[3]*.4]],'rgba(220,233,228,.09)');
       }
     });
     if(stage) clip(g,p.crown,()=>{
       for(let i=0;i<Math.min(stage,4);i++) {
-        const x=302+i*127,deep=stage>4&&i<((stage-1)%4)+1;
-        poly(g,[[x,83],[x+16,63],[x+32,84],[x+16,106]],deep?'#f5dba1':'#ba9149');
-        poly(g,[[x+4,83],[x+16,69],[x+16,99]],'#eed79a');
+        const x=25+i*29,deep=stage>4&&i<((stage-1)%4)+1;
+        poly(g,[[x,27],[x+7,17],[x+14,27],[x+7,37]],deep?'#f5dba1':'#ba9149');
+        poly(g,[[x+2,27],[x+7,20],[x+7,34]],'#eed79a');
       }
-      if(stage>4)lettering(g,'+'+(stage-4),843,125,27,'#dfc58a',140,'right');
+      if(stage>4)lettering(g,'+'+(stage-4),160,27,12,'#dfc58a',24,'right');
     });
-    clip(g,p.plaque,()=>lettering(g,n?'HONOURS '+n:'EMPTY',560,1228,35,n?'#c8b478':'#635948',490,'center'));
+    clip(g,p.plaque,()=>lettering(g,n?'HONOURS '+n:'EMPTY',87,188,12,n?'#c8b478':'#a7a899',84,'center'));
   }
   function inbox(g,s) {
     // There is no inbox data feed in PropSprites today. An explicit collection

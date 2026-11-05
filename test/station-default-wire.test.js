@@ -8,7 +8,7 @@
 const A = require('./_assert.js');
 const fs = require('fs');
 const path = require('path');
-const appjs = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'app.js'), 'utf8');
+const appjs = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
 
 function lift(name) {
   const start = appjs.indexOf('  function ' + name + '(');

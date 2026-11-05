@@ -38,8 +38,9 @@ assert.equal(seven.sourceStandingHeight, 76);
 assert.equal(data.skinIds().filter(id => id === 'minionchar').length, 0);
 assert.equal(new Set(data.skinIds()).size, Object.keys(data.SKINS).length);
 data.SKINS.future_trek = { name: 'Future crew', collection: 'star-trek' };
-assert.deepEqual(Array.from(data.skinIds().slice(0, 8)), ['tom_paris', 'jean_luc_picard', 'q_judge', 'montgomery_scott', 'seven_of_nine', 'chief_science_officer', 'quark', 'future_trek']);
-assert.equal(data.skinIds()[8], 'blank');
+const trekIds = ['tom_paris', 'jean_luc_picard', 'q_judge', 'montgomery_scott', 'seven_of_nine', 'chief_science_officer', 'quark', 'chief_of_security', 'chief_medical_officer', 'first_officer', 'future_trek'];
+assert.deepEqual(Array.from(data.skinIds().slice(0, trekIds.length)), trekIds);
+assert.equal(data.skinIds()[trekIds.length], 'blank');
 delete data.SKINS.future_trek;
 for (const file of ['app.js','stationui.js','marketplace.js']) {
   assert.match(read('frontend/app/'+file), /DATA\.skinIds\(\)/, file+' uses shared picker ordering');

@@ -32,7 +32,7 @@ for (const p of [
   {t:'war_intelcab',x:1,y:1,w:1,h:2},
   {t:'comms_dish',x:22,y:1,w:2,h:2},
   {t:'bay',x:4,y:4,w:2,h:2,agentId:'worker'},
-  {t:'desk',x:25,y:5,w:2,h:1,agentId:'worker'}
+  {t:'console',x:25,y:5,w:2,h:1,agentId:'worker'}
 ]) A.ok(station.addProp(p).ok, 'explanation fixture prop fits');
 const leadFiles = Equipment.inspect(station,'lead','war_intelcab');
 const workerFiles = Equipment.inspect(station,'worker','war_intelcab');

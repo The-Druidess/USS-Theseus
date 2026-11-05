@@ -726,7 +726,8 @@ const StationCommands = (() => {
       const target = App.agents().find(row => row.id === a.agentId);
       if (!target) throw new Error('unknown agentId; read team.config before editing');
       if (!['identity', 'purpose', 'manual', 'context'].includes(a.field)) throw new Error('only Dossier documents can be edited');
-      if (typeof a.text !== 'string' || a.text.length > 20000 || typeof a.previousText !== 'string') throw new Error('text and previousText are required; text is limited to 20000 characters');
+      if (typeof a.text !== 'string' || typeof a.previousText !== 'string') throw new Error('text and previousText are required');
+      if (a.field !== 'purpose' && a.text.length > 20000) throw new Error('identity, manual and context documents are limited to 20000 characters');
       const current = String((target.docs || {})[a.field] || '');
       // Compare before writing: never overwrite a newer Dossier edit or guess a target.
       if (current !== a.previousText && current !== a.text) throw new Error('the document changed; read team.config again before editing');
@@ -982,7 +983,7 @@ const StationCommands = (() => {
        its dock button / tab / menu entry uses, raise it to the front, and answer with what is really on screen. Only the
        run the Commander is watching may move their eyes (requireWatching). */
     'station.show': async (a) => {
-      requireWatching(a && a.origin);
+      await requireWatching(a && a.origin);
       const place = typeof Places !== 'undefined' && Places.get ? Places.get(a && a.place) : null;
       if (!place) throw new Error('there is no StarNet place "' + String((a && a.place) || '') + '"; places: ' + (typeof Places !== 'undefined' ? Places.ids().join(', ') : 'none loaded — reload the page'));
       if (typeof StationUI === 'undefined' || !StationUI.showTerm) throw new Error('the station windows are not ready yet');
@@ -1064,12 +1065,18 @@ const StationCommands = (() => {
   /* station.show moves the Commander's EYES, so only the run they are watching may call it: its session is the focused
      one and it is that session's live run. A background worker, a routine, a phone/Telegram turn, or a run that ended is
      refused. Unlike a session switch, a typed draft is no reason to refuse — opening a window leaves the composer alone. */
-  function requireWatching(origin) {
-    const active = typeof Workstreams !== 'undefined' && Workstreams.activeId ? Workstreams.activeId() : null;
-    const live = !!(origin && origin.streamId && origin.runId && active === origin.streamId
-      && typeof Channels !== 'undefined' && Channels.isBusy && Channels.isBusy(origin.streamId)
-      && Channels.runIdOf && Channels.runIdOf(origin.streamId) === origin.runId);
-    if (!live) throw new Error('the Commander is not looking at this conversation right now, so their screen was left alone — tell them where it is instead');
+  async function requireWatching(origin) {
+    for (let attempt = 0; attempt <= 20; attempt++) {
+      const active = typeof Workstreams !== 'undefined' && Workstreams.activeId ? Workstreams.activeId() : null;
+      if (!(origin && origin.streamId && origin.runId && active === origin.streamId
+        && typeof Channels !== 'undefined' && Channels.isBusy && Channels.isBusy(origin.streamId)
+        && Channels.runIdOf)) break;
+      const runId = Channels.runIdOf(origin.streamId);
+      if (runId === origin.runId) return;
+      if (runId || attempt === 20) break;
+      await new Promise(resolve => setTimeout(resolve, 25));
+    }
+    throw new Error('the Commander is not looking at this conversation right now, so their screen was left alone — tell them where it is instead');
   }
   // an agent by exact id or name (case-insensitive) — never a guess: unknown or ambiguous refuses with the real roster
   function resolveAgent(ref) {

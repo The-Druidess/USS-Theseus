@@ -55,7 +55,7 @@ const PropCatalogFixture = (() => {
     }
     // One furnished comparison corner in every room. These are context, never counted as subjects.
     const anchorY = y + 1;
-    const anchors = [add('desk', 3, anchorY, 0, 'anchor-desk'), add('chair', 4, anchorY + 2, 0, 'anchor-chair'), add('crate', 12, anchorY, 0, 'anchor-crate')];
+    const anchors = [add('console', 3, anchorY, 0, 'anchor-console'), add('chair', 4, anchorY + 2, 0, 'anchor-chair'), add('crate', 12, anchorY, 0, 'anchor-crate')];
     doc.rooms = { [roomId]: { ...doc.rooms[roomId], name: 'CATALOG REVIEW', rects: [{ x1: 0, y1: 0, x2: width, y2: anchorY + 5 }] } };
     doc.order = [roomId]; doc.props = props; doc.belts = {}; doc._nid = 10000;
     const station = M.deserialize(doc);

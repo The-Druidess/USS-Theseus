@@ -186,7 +186,7 @@ for(const t of ['desk','desk2']){
     A.eq([seat.tx,seat.ty,seat.face],[local.x+(r===1?-1:1),local.y+Math.floor(length/2),r===1?'east':'west'],t+': operator approaches the centre of the actual long edge');
     A.ok(geo.walkable(seat.tx,seat.ty),t+': chosen chair tile is walkable');
     const roundtrip=WM.deserialize(st.serialize()).propById(p.id);
-    A.eq([roundtrip.w,roundtrip.h,roundtrip.r],[1,length,r],t+': saved plan survives migration');
+    A.eq([roundtrip.t,roundtrip.w,roundtrip.h,roundtrip.r],['console',1,length,null],t+': retired workstation migrates without an unsupported facing');
     st.undo();A.eq(st.serialize(),initial,t+': one undo restores footprint and facing');
   }
   // New placement, overlap rejection and deck bounds all use the same turned box.

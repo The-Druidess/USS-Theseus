@@ -129,7 +129,7 @@ const appearance = { light: { color: [96, 168, 240], strength: 0.5, dx: 1, dy: 0
 test('normal desktop roster renders the selected refresh without preview flags, with planted walking feet', async () => {
   const selected = JSON.parse(fs.readFileSync(path.join(frontend, 'assets/skin-study-0914/runtime-motion.json')));
   const { sprites, catalog } = await harness(true);
-  assert.equal(Object.keys(catalog).length, 61);
+  assert.equal(Object.keys(catalog).length, 64);
   for (const skin of selected.skins) {
     assert.equal(catalog[skin.skin].set, skin.renderSet, skin.skin + ' keeps its saved ID');
     await sprites.ensureSkin(skin.skin);
@@ -161,11 +161,11 @@ test('normal desktop roster renders the selected refresh without preview flags, 
 test('custom skin IDs resolve standing height by render set and keep feet flush with the floor', async () => {
   const { sprites, catalog } = await harness(true);
   const skin = catalog.chief_science_officer;
-  assert.equal(skin.set, 'theseus_science_officer');
+  assert.equal(skin.set, 'theseus_bridge_science_v2');
   await sprites.ensureSkin('chief_science_officer');
   const b = body({ id: 'chief-science-officer', skin: 'chief_science_officer', state: 'walk' });
   assert.equal(sprites.setForBody(b), skin.set);
-  close(sprites.bodyScale(b), 0.25, 'custom render set keeps its configured scale');
+  close(sprites.bodyScale(b), 19 / 81, 'custom render set keeps its configured scale');
   for (const dir of ['south', 'east', 'north', 'west']) {
     b.dir = dir;
     const { frame } = draw(sprites, b, 0, {});

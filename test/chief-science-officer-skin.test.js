@@ -19,10 +19,10 @@ function readSkin(file) {
 const skin = readSkin(path.join(frontend, 'app', 'data-shim.js'));
 const websiteSkin = readSkin(path.join(website, 'app', 'data-shim.js'));
 assert.deepEqual(JSON.parse(JSON.stringify(skin)), JSON.parse(JSON.stringify(websiteSkin)));
-assert.equal(skin.name, 'Geordi LaForge');
-assert.equal(skin.set, 'theseus_science_officer');
-assert.equal(skin.scale, 0.25);
-assert.equal(skin.sourceStandingHeight, 76);
+assert.equal(skin.name, 'Chief Science Officer');
+assert.equal(skin.set, 'theseus_bridge_science_v2');
+assert.equal(skin.scale, 19 / 81);
+assert.equal(skin.sourceStandingHeight, 81);
 assert.equal(skin.collection, 'star-trek');
 
 const frontendManifestPath = path.join(frontend, 'assets', 'sprites', 'manifest.json');

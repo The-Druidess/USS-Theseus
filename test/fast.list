@@ -550,6 +550,7 @@ test/state-truth-overlap.test.js
 test/world-setskin.test.js
 test/tom-paris-skin.test.js
 test/chief-science-officer-skin.test.js
+test/bridge-officer-skins.test.js
 test/quark-skin.test.js
 test/treasurer-sprite-preview.test.js
 test/world-commander.test.js
@@ -667,6 +668,7 @@ test/summon.id.test.js
 test/summon-desk-prompt.test.js
 test/desk-assign-easy.test.js
 test/desk-one-per-agent.test.js
+test/bench-workbench-upgrade.test.js
 test/recruit-identity-ui.test.js
 test/subagents.test.js
 test/orchestration.test.js

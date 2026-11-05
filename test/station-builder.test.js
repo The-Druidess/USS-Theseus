@@ -1499,7 +1499,7 @@ for (const c of T.catalog) {
     for (const [q, re] of [
       [[{ op: 'place', t: 'tv', x: 300, y: 300 }], /^Edit 1 \(place\): must sit on a deck\. Nothing was built/],
       [[{ op: 'fly' }], /^Edit 1 \(fly\): there is no op "fly" \(ops: room, hall, /],
-      [[{ op: 'place', t: 'tv', x: 2, y: 2 }, { op: 'place', t: 'couch', x: 2, y: 5, r: 1 }], /^Edit 2 \(place\): a couch does not turn/],
+      [[{ op: 'place', t: 'tv', x: 10, y: 2 }, { op: 'place', t: 'couch', x: 2, y: 5, r: 1 }], /^Edit 2 \(place\): a couch does not turn/],
       [[{ op: 'delete', room: 'HOME' }], /^Edit 1 \(delete\): HOME is the main room, so it stays/],
       [[{ op: 'room', x: 0, y: 0, w: 10, h: 8 }], /^Edit 1 \(room\): overlaps HOME/],
       [[{ op: 'brief', prop: 'nope', text: 'x' }], /^Edit 1 \(brief\): there is no piece "nope"/],
@@ -2157,7 +2157,7 @@ for (const c of T.catalog) {
     A.ok(/^REFUSED: Say one start/.test((await sl.run({ line: 'ship it', schedule: 'daily', webhook: true, job: 'x' }, {})).content) && /^REFUSED: job is the work the line gets/.test((await sl.run({ line: 'ship it', schedule: 'daily' }, {})).content), 'one start a call, each with its job');
     startAnswer = { ok: true, kind: 'off', id: 'trg_x1', was: 'webhook' };
     A.ok(/"said":"The webhook trigger trg_x1 on SHIP IT is off\."/.test((await sl.run({ line: 'ship it', off: 'trg_x1' }, {})).content), 'a trigger turns off');
-    const idx2 = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8');
+    const idx2 = fs.readFileSync(path.join(__dirname, '..', 'sidecar', 'index.js'), 'utf8').replace(/\r\n/g, '\n');
     A.ok(/if \(!job\) return \{ ok: false, error: 'a start needs the job it sends down the line each time' \};\n[\s\S]{0,260}\{ const scan = cronGuard\.scanRoutinePrompt\(job\); if \(!scan\.ok\) return \{ ok: false, error: scan\.error \}; \}\n  if \(s\.kind === 'schedule'\)/.test(idx2), 'every start (folder and webhook too) meets the routine tripwire before anything is saved');
     A.ok(/startLine: spec => startLineFor\(spec\)/.test(idx2) && /async function startLineFor\(spec\)/.test(idx2) && /createCronJobFromSpec\(\{ name: \(name \? name \+ ' — ' : ''\)/.test(idx2) && /extra\.secretHash = mintTriggerSecret\(\)\.hash;   \/\/ the key itself is never kept or handed on/.test(idx2), 'the tool runs the panel\'s own schedule and trigger cores, and drops a webhook key');
     A.ok(/station\[\._\]test_line\$\/\.test\(String\(call && call\.name \|\| ''\)\)\) return 'the line ' \+/.test(idx2) && /runLineJob: \(args, signal\) => \{\s*const before = sampleInFlight;\s*const p = runSampleJob\(async \(\) => args\);/.test(idx2) && /const stopMine = \(\) => \{ if \(sampleInFlight === mine\) stopSampleJob\(\); \};/.test(idx2) && /async function handleRoutingSample\(req, res\) \{\n  const r = await runSampleJob\(/.test(idx2), 'the card names the line and the job, and the tool runs SEND A JOB\'s own core');

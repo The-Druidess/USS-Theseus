@@ -9,7 +9,7 @@ const vm = require('node:vm');
 const A = require('./_assert.js');
 
 const ROOT = path.join(__dirname, '..');
-const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const rd = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n');
 
 (async () => {
   const mod = await import(require('node:url').pathToFileURL(path.join(ROOT, 'scripts', 'stage-frontend-dist.mjs')).href);

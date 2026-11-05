@@ -97,7 +97,7 @@ const HOST = '127.0.0.1';
   const fixture = SidecarFixture.create({ prefix: 'starnet-availability-', timeoutMs: 20000, env });
   // The DEFAULT new-install floor, exactly as World.heroCaps projects WorldModel.starterDoc() — plus a jukebox.
   const starter = [];
-  for (const p of WM.starterDoc().props) { const c = WM.capForProp(p.t); if (c && c !== 'computer' && c !== 'connector' && starter.indexOf(c) < 0) starter.push(c); }
+  for (const p of WM.starterDoc().props) for (const c of WM.capabilitiesForProp(p.t)) { if (c && c !== 'computer' && c !== 'connector' && starter.indexOf(c) < 0) starter.push(c); }
   let ptyLoads = false; try { require('node-pty'); ptyLoads = true; } catch (_) { ptyLoads = false; }
   try {
     await fixture.start();

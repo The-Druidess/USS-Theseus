@@ -81,10 +81,10 @@
         { w: 8, h: 4, pieces: [['screens', 0, 0], ['console', 2, 0], ['comms_dish', 6, 0], ['plant', 0, 3]] },
         { w: 6, h: 3, pieces: [['console', 0, 0], ['screens', 4, 0]] },
       ] },
-    workshop: { name: 'a workshop', about: 'a workbench, a fabricator, a toolbox and crates', words: ['maker', 'tools', 'build', 'fabrication', 'engineering', 'garage'],
+    workshop: { name: 'a workshop', about: 'a Bench, a fabricator, a toolbox and crates', words: ['maker', 'tools', 'build', 'fabrication', 'engineering', 'garage'],
       sets: [
-        { w: 8, h: 4, pieces: [['workbench', 0, 0], ['toolbox', 2, 0], ['fabricator', 4, 0], ['industrial_toolcaddy', 7, 0], ['crate', 0, 3], ['boxes', 6, 3]] },
-        { w: 5, h: 3, pieces: [['workbench', 0, 0], ['toolbox', 2, 0], ['crate', 3, 2]] },
+        { w: 10, h: 4, pieces: [['bench', 0, 0], ['toolbox', 4, 0], ['fabricator', 5, 0], ['industrial_toolcaddy', 9, 0], ['crate', 0, 3], ['boxes', 8, 3]] },
+        { w: 7, h: 3, pieces: [['bench', 0, 0], ['toolbox', 5, 0], ['crate', 4, 2]] },
       ] },
   };
   // what the approval card calls a piece where its catalog label reads badly in a sentence ("RECLINER ‹ LEFT", "BOOKS")
@@ -174,8 +174,8 @@
         { w: 9, h: 3, pieces: [['console', 0, 0], ['research_samplecart', 4, 0], ['research_papers', 7, 0]] },
         { w: 5, h: 3, pieces: [['console', 0, 0], ['research_samplecart', 3, 0]] }],
       corners: ['plant', 'tallplant', 'plant', 'plant'], sides: ['telescope', 'research_samplecart', 'tube'] },
-    workshop: { name: 'a workshop', about: 'a workbench, a fabricator, a tool bench, drawers, crates', kind: 'factory', deck: { style: 'hull', mat: 'tread' }, walls: { mat: 'pipework' },
-      feature: { left: ['workbench', 'toolbox'], centre: ['fabricator'], right: ['industrial_drawerbank'] },
+    workshop: { name: 'a workshop', about: 'a Bench, a fabricator, drawers and crates', kind: 'factory', deck: { style: 'hull', mat: 'tread' }, walls: { mat: 'pipework' },
+      feature: { left: ['bench', 'toolbox'], centre: ['fabricator'], right: ['industrial_drawerbank'] },
       centre: [
         { w: 8, h: 3, pieces: [['bench', 0, 0], ['industrial_toolcaddy', 5, 0], ['industrial_supplycart', 6, 2]] },
         { w: 4, h: 1, pieces: [['bench', 0, 0]] }],

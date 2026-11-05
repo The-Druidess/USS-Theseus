@@ -6,7 +6,7 @@ const path = require('node:path');
 
 const root = path.join(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'frontend', 'index.html'), 'utf8');
-const source = fs.readFileSync(path.join(root, 'frontend', 'app', 'voice-live.js'), 'utf8');
+const source = fs.readFileSync(path.join(root, 'frontend', 'app', 'voice-live.js'), 'utf8').replace(/\r\n/g, '\n');
 const voiceSource = fs.readFileSync(path.join(root, 'frontend', 'app', 'voice.js'), 'utf8');
 const chatSource = fs.readFileSync(path.join(root, 'frontend', 'app', 'chat.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'frontend', 'css', 'app.css'), 'utf8');

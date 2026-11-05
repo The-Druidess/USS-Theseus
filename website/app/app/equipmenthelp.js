@@ -45,10 +45,10 @@
     const room = roomId && station.roomById(roomId);
     const within = p => !roomId || station.roomAt(p.x, p.y) === roomId;
     const equivalents = cap ? props.filter(p => within(p) && station.capForProp(p.t) === cap) : [];
-    const objects = roomId ? station.bayObjects(agentId) : props.map(p => ({ objectType: station.capForProp(p.t) }));
+    const objects = roomId ? station.bayObjects(agentId) : props.flatMap(p => (station.capabilitiesForProp ? station.capabilitiesForProp(p.t) : [station.capForProp(p.t)]).map(objectType => ({objectType})));
     const placed = [...new Set(objects.map(o => typeof o === 'string' ? o : o.objectType).filter(Boolean))];
     return { cap, placed, roomId, scope: roomId ? (room && (room.name || room.label) || 'the agent’s desk room') : 'the station',
-      purpose: PURPOSE[cap] || '', count: equivalents.length,
+      purpose: propType === 'bench' ? 'An assigned work position plus Terminal and verification tools, subject to existing access settings.' : PURPOSE[cap] || '', count: equivalents.length,
       duplicates: cap === 'computer' ? 'Each workflow agent needs its own assigned desk.'
         : cap === 'connector' ? 'Each portal can represent a different connected service.'
         : cap ? 'One of each ability is enough in this scope. Matching badges provide the same ability; extra copies do not add more tools.'

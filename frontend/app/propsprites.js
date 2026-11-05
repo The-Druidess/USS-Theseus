@@ -10779,8 +10779,8 @@ const PropSprites = (() => {
     { id: "laptop", label: "LAPTOP", cat: "workstation", tier: "functional", seat: true, w: 1, h: 1, animated: true, blocks: false, mount: "surface", desc: D_WS },
     { id: "consoleL", label: "CONSOLE L", cat: "workstation", tier: "functional", retired: true, seat: true, w: 3, h: 1, animated: true, blocks: true, desc: D_WS },
     { id: "pixelrig", label: "PIXEL RIG", cat: "workstation", tier: "functional", seat: true, w: 2, h: 1, animated: true, blocks: true, desc: D_WS },
-    { id: "bench", label: "BENCH", cat: "workstation", tier: "functional", seat: true, w: 4, h: 1, animated: true, blocks: true, desc: D_WS },
-    { id: "workbench", label: "WORKBENCH", cat: "workstation", tier: "functional", w: 2, h: 1, animated: true, blocks: true, desc: "WORKBENCH — grants the room's agent shell + verify, so it can run and test real code. Pair it with a workstation in the same room." },
+    { id: "bench", label: "BENCH", cat: "workstation", tier: "functional", seat: true, w: 4, h: 1, animated: true, blocks: true, desc: "BENCH — an assignable workstation that also grants the room's agents terminal and verification tools. Tool calls still follow their access and consent settings." },
+    { id: "workbench", label: "WORKBENCH", cat: "workstation", tier: "functional", retired: true, w: 2, h: 1, animated: true, blocks: true, desc: "Retired terminal equipment; replaced by Bench." },
     // WORKFLOW — how work enters, moves, routes, and leaves.
     // (id stays 'intake' — saves/routing keys never rename; INBOX is the user-facing word, mirroring OUTBOX)
     // Docks (2×2 floor machines) are SOLID: belts hook to their ring tiles (connectBelt's pathable
@@ -11028,7 +11028,7 @@ const PropSprites = (() => {
      until each power is placed, then retires; a placed prop granting the same power satisfies its
      tile (a VAULT counts for the INTEL CAB slot — the shelf tracks powers, not skins). Ids, not
      labels: the palette resolves each through BY_ID so a renamed prop can never strand the shelf. */
-  const STARTER = ['war_intelcab', 'comms_dish', 'workbench', 'gigs_servercart', 'studio'];
+  const STARTER = ['war_intelcab', 'comms_dish', 'bench', 'gigs_servercart', 'studio'];
 
   /* The display names for the two TIERS and every CATEGORY. These live HERE, with the catalog they
      describe, because more than one consumer needs them: build.js paints them on the palette tabs and

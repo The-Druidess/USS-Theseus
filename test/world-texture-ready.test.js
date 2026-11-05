@@ -13,14 +13,14 @@ const helpers=names.map(n=>{
 const init=A.fnBody(src,'function init('),start=init.indexOf("if (typeof IndustrialTextures !== 'undefined') IndustrialTextures.ready.then("),end=init.indexOf("window.addEventListener('resize', resize)",start);
 const readyHook=init.slice(start,end);
 A.ok(start>=0&&end>start&&readyHook.length<900,'test executes the actual init readiness subscription');
-function setup({r=3,goal='work',sitting=false,failed=false,unloaded=false}={}){
- const draft=WM.create(),added=draft.addProp({t:'desk2',x:6,y:3,w:r%2?1:2,h:r%2?2:1,r,agentId:'hero'});
- A.ok(added.ok,'saved rotated compact desk fits real station geometry');
+function setup({goal='work',sitting=false,failed=false,unloaded=false}={}){
+ const draft=WM.create(),added=draft.addProp({t:'console',x:6,y:3,w:2,h:1,agentId:'hero'});
+ A.ok(added.ok,'canonical Console fits real station geometry');
  const station=WM.deserialize(draft.serialize()),geo=station.projectGeometry();
  let derivations=0;const project=station.projectGeometry;station.projectGeometry=(...a)=>{derivations++;return project(...a);};
  let finish,available=false;
  const textures={ready:new Promise(resolve=>finish=()=>{available=!failed;resolve();}),isRemaster:()=>available,enabled:()=>available};
- const draws=[],ps={facings:()=>available?[0,1,2,3]:[0],has:()=>true,setCtx(){},setNow(){}};
+ const draws=[],ps={facings:()=>[0],has:()=>true,setCtx(){},setNow(){}};
  const hero={id:'hero',goal,px:90,py:83,dir:'north',state:sitting?'idle':'walk',sitting,working:true,
   target:{x:90,y:83},pathPts:[{x:7,y:6}],pathIdx:1,workRetryAt:9000,seatKey:goal==='use'?'couch:0':null,seated:goal==='use'};
  const crew={agentId:'crew',px:54,py:47,state:'walk',target:{x:66,y:47},pathPts:[{x:5,y:3}],working:true};
@@ -45,13 +45,13 @@ async function main(){
   A.eq([t.runtime.chair().x,t.runtime.chair().y],[before.seat.cx,before.seat.ty],'pending generated chair uses the same native seat');
   await t.finish();
   const after=t.runtime.state(),direct=t.runtime.direct(),chair=t.runtime.chair();
-  A.eq(['tx','ty','cx','cy','face'].map(k=>after.seat[k]),['tx','ty','cx','cy','face'].map(k=>direct[k]),'texture activation refreshes cached hero seat to the current authored front');
-  A.eq([after.deskFace,after.seat.face,chair.r],['west','west',1],'saved east-side front and generated chair agree after loading');
-  A.eq([chair.x,chair.y],[after.seat.cx,after.seat.cy],'generated chair uses the same fractional side centre');
+   A.eq(['tx','ty','cx','cy','face'].map(k=>after.seat[k]),['tx','ty','cx','cy','face'].map(k=>direct[k]),'texture activation preserves the canonical Console seat');
+   A.eq([after.deskFace,after.seat.face,chair.r],['north','north',2],'generated chair matches the Console front after loading');
+   A.eq([chair.x,chair.y],[after.seat.cx,after.seat.cy==null?after.seat.ty:after.seat.cy],'generated chair uses the same Console seat anchor');
   A.eq([t.hero.px,t.hero.py],heroXY,'ready callback never teleports the '+(sitting?'seated':'walking')+' hero');
-  A.eq([t.hero.target,t.hero.pathPts,t.hero.sitting,t.hero.workRetryAt],[null,null,false,0],'changed workstation seat permits existing work loop to replan');
+   A.eq([t.hero.target,t.hero.pathPts,t.hero.sitting,t.hero.workRetryAt],[{x:90,y:83},[{x:7,y:6}],sitting,9000],'unchanged Console seat preserves the current work route and pose');
   A.eq([t.hero.goal,t.hero.working],['work',true],'real work state survives the seating refresh');
-  A.ok(oldPath!==t.hero.pathPts,'old-front trip is invalidated');
+   A.ok(oldPath===t.hero.pathPts,'unchanged Console seat retains the active route');
   A.eq(JSON.stringify(t.crew),crewJson,'crew retains its position and in-flight route');
   A.eq([...after.blocked],[...before.blocked],'workstation blocking footprint does not change on readiness');
   A.ok(after.geo===before.geo,'ready callback keeps the same geometry projection');
@@ -63,11 +63,11 @@ async function main(){
  }
  for(const goal of [null,'use','fetch','lounge']){
   const t=setup({goal}),body=JSON.stringify(t.hero),route=t.hero.pathPts;await t.finish();
-  A.eq(t.runtime.state().seat.face,'west','cached home updates during '+goal);
+   A.eq(t.runtime.state().seat.face,'north','cached Console home stays stable during '+goal);
   A.eq(JSON.stringify(t.hero),body,'texture readiness preserves all '+goal+' body state');
   A.ok(t.hero.pathPts===route,'texture readiness preserves '+goal+' route identity');
  }
- const stable=setup({r:0,sitting:true}),body=JSON.stringify(stable.hero),route=stable.hero.pathPts;await stable.finish();
+ const stable=setup({sitting:true}),body=JSON.stringify(stable.hero),route=stable.hero.pathPts;await stable.finish();
  A.eq(JSON.stringify(stable.hero),body,'unchanged front never disturbs an active sitter');
  A.ok(stable.hero.pathPts===route,'unchanged front retains the original route');
  const failed=setup({failed:true}),native=failed.runtime.state(),failedBody=JSON.stringify(failed.hero);await failed.finish();

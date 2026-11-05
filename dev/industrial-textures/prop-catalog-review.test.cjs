@@ -4,10 +4,10 @@ global.IndustrialTextures = { isRemaster: () => true, enabled: () => true, ready
 const P = require('../../frontend/app/propsprites.js'), M = require('../../frontend/app/worldmodel.js');
 const F = require('../../frontend/app/prop-catalog-fixture.js'), data = require('../../frontend/app/prop-catalog-data.js');
 const expected = P.CATALOG.flatMap(s => P.facings(s.id).map(r => s.id + ':' + ['s', 'w', 'n', 'e'][r]));
-assert.equal(data.catalogTypes, 161);   // + plugin_terminal (2026-09-29, wears the dispatch pylon art)
+assert.equal(data.catalogTypes, P.CATALOG.length);
 assert.deepEqual(data.views.map(v => v.key).sort(), expected.sort());
 assert.equal(new Set(data.views.map(v => v.key)).size, data.views.length);
-assert.equal(data.supportedViews, 209);
+assert.equal(data.supportedViews, expected.length);
 const starterShape = () => { const doc = M.defaultDoc(); delete doc.meta.createdAt; return JSON.stringify(doc); };
 const initial = starterShape(), covered = new Set();
 let rooms = 0, mounted = 0;
@@ -17,7 +17,7 @@ for (const category of ['', ...data.categories.map(c => c.id)]) {
     const selection = F.page(data, { category, page }), room = F.create(selection.entries, P, M);
     assert.deepEqual(room.violations, [], 'Room placements: ' + category + '/' + page);
     assert.equal(room.anchors.length, 3);
-    assert.deepEqual(room.anchors.map(p => p.t), ['desk', 'chair', 'crate']);
+    assert.deepEqual(room.anchors.map(p => p.t), ['console', 'chair', 'crate']);
     for (const { entry, prop } of room.subjects) {
       covered.add(entry.key);
       assert.deepEqual({ w: prop.w, h: prop.h }, P.footprintAt(prop.t, prop.r));

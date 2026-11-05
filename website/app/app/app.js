@@ -3419,7 +3419,7 @@ const App = (() => {
     // at create AND backfills it on migrate — a stamp that is never SAVED would re-roll on every reload,
     // and every per-station BUILD MODE latch keyed on it would be lost. Read before deserialize mutates it.)
     const hadStationId = !!(pendingStationDoc && pendingStationDoc.meta && pendingStationDoc.meta.createdAt);
-    const hadRetiredWorkstations = Array.isArray(pendingStationDoc?.props) && pendingStationDoc.props.some(prop => prop && ['desk', 'desk2', 'consoleL'].includes(prop.t));
+    const hadRetiredWorkstations = Array.isArray(pendingStationDoc?.props) && pendingStationDoc.props.some(prop => prop && ['desk', 'desk2', 'consoleL', 'workbench'].includes(prop.t));
     station = (pendingStationDoc && pendingStationDoc.rooms) ? WorldModel.deserialize(pendingStationDoc) : WorldModel.create(WorldModel.starterDoc());
     pendingStationDoc = null;
     watchStationSave();

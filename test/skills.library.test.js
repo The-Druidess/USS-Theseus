@@ -27,6 +27,7 @@ const { makeSkillPrefs } = require('../sidecar/skills/prefs.js');
   A.eq(s.default, true, 'default boolean parsed');
   A.ok(/Body line one/.test(s.body) && /Body line two/.test(s.body), 'body captured after frontmatter');
   A.ok(s.body.indexOf('---') === -1, 'frontmatter delimiters are not in the body');
+  A.eq(C.parse(text.replace(/\n/g, '\r\n'), 'fallback').body, s.body, 'Windows and Unix skill bodies share the same prompt budget');
 }
 
 // ---- B. parse: no frontmatter -> whole text is body, slug from filename, safe defaults ----

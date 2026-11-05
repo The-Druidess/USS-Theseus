@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 
-const src = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8');
+const src = fs.readFileSync(path.join(__dirname, '..', 'frontend', 'app', 'chat.js'), 'utf8').replace(/\r\n/g, '\n');
 const start = src.indexOf('  function renderReceipts(batch) {');
 A.ok(start > 0, 'chat.js defines renderReceipts');
 const end = src.indexOf('\n  }\n', start) + 4;

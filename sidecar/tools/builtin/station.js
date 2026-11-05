@@ -208,9 +208,10 @@
       description: 'Edit one existing crew member Dossier document, using the exact agentId and previousText from team.config. Preserve unrelated instructions in the replacement text. An empty text explicitly clears the document. Uses the Dossier save path; applies to the next run, not a currently running turn. Requires an open station page. Does not change the name (station.control agent.rename), skills, permissions, Bay briefs or layout. Never substitute notebook.write for this edit.',
       schema: { type: 'object', additionalProperties: false, required: ['agentId', 'field', 'previousText', 'text'], properties: {
         agentId: { type: 'string' }, field: { type: 'string', enum: ['identity', 'purpose', 'manual', 'context'] },
-        previousText: { type: 'string' }, text: { type: 'string', maxLength: 20000 }
+        previousText: { type: 'string' }, text: { type: 'string' }
       } },
       run: async (args) => {
+        if (args && args.field !== 'purpose' && typeof args.text === 'string' && args.text.length > 20000) return refuse('identity, manual and context documents are limited to 20000 characters; Purpose has no field-specific character limit');
         /* A RENAME IS NOT A PERSONA EDIT (approval-mode run 2026-10-08, Claude Haiku 4.5): "rename NOVA to VEGA" rewrote the
            identity text ("You are NOVA…" → "You are VEGA…") and reported "renamed" while the crew list still said NOVA. An
            identity edit whose ONLY change is one word swapped everywhere is refused toward the real rename. */

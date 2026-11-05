@@ -3093,7 +3093,7 @@ const World = (() => {
   // placed -> nothing pulses; a tool the floor didn't grant a body never invents one).
   function capPropFor(cap, aid) {
     if (!geo || !geo.props || !cap) return null;
-    const match = p => (station && station.capForProp && station.capForProp(p.t) === cap) || p.t === cap;   // t===cap covers catalog types named for the capability itself (e.g. jukebox)
+    const match = p => (station && station.capabilitiesForProp ? station.capabilitiesForProp(p.t).includes(cap) : station && station.capForProp && station.capForProp(p.t) === cap) || p.t === cap;
     const cands = geo.props.filter(match);
     if (!cands.length) return null;
     if (aid) { const own = cands.find(p => p.agentId === aid); if (own) return own; }
@@ -11450,7 +11450,7 @@ const World = (() => {
       }
       const src = (hasBay || (viaBay && viaBay.length))
         ? viaBay.map(norm)
-        : ((station.doc && station.doc().props) || []).map(p => (station.capForProp ? station.capForProp(p.t) : null));
+        : ((station.doc && station.doc().props) || []).flatMap(p => station.capabilitiesForProp ? station.capabilitiesForProp(p.t) : [station.capForProp ? station.capForProp(p.t) : null]);
       const out = [], seen = {};
       for (const cap of src) {
         if (!cap || cap === 'computer' || cap === 'connector' || cap === 'plugin') continue;   // compute = freebie; connectors = added server-side; plugins below
@@ -11477,10 +11477,11 @@ const World = (() => {
       const props = (station.doc && station.doc().props) || [];
       const out = [], seen = {};
       for (const p of props) {
-        const cap = station.capForProp ? station.capForProp(p.t) : null;
+        for (const cap of (station.capabilitiesForProp ? station.capabilitiesForProp(p.t) : [station.capForProp ? station.capForProp(p.t) : null])) {
         if (!cap || cap === 'computer' || cap === 'connector') continue;   // compute = freebie; connectors = server-side
         if (seen[cap]) continue; seen[cap] = true;
         out.push({ objectType: cap });
+        }
       }
       return out;
     }
