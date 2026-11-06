@@ -79,7 +79,7 @@ if(src.includes('function invalidateRefitLeisure(')){
  for(const [face,r] of [['south',0],['west',1],['north',2],['east',3]]){
   const p=chairDraw(true,face);A.eq([p.x,p.y,p.r],[6,5.5,r],'remastered generated chair faces '+face+' on its actual centre');
  }
- A.eq(chairDraw(false,'west').r,undefined,'classic generated chair art remains unturned');
+ A.eq([chairDraw(false,'west').t,chairDraw(false,'west').r],['simple_red_cushion_chair',1],'classic generated red chair retains its authored west facing');
  // An in-memory round trip exercises the real save boundary without touching a user save.
  const st=WM.create(),added=st.addProp({...side,x:5,y:3,agentId:'agent'});
  A.ok(added.ok,'turned assigned desk is valid model geometry');

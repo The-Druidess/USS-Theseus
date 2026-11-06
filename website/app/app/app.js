@@ -3420,6 +3420,7 @@ const App = (() => {
     // and every per-station BUILD MODE latch keyed on it would be lost. Read before deserialize mutates it.)
     const hadStationId = !!(pendingStationDoc && pendingStationDoc.meta && pendingStationDoc.meta.createdAt);
     const hadRetiredWorkstations = Array.isArray(pendingStationDoc?.props) && pendingStationDoc.props.some(prop => prop && ['desk', 'desk2', 'consoleL', 'workbench'].includes(prop.t));
+    const hadLegacySeats = Array.isArray(pendingStationDoc?.props) && pendingStationDoc.props.some(prop => prop && WorldModel.normalizeSeatType(prop.t) !== prop.t);
     station = (pendingStationDoc && pendingStationDoc.rooms) ? WorldModel.deserialize(pendingStationDoc) : WorldModel.create(WorldModel.starterDoc());
     pendingStationDoc = null;
     watchStationSave();
@@ -3432,7 +3433,7 @@ const App = (() => {
       const seeded = station.ensureWorkstation(agent.id);
       // a real floor change, OR a save that just received its station id — either way the doc on disk is
       // now behind the doc in memory, and the id in particular MUST be durable (see hadStationId above).
-      if (!hadStationId || hadRetiredWorkstations || (seeded && seeded.ok && !seeded.existing)) persist();
+      if (!hadStationId || hadRetiredWorkstations || hadLegacySeats || (seeded && seeded.ok && !seeded.existing)) persist();
     }
     if (typeof World.loadStation === 'function') World.loadStation(station);   // the live world IS the built station
     // give resumed summoned crew their real floor bodies now that the station/geo is loaded (no-op for a

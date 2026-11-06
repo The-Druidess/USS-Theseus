@@ -10746,6 +10746,25 @@ const PropSprites = (() => {
     };
   }
 
+  for (const id of ['equipment_atm', 'equipment_safe', 'desktop_inbox_outbox']) {
+    for (const face of ['s', 'w', 'n', 'e']) {
+      F[face === 's' ? id : id + ':' + face] = (x, y, w, h) => {
+        const tray = id === 'desktop_inbox_outbox', top = y - (tray ? 2 : 12);
+        px(x, top, w, h + (tray ? 2 : 12), tray ? '#30363b' : '#a4afb2');
+        px(x + 1, top + 1, w - 2, 1, '#d4dcdd');
+        px(x + w - 2, top + 2, 2, h + (tray ? 0 : 10), '#59656c');
+        px(x + 1, y + h - 2, w - 2, 2, '#59656c');
+        px(x + 1, top + 2, 1, h + (tray ? 0 : 8), '#c4ced0');
+        px(x + 2, top + (tray ? 5 : 14), Math.max(1, w - 4), 1, '#161e23');
+        if (face === 'n') return;
+        const left = face === 'w' ? x : face === 'e' ? x + w / 2 : x + 2;
+        const width = face === 's' ? w - 4 : w / 2;
+        px(left, top + 3, width, tray ? 2 : 7, '#161e23');
+        if (!tray) px(left + 1, top + 9, Math.max(1, width - 2), 1, '#73c95b');
+      };
+    }
+  }
+
   F.laptop = F.deskterminal;
   F.furniture_desk = F.longtable;
   F['furniture_desk:e'] = F['longtable:e'];
@@ -10823,6 +10842,9 @@ const PropSprites = (() => {
     { id: "trophycase", label: "TROPHY CASE", cat: "command", tier: "functional", w: 2, h: 2, animated: true, blocks: true, desc: "TROPHY CASE — the station's real achievements made permanent. Earned milestones, completed quests, and your living tools stand behind glass; click to open the case. It grants nothing — it remembers." },
 
     /* ===================== COSMETIC ===================== */
+    { id: "equipment_atm", label: "ATM", cat: "decor", tier: "cosmetic", pendingEquipment: true, w: 2, h: 1, animated: false, blocks: true, desc: "Pending equipment. Function not yet assigned; grants no tools." },
+    { id: "equipment_safe", label: "SAFE", cat: "storage", tier: "cosmetic", pendingEquipment: true, w: 1, h: 1, animated: false, blocks: true, desc: "Pending bank safe. Function not yet assigned. Separate from the functional file safe; grants no tools." },
+    { id: "desktop_inbox_outbox", label: "TRAY", cat: "decor", tier: "cosmetic", pendingEquipment: true, w: 1, h: 1, animated: false, blocks: false, mount: "surface", desc: "Pending desktop equipment. Place on a desk or table; not connected to workflow intake or outbox." },
     // SCREENS — ops & display dressing.
     { id: "bridge_consolebank", label: "BRIDGE CONSOLE BANK", cat: "screens", tier: "cosmetic", w: 9, h: 1, animated: false, blocks: true, mount: 'wall', desc: "Decorative instrument bank with cyan navigation displays. Fits against a north wall; grants no tools." },
     { id: "bridge_tacticaltable", label: "TACTICAL TABLE", cat: "screens", tier: "cosmetic", w: 7, h: 4, animated: false, blocks: true, desc: "Decorative octagonal navigation table in worn steel and dark cyan glass." },
@@ -11316,6 +11338,11 @@ const PropSprites = (() => {
     const lift = surfaceLift(f);
     const x = f.x * TILE, y = f.y * TILE - lift;
     const r = RAMP.steel;
+    if (f.t === 'simple_red_cushion_chair') {
+      ctx.save(); ctx.beginPath(); ctx.rect(x, y + 6, TILE, 3); ctx.clip();
+      try { draw(f, false); } finally { ctx.restore(); }
+      return;
+    }
     // The occupied couch is a sandwich: cushions, sitter, then the near backrest.
     // Its authored near rail starts halfway down the 26px remastered bounds.
     if (f.t === 'couch' && typeof PropRemaster !== 'undefined' && PropRemaster.enabled('couch')) {

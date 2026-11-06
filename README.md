@@ -94,6 +94,25 @@ Jefferies has a narrower service-hull silhouette. Click a tier or use the arrow,
 Home, and End keys while its tab is focused. Switching hulls does not alter the
 saved station or interrupt crew work. Build mode returns to the Bridge.
 
+Individual chairs, stools, and workstation seats use **SIMPLE RED CUSHION
+CHAIR** throughout the ship. Existing individual-seat props migrate on reload,
+preserving their IDs, positions, footprints, rotation, and Commander binding;
+new placements use the same chair. Couches, booths, benches, and recliners
+retain their original seating. Q (`q_judge`) is the Commander exception: his
+assigned seat always renders his specific throne, regardless of the underlying
+chair type, and follows the seat's position and facing.
+The simple red chair uses the replacement object's cardinal rotations directly:
+south, west, north, and east correspond to `r = 0, 1, 2, 3`. Its transparent
+padding is excluded from the floor contact, keeping every view grounded.
+
+Build's **EQUIPMENT** selection area offers three pending equipment objects: **ATM** (2x1 floor tiles),
+**SAFE** (1x1 floor tile, intended for the bank), and **TRAY** (1x1,
+mounted on a desk or table). Each has four authored cardinal views and is labeled
+as pending equipment with its function unassigned. Their
+functions are deliberately unassigned: no financial actions, tool grants,
+inventory, or workflow routing. They do not replace the functional safe, intake,
+or outbox, and adding them to the catalog does not place them on existing ships.
+
 The crew manifest shows each officer's assigned room above their title. Bridge
 crew sort first, then other rooms by name, then officer titles alphabetically
 within each room. Assignment follows the officer's dedicated computer, falling

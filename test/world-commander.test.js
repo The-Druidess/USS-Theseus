@@ -14,7 +14,7 @@ A.eq(saved.meta.commander, { propId: chair.id, skin: 'blank' }, 'binding survive
 const seats = new Set(), warnings = [];
 const runtime = Function('station', 'DATA', 'PropAnchor', 'occupiedSeats', 'console', `
 let commander = null, geo;
-const T = 12, SEAT_LIFT = { chair: 2 };
+const T = 12, SEAT_LIFT = { simple_red_cushion_chair: 2 };
 const makeCrewBody = (id, name, color, px, py, skin) => ({ id, name, color, px, py, skin, working: false });
 ${A.fnBody(src, 'function syncCommander(')}
 return g => { geo = g; syncCommander(); return commander; };
@@ -22,6 +22,7 @@ return g => { geo = g; syncCommander(); return commander; };
 const geo = () => st.projectGeometry();
 let b = runtime(geo());
 A.eq([b.name, b.agentId, b.seated, b.sitting, b.working], ['COMMANDER', null, true, true, false], 'human is seated, never an AI worker');
+A.eq(b.seatType, 'simple_red_cushion_chair', 'Commander uses the standardized chair');
 A.eq([b.seatPx, b.seatPy, b.seatLift], [(geo().props.find(p => p.id === chair.id).x + 0.5) * 12, (geo().props.find(p => p.id === chair.id).y + 1) * 12 - 1, 2], 'uses real chair anchor and seat lift');
 A.ok(seats.has(chair.id + ':0'), 'seat reserved against idle AI occupancy');
 A.ok(st.moveProp(chair.id, 2, 0).ok, 'chair moves');
@@ -81,6 +82,9 @@ for (const direction of ['south', 'south-east', 'east', 'north-east', 'north', '
   const png = fs.readFileSync(path.join(__dirname, '..', 'frontend', relative));
   A.eq([png.readUInt32BE(16), png.readUInt32BE(20)], [176, 176], 'approved canvas ' + direction);
   A.ok(png.equals(fs.readFileSync(path.join(__dirname, '..', 'website', 'app', relative))), 'website throne parity ' + direction);
+}
+for (const seatType of ['chair', 'simple_red_cushion_chair', 'red_captains_chair']) {
+  A.ok(throne.image(Object.assign(q, { seatType })), 'Q always uses his specific throne regardless of the underlying seat type');
 }
 A.ok(src.includes('commander.usingProp === p.id && commanderThroneImage(commander)) continue'), 'native base and foreground skipped only for ready Q throne');
 A.ok(src.includes(': commanderThroneImage(b) ? { y: fallbackY, draw: () => drawCommanderThrone(b) }'), 'exclusive composite shares body depth ordering');

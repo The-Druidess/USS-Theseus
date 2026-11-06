@@ -1,10 +1,10 @@
 {
   "version": 1,
   "coordinateSpace": "full-export-normalized",
-  "catalogTypes": 166,
-  "views": 211,
+  "catalogTypes": 169,
+  "views": 223,
   "effectTypes": 90,
-  "quietTypes": 78,
+  "quietTypes": 81,
   "records": [
     {
       "id": "industrial_locker",
@@ -9199,10 +9199,10 @@
       "classification": "none",
       "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
       "inCurrentDemo": true,
-      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-s-4def3258d076.png",
-      "sourceWidth": 318,
-      "sourceHeight": 414,
-      "sha256": "4def3258d076cbf0634ab708eef197075fa6139897561e5a3026416a7ccf7ad9",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-s-683d2197cf7c.png",
+      "sourceWidth": 96,
+      "sourceHeight": 96,
+      "sha256": "683d2197cf7c38a2f7dd49fea75fb99b959244b63b6c1799d643d3f9c9edba86",
       "regions": [],
       "evidence": [
         "frontend/app/propsprites.js:11296",
@@ -9217,10 +9217,10 @@
       "classification": "none",
       "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
       "inCurrentDemo": true,
-      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-w-874a3d34c005.png",
-      "sourceWidth": 300,
-      "sourceHeight": 426,
-      "sha256": "874a3d34c0051d6f2611675713df0a60bbaf88ae5d3687827845ab9876f74074",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-w-386682241ce7.png",
+      "sourceWidth": 96,
+      "sourceHeight": 96,
+      "sha256": "386682241ce785be71e4bba03f3d6b9b8fd060dc178a547bca382a8bc5be31cf",
       "regions": [],
       "evidence": [
         "frontend/app/propsprites.js:11296",
@@ -9235,10 +9235,10 @@
       "classification": "none",
       "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
       "inCurrentDemo": true,
-      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-n-e3bbc34100d6.png",
-      "sourceWidth": 312,
-      "sourceHeight": 426,
-      "sha256": "e3bbc34100d61e73c3d989a7bde00adb079a9539783a88f38d64f290fbb66696",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-n-115d7606cf6c.png",
+      "sourceWidth": 96,
+      "sourceHeight": 96,
+      "sha256": "115d7606cf6cdb64d2684a3dafcd21b2bc840dbef8f9187ed8d3c4eb387b7e17",
       "regions": [],
       "evidence": [
         "frontend/app/propsprites.js:11296",
@@ -9253,10 +9253,10 @@
       "classification": "none",
       "reason": "Seating/table body remains untouched; occupancy, sleep and mounting stay with existing body/foreground/surface owners.",
       "inCurrentDemo": true,
-      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-e-60c67969e536.png",
-      "sourceWidth": 264,
-      "sourceHeight": 420,
-      "sha256": "60c67969e536074c1d07e541681eaa02df55f86077087b1be08811c84ca66bc2",
+      "image": "frontend/assets/industrial/projection-correction/simple_red_cushion_chair-e-621884f98de1.png",
+      "sourceWidth": 96,
+      "sourceHeight": 96,
+      "sha256": "621884f98de1980c2e27dd5b3fdef54db5774f7b7e5867a4633c90ea202017cf",
       "regions": [],
       "evidence": [
         "frontend/app/propsprites.js:11296",
@@ -9277,7 +9277,7 @@
       "sha256": "0f98311fb7a86f1586addec896a74134bae13ecdecafdd5f52a80283b84a35ff",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:10766",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -9295,7 +9295,7 @@
       "sha256": "f661e14deda1d1a09059b21ddc4b9256c8e5db4c9ff075534a7e7ac7df22ff44",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:10766",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -9313,7 +9313,7 @@
       "sha256": "f5ad07744c51e3ccd24743fefae5e3b2fc82b7904e6abd3b2d25f71941bb329b",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:10766",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -9331,7 +9331,7 @@
       "sha256": "07076a59f19a30d6ea44ca4733e9e32436d3ed8b908755f259743f94a28edcbe",
       "regions": [],
       "evidence": [
-        "frontend/app/propsprites.js:10750",
+        "frontend/app/propsprites.js:10766",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -9378,7 +9378,7 @@
         }
       ],
       "evidence": [
-        "frontend/app/propsprites.js:10749",
+        "frontend/app/propsprites.js:10765",
         "frontend/app/propsprites.js:11296",
         "frontend/app/propremaster.js:285"
       ],
@@ -9388,6 +9388,222 @@
         "width": 1,
         "height": 1
       }
+    },
+    {
+      "id": "equipment_atm",
+      "view": "s",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_atm-s-9d8135f3b01c.png",
+      "sourceWidth": 192,
+      "sourceHeight": 192,
+      "sha256": "9d8135f3b01cf240e179512fae126666e0025464d6ceb222babc6253ae387ba7",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_atm",
+      "view": "w",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_atm-w-05ee9f8c631f.png",
+      "sourceWidth": 192,
+      "sourceHeight": 192,
+      "sha256": "05ee9f8c631fd396a72005b4fc75ec665410f8c2868e84041d2dede6ef016d75",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_atm",
+      "view": "n",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_atm-n-564be1f4775d.png",
+      "sourceWidth": 192,
+      "sourceHeight": 192,
+      "sha256": "564be1f4775dd0208d33d5a8eac7d1b28472d7817b4379beab07b211393433b5",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_atm",
+      "view": "e",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_atm-e-3cc40343d58c.png",
+      "sourceWidth": 192,
+      "sourceHeight": 192,
+      "sha256": "3cc40343d58cbb69d017ef1f5d2ac687413afba8860ea76be1d79108d26c0eac",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_safe",
+      "view": "s",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_safe-s-24ed5768f922.png",
+      "sourceWidth": 64,
+      "sourceHeight": 64,
+      "sha256": "24ed5768f922b3552c80184178b2a729ec64fa134863ec011e3ea270d305c048",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_safe",
+      "view": "w",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_safe-w-43c4a274d9f9.png",
+      "sourceWidth": 64,
+      "sourceHeight": 64,
+      "sha256": "43c4a274d9f9f4f29f3ad660c7512f49709802c5d3c3f44d0a19cb8e54b34b17",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_safe",
+      "view": "n",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_safe-n-9c9c12a322c6.png",
+      "sourceWidth": 64,
+      "sourceHeight": 64,
+      "sha256": "9c9c12a322c66a33a8847dad11dadb50a39a215055d9ad63ad67dc1650d4aa87",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "equipment_safe",
+      "view": "e",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/equipment_safe-e-c715526b7473.png",
+      "sourceWidth": 64,
+      "sourceHeight": 64,
+      "sha256": "c715526b7473fb4d8b615b6b557fbecd74c0c5c3a1aa66238a63ca54980f96f7",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "desktop_inbox_outbox",
+      "view": "s",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/desktop_inbox_outbox-s-b17e965fd8cb.png",
+      "sourceWidth": 48,
+      "sourceHeight": 48,
+      "sha256": "b17e965fd8cb6c95f0ddc6239746276cd3b13e7adacb353e62bb3a918deca68c",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "desktop_inbox_outbox",
+      "view": "w",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/desktop_inbox_outbox-w-62d637722b4d.png",
+      "sourceWidth": 48,
+      "sourceHeight": 48,
+      "sha256": "62d637722b4dfcadb1db3c5b8077118f06b710522ce432abe0a41d5926b8d3e3",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "desktop_inbox_outbox",
+      "view": "n",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/desktop_inbox_outbox-n-106074676ccc.png",
+      "sourceWidth": 48,
+      "sourceHeight": 48,
+      "sha256": "106074676ccc9cecdc5a855f8822d309da3e42b58f6448022dface5ac34c2fd5",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
+    },
+    {
+      "id": "desktop_inbox_outbox",
+      "view": "e",
+      "classification": "none",
+      "reason": "Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.",
+      "inCurrentDemo": true,
+      "image": "frontend/assets/industrial/projection-correction/desktop_inbox_outbox-e-12f1dfdb2f88.png",
+      "sourceWidth": 48,
+      "sourceHeight": 48,
+      "sha256": "12f1dfdb2f8861b4b50afe6fd03b22252ff820227a80498dbe473935db0ed181",
+      "regions": [],
+      "evidence": [
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propsprites.js:11296",
+        "frontend/app/propremaster.js:285"
+      ],
+      "frameBounds": null
     }
   ]
 }

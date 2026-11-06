@@ -19,12 +19,13 @@
   // Some furniture grants tools; some impressive-looking machinery is only decoration.
   function kind(spec, cap) {
     if (cap && cap !== 'computer') return 'abilities';
-    if (cap === 'computer' || spec.tier === 'functional') return 'equipment';
+    if (cap === 'computer' || spec.tier === 'functional' || spec.pendingEquipment) return 'equipment';
     return 'decoration';
   }
   function label(spec, cap) {
     if (cap === 'computer') return 'WORKSTATION';
     if (cap) return 'ABILITY · ' + (ABILITY_NAMES[cap] || cap.toUpperCase());
+    if (spec.pendingEquipment) return 'PENDING EQUIPMENT · FUNCTION UNASSIGNED';
     if (spec.cat === 'workflow' && spec.tier === 'functional') return 'WORKFLOW EQUIPMENT';
     if (spec.tier === 'functional') return 'STATION EQUIPMENT';
     return 'DECORATION · APPEARANCE ONLY';

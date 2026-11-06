@@ -39,6 +39,9 @@ const WorldModel = (() => {
   const MIN_HALL = 2;   // min hallway length, in tiles (long axis)
   const MAX_SPAN = 240; // max station footprint span per axis (keeps the bake canvas bounded)
   const HULL_PAD = 14;  // extra canvas px below the grid for the south hull extrusion (matches v7 H = ROWS*T+14)
+  const CHAIR_TYPE = 'simple_red_cushion_chair';
+  const INDIVIDUAL_SEATS = new Set(['chair', 'stool', 'dinerchair', 'podchair', 'red_cushion_chair', 'red_captains_chair', CHAIR_TYPE]);
+  const normalizeSeatType = t => INDIVIDUAL_SEATS.has(t) ? CHAIR_TYPE : t;
 
   /* FILTER/MERGER junction config carried on a prop (additive, like a BAY's agentId; the pipeline reads
      routes/def for filters, bufferSize for mergers). Sanitized so a hand-edited save can never inject a bad lane. */
@@ -1636,7 +1639,7 @@ const WorldModel = (() => {
       checkProp({ x1: x, y1: y, x2: x + (w || 1) - 1, y2: y + (h || 1) - 1 }, ignoreId, t);
 
     function addProp(opts) {
-      const t = String(opts.t || '').trim();
+      const t = normalizeSeatType(String(opts.t || '').trim());
       if (!t) return fail('NO_TYPE', 'no prop type');
       const w = Math.max(1, opts.w | 0 || 1), h = Math.max(1, opts.h | 0 || 1);
       const x = opts.x | 0, y = opts.y | 0;
@@ -3448,7 +3451,7 @@ const WorldModel = (() => {
     function setCommanderSeat(config) {
       if (config !== null) {
         const p = config && propById(config.propId);
-        if (!p || p.t !== 'chair' || p.w !== 1 || p.h !== 1 || p.agentId) return fail('BAD_COMMANDER_SEAT', 'Commander needs an unassigned single-tile chair');
+        if (!p || p.t !== CHAIR_TYPE || p.w !== 1 || p.h !== 1 || p.agentId) return fail('BAD_COMMANDER_SEAT', 'Commander needs an unassigned single-tile chair');
         if (typeof config.skin !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(config.skin)) return fail('BAD_SKIN', 'A skin catalog key is required');
       }
       snapshot();
@@ -3629,6 +3632,7 @@ const WorldModel = (() => {
     doc.props = doc.props.filter(p => p && typeof p === 'object' && typeof p.t === 'string')
       .map(p => { const o = { id: p.id || null, t: p.t, x: p.x | 0, y: p.y | 0, w: Math.max(1, p.w | 0 || 1), h: Math.max(1, p.h | 0 || 1) }; if (p.block === false && !LEGACY_WALKABLE_DOCKS[p.t]) o.block = false; if (typeof p.agentId === 'string' && p.agentId) o.agentId = p.agentId; const r0 = cleanRot(p.r); if (r0) o.r = r0; if (p.m) o.m = 1; if (typeof p.role === 'string' && p.role) o.role = p.role.slice(0, 24); if (typeof p.brief === 'string' && p.brief.trim()) o.brief = p.brief.slice(0, 2000); if (p.t === 'bay' && typeof p.hands === 'string' && p.hands.trim()) o.hands = p.hands.slice(0, 160); if (typeof p.label === 'string' && p.label.trim()) o.label = p.label.slice(0, 48); if (p.t === 'intake' && typeof p.projectRoot === 'string' && p.projectRoot.trim()) o.projectRoot = p.projectRoot.trim().slice(0, 4096); if (p.t === 'intake' && p.limits && typeof p.limits === 'object') { const nl = normalizeLimits(p.limits); if (nl) o.limits = { maxHops: nl.maxHops, maxUsdPerMessage: nl.maxUsdPerMessage, maxUsdPerDay: nl.maxUsdPerDay }; } applyJunctionCfg(o, p); if (cleanDoor(p.door)) o.door = p.door; if (typeof p.connectorId === 'string' && p.connectorId.trim()) o.connectorId = p.connectorId.trim(); if (p.t === 'plugin_terminal' && typeof p.pluginId === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(p.pluginId.trim())) o.pluginId = p.pluginId.trim(); return o; });
     for (const prop of doc.props) {
+      prop.t = normalizeSeatType(prop.t);
       if (!['desk', 'desk2', 'consoleL'].includes(prop.t)) continue;
       prop.t = 'console';
       if (prop.h === 1 && (prop.w === 2 || prop.w === 3)) prop.w = 2;
@@ -3691,7 +3695,7 @@ const WorldModel = (() => {
   }
 
   return {
-    TILE, MARGIN, MIN_ROOM, MIN_HALL, FLOOR_STYLES, FLOOR_MATERIALS, MAT_ORDER, WALL_MATERIALS, WALL_ORDER, HULL_MATERIALS, HULL_ORDER, ROOM_KINDS, KIND_ORDER,
+    TILE, MARGIN, MIN_ROOM, MIN_HALL, CHAIR_TYPE, normalizeSeatType, FLOOR_STYLES, FLOOR_MATERIALS, MAT_ORDER, WALL_MATERIALS, WALL_ORDER, HULL_MATERIALS, HULL_ORDER, ROOM_KINDS, KIND_ORDER,
     create: doc => makeStation(doc),
     deserialize: doc => makeStation(clone(doc)),
     defaultDoc: freshDoc,

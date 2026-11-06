@@ -2426,51 +2426,51 @@
       }
     },
     "simple_red_cushion_chair:s": {
-      "image": "simple_red_cushion_chair-s-4def3258d076.png",
-      "width": 318,
-      "height": 414,
-      "sha256": "4def3258d076cbf0634ab708eef197075fa6139897561e5a3026416a7ccf7ad9",
+      "image": "simple_red_cushion_chair-s-683d2197cf7c.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "683d2197cf7c38a2f7dd49fea75fb99b959244b63b6c1799d643d3f9c9edba86",
       "crop": {
-        "x": 0,
-        "y": 0,
-        "width": 318,
-        "height": 414
+        "x": 25,
+        "y": 13,
+        "width": 46,
+        "height": 71
       }
     },
     "simple_red_cushion_chair:w": {
-      "image": "simple_red_cushion_chair-w-874a3d34c005.png",
-      "width": 300,
-      "height": 426,
-      "sha256": "874a3d34c0051d6f2611675713df0a60bbaf88ae5d3687827845ab9876f74074",
+      "image": "simple_red_cushion_chair-w-386682241ce7.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "386682241ce785be71e4bba03f3d6b9b8fd060dc178a547bca382a8bc5be31cf",
       "crop": {
-        "x": 0,
-        "y": 0,
-        "width": 300,
-        "height": 426
+        "x": 22,
+        "y": 13,
+        "width": 55,
+        "height": 78
       }
     },
     "simple_red_cushion_chair:n": {
-      "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
-      "width": 312,
-      "height": 426,
-      "sha256": "e3bbc34100d61e73c3d989a7bde00adb079a9539783a88f38d64f290fbb66696",
+      "image": "simple_red_cushion_chair-n-115d7606cf6c.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "115d7606cf6cdb64d2684a3dafcd21b2bc840dbef8f9187ed8d3c4eb387b7e17",
       "crop": {
-        "x": 0,
-        "y": 0,
-        "width": 312,
-        "height": 426
+        "x": 25,
+        "y": 13,
+        "width": 46,
+        "height": 71
       }
     },
     "simple_red_cushion_chair:e": {
-      "image": "simple_red_cushion_chair-e-60c67969e536.png",
-      "width": 264,
-      "height": 420,
-      "sha256": "60c67969e536074c1d07e541681eaa02df55f86077087b1be08811c84ca66bc2",
+      "image": "simple_red_cushion_chair-e-621884f98de1.png",
+      "width": 96,
+      "height": 96,
+      "sha256": "621884f98de1980c2e27dd5b3fdef54db5774f7b7e5867a4633c90ea202017cf",
       "crop": {
-        "x": 0,
-        "y": 0,
-        "width": 264,
-        "height": 420
+        "x": 19,
+        "y": 13,
+        "width": 55,
+        "height": 78
       }
     },
     "furniture_desk:s": {
@@ -2531,6 +2531,150 @@
         "y": 0,
         "width": 276,
         "height": 276
+      }
+    },
+    "equipment_atm:s": {
+      "image": "equipment_atm-s-9d8135f3b01c.png",
+      "width": 192,
+      "height": 192,
+      "sha256": "9d8135f3b01cf240e179512fae126666e0025464d6ceb222babc6253ae387ba7",
+      "crop": {
+        "x": 60,
+        "y": 14,
+        "width": 72,
+        "height": 167
+      }
+    },
+    "equipment_atm:w": {
+      "image": "equipment_atm-w-05ee9f8c631f.png",
+      "width": 192,
+      "height": 192,
+      "sha256": "05ee9f8c631fd396a72005b4fc75ec665410f8c2868e84041d2dede6ef016d75",
+      "crop": {
+        "x": 50,
+        "y": 11,
+        "width": 86,
+        "height": 168
+      }
+    },
+    "equipment_atm:n": {
+      "image": "equipment_atm-n-564be1f4775d.png",
+      "width": 192,
+      "height": 192,
+      "sha256": "564be1f4775dd0208d33d5a8eac7d1b28472d7817b4379beab07b211393433b5",
+      "crop": {
+        "x": 62,
+        "y": 14,
+        "width": 68,
+        "height": 165
+      }
+    },
+    "equipment_atm:e": {
+      "image": "equipment_atm-e-3cc40343d58c.png",
+      "width": 192,
+      "height": 192,
+      "sha256": "3cc40343d58cbb69d017ef1f5d2ac687413afba8860ea76be1d79108d26c0eac",
+      "crop": {
+        "x": 54,
+        "y": 11,
+        "width": 87,
+        "height": 168
+      }
+    },
+    "equipment_safe:s": {
+      "image": "equipment_safe-s-24ed5768f922.png",
+      "width": 64,
+      "height": 64,
+      "sha256": "24ed5768f922b3552c80184178b2a729ec64fa134863ec011e3ea270d305c048",
+      "crop": {
+        "x": 3,
+        "y": 2,
+        "width": 58,
+        "height": 59
+      }
+    },
+    "equipment_safe:w": {
+      "image": "equipment_safe-w-43c4a274d9f9.png",
+      "width": 64,
+      "height": 64,
+      "sha256": "43c4a274d9f9f4f29f3ad660c7512f49709802c5d3c3f44d0a19cb8e54b34b17",
+      "crop": {
+        "x": 5,
+        "y": 2,
+        "width": 56,
+        "height": 59
+      }
+    },
+    "equipment_safe:n": {
+      "image": "equipment_safe-n-9c9c12a322c6.png",
+      "width": 64,
+      "height": 64,
+      "sha256": "9c9c12a322c66a33a8847dad11dadb50a39a215055d9ad63ad67dc1650d4aa87",
+      "crop": {
+        "x": 3,
+        "y": 4,
+        "width": 58,
+        "height": 57
+      }
+    },
+    "equipment_safe:e": {
+      "image": "equipment_safe-e-c715526b7473.png",
+      "width": 64,
+      "height": 64,
+      "sha256": "c715526b7473fb4d8b615b6b557fbecd74c0c5c3a1aa66238a63ca54980f96f7",
+      "crop": {
+        "x": 5,
+        "y": 2,
+        "width": 49,
+        "height": 60
+      }
+    },
+    "desktop_inbox_outbox:s": {
+      "image": "desktop_inbox_outbox-s-b17e965fd8cb.png",
+      "width": 48,
+      "height": 48,
+      "sha256": "b17e965fd8cb6c95f0ddc6239746276cd3b13e7adacb353e62bb3a918deca68c",
+      "crop": {
+        "x": 8,
+        "y": 11,
+        "width": 22,
+        "height": 20
+      }
+    },
+    "desktop_inbox_outbox:w": {
+      "image": "desktop_inbox_outbox-w-62d637722b4d.png",
+      "width": 48,
+      "height": 48,
+      "sha256": "62d637722b4dfcadb1db3c5b8077118f06b710522ce432abe0a41d5926b8d3e3",
+      "crop": {
+        "x": 14,
+        "y": 13,
+        "width": 23,
+        "height": 18
+      }
+    },
+    "desktop_inbox_outbox:n": {
+      "image": "desktop_inbox_outbox-n-106074676ccc.png",
+      "width": 48,
+      "height": 48,
+      "sha256": "106074676ccc9cecdc5a855f8822d309da3e42b58f6448022dface5ac34c2fd5",
+      "crop": {
+        "x": 18,
+        "y": 12,
+        "width": 21,
+        "height": 20
+      }
+    },
+    "desktop_inbox_outbox:e": {
+      "image": "desktop_inbox_outbox-e-12f1dfdb2f88.png",
+      "width": 48,
+      "height": 48,
+      "sha256": "12f1dfdb2f8861b4b50afe6fd03b22252ff820227a80498dbe473935db0ed181",
+      "crop": {
+        "x": 12,
+        "y": 17,
+        "width": 23,
+        "height": 16
       }
     }
   }

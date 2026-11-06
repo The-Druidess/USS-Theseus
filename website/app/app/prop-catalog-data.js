@@ -2,10 +2,10 @@
 'use strict';
 const PropCatalogData = {
   "version": 1,
-  "catalogTypes": 166,
-  "supportedViews": 235,
+  "catalogTypes": 169,
+  "supportedViews": 247,
   "source": "frontend/assets/industrial/projection-correction/manifest.json",
-  "sourceSha256": "c6888e8a503770c3223436a48acdf2d21850672f23ec838026a4a32c079268e5",
+  "sourceSha256": "20e2f0604ddf2f253c8531e563a10f597632bdc6d108197cd09329a11c673312",
   "categories": [
     {
       "id": "workstation",
@@ -1941,6 +1941,354 @@ const PropCatalogData = {
       "image": "trophycase-e.png",
       "surface": false,
       "animated": true
+    },
+    {
+      "key": "equipment_atm:s",
+      "id": "equipment_atm",
+      "face": "s",
+      "r": 0,
+      "label": "ATM",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -18,
+        "width": 24,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_atm-s-9d8135f3b01c.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_atm:w",
+      "id": "equipment_atm",
+      "face": "w",
+      "r": 1,
+      "label": "ATM",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -18,
+        "width": 24,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_atm-w-05ee9f8c631f.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_atm:n",
+      "id": "equipment_atm",
+      "face": "n",
+      "r": 2,
+      "label": "ATM",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -18,
+        "width": 24,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_atm-n-564be1f4775d.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_atm:e",
+      "id": "equipment_atm",
+      "face": "e",
+      "r": 3,
+      "label": "ATM",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 2,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -18,
+        "width": 24,
+        "height": 30
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_atm-e-3cc40343d58c.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_safe:s",
+      "id": "equipment_safe",
+      "face": "s",
+      "r": 0,
+      "label": "SAFE",
+      "category": "storage",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -6,
+        "width": 12,
+        "height": 18
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_safe-s-24ed5768f922.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_safe:w",
+      "id": "equipment_safe",
+      "face": "w",
+      "r": 1,
+      "label": "SAFE",
+      "category": "storage",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -6,
+        "width": 12,
+        "height": 18
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_safe-w-43c4a274d9f9.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_safe:n",
+      "id": "equipment_safe",
+      "face": "n",
+      "r": 2,
+      "label": "SAFE",
+      "category": "storage",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -6,
+        "width": 12,
+        "height": 18
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_safe-n-9c9c12a322c6.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "equipment_safe:e",
+      "id": "equipment_safe",
+      "face": "e",
+      "r": 3,
+      "label": "SAFE",
+      "category": "storage",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": -6,
+        "width": 12,
+        "height": 18
+      },
+      "placement": "floor",
+      "requiredMount": null,
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "equipment_safe-e-c715526b7473.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "desktop_inbox_outbox:s",
+      "id": "desktop_inbox_outbox",
+      "face": "s",
+      "r": 0,
+      "label": "TRAY",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": 4,
+        "width": 12,
+        "height": 8
+      },
+      "placement": "surface",
+      "requiredMount": "surface",
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "s",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "desktop_inbox_outbox-s-b17e965fd8cb.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "desktop_inbox_outbox:w",
+      "id": "desktop_inbox_outbox",
+      "face": "w",
+      "r": 1,
+      "label": "TRAY",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": 4,
+        "width": 12,
+        "height": 8
+      },
+      "placement": "surface",
+      "requiredMount": "surface",
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "w",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "desktop_inbox_outbox-w-62d637722b4d.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "desktop_inbox_outbox:n",
+      "id": "desktop_inbox_outbox",
+      "face": "n",
+      "r": 2,
+      "label": "TRAY",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": 4,
+        "width": 12,
+        "height": 8
+      },
+      "placement": "surface",
+      "requiredMount": "surface",
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "n",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "desktop_inbox_outbox-n-106074676ccc.png",
+      "surface": false,
+      "animated": false
+    },
+    {
+      "key": "desktop_inbox_outbox:e",
+      "id": "desktop_inbox_outbox",
+      "face": "e",
+      "r": 3,
+      "label": "TRAY",
+      "category": "decor",
+      "tier": "cosmetic",
+      "footprint": {
+        "w": 1,
+        "h": 1
+      },
+      "bounds": {
+        "x": 0,
+        "y": 4,
+        "width": 12,
+        "height": 8
+      },
+      "placement": "surface",
+      "requiredMount": "surface",
+      "optionalStack": false,
+      "flat": false,
+      "artFace": "e",
+      "nativeMirror": false,
+      "nativeTurn": false,
+      "image": "desktop_inbox_outbox-e-12f1dfdb2f88.png",
+      "surface": false,
+      "animated": false
     },
     {
       "key": "bridge_consolebank:s",
@@ -5389,7 +5737,7 @@ const PropCatalogData = {
       "artFace": "s",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "simple_red_cushion_chair-s-4def3258d076.png",
+      "image": "simple_red_cushion_chair-s-683d2197cf7c.png",
       "surface": false,
       "animated": false
     },
@@ -5418,7 +5766,7 @@ const PropCatalogData = {
       "artFace": "w",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "simple_red_cushion_chair-w-874a3d34c005.png",
+      "image": "simple_red_cushion_chair-w-386682241ce7.png",
       "surface": false,
       "animated": false
     },
@@ -5447,7 +5795,7 @@ const PropCatalogData = {
       "artFace": "n",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
+      "image": "simple_red_cushion_chair-n-115d7606cf6c.png",
       "surface": false,
       "animated": false
     },
@@ -5476,7 +5824,7 @@ const PropCatalogData = {
       "artFace": "e",
       "nativeMirror": false,
       "nativeTurn": false,
-      "image": "simple_red_cushion_chair-e-60c67969e536.png",
+      "image": "simple_red_cushion_chair-e-621884f98de1.png",
       "surface": false,
       "animated": false
     },

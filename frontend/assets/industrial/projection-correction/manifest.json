@@ -5355,9 +5355,9 @@
     "simple_red_cushion_chair": {
       "views": {
         "s": {
-          "image": "simple_red_cushion_chair-s-4def3258d076.png",
-          "sourceWidth": 318,
-          "sourceHeight": 414,
+          "image": "simple_red_cushion_chair-s-683d2197cf7c.png",
+          "sourceWidth": 96,
+          "sourceHeight": 96,
           "footprint": {
             "w": 1,
             "h": 1
@@ -5372,14 +5372,14 @@
           "exposure": 1,
           "contact": {
             "x": 0.5,
-            "y": 1
+            "y": 0.875
           },
           "effects": false
         },
         "w": {
-          "image": "simple_red_cushion_chair-w-874a3d34c005.png",
-          "sourceWidth": 300,
-          "sourceHeight": 426,
+          "image": "simple_red_cushion_chair-w-386682241ce7.png",
+          "sourceWidth": 96,
+          "sourceHeight": 96,
           "footprint": {
             "w": 1,
             "h": 1
@@ -5394,14 +5394,14 @@
           "exposure": 1,
           "contact": {
             "x": 0.5,
-            "y": 1
+            "y": 0.9479166666666666
           },
           "effects": false
         },
         "n": {
-          "image": "simple_red_cushion_chair-n-e3bbc34100d6.png",
-          "sourceWidth": 312,
-          "sourceHeight": 426,
+          "image": "simple_red_cushion_chair-n-115d7606cf6c.png",
+          "sourceWidth": 96,
+          "sourceHeight": 96,
           "footprint": {
             "w": 1,
             "h": 1
@@ -5416,14 +5416,14 @@
           "exposure": 1,
           "contact": {
             "x": 0.5,
-            "y": 1
+            "y": 0.875
           },
           "effects": false
         },
         "e": {
-          "image": "simple_red_cushion_chair-e-60c67969e536.png",
-          "sourceWidth": 264,
-          "sourceHeight": 420,
+          "image": "simple_red_cushion_chair-e-621884f98de1.png",
+          "sourceWidth": 96,
+          "sourceHeight": 96,
           "footprint": {
             "w": 1,
             "h": 1
@@ -5438,7 +5438,7 @@
           "exposure": 1,
           "contact": {
             "x": 0.5,
-            "y": 1
+            "y": 0.9479166666666666
           },
           "effects": false
         }
@@ -5560,6 +5560,282 @@
             "x": 0.5,
             "y": 1
           }
+        }
+      }
+    },
+    "equipment_atm": {
+      "views": {
+        "s": {
+          "image": "equipment_atm-s-9d8135f3b01c.png",
+          "sourceWidth": 192,
+          "sourceHeight": 192,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -18,
+            "width": 24,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.9427083333333334
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "equipment_atm-w-05ee9f8c631f.png",
+          "sourceWidth": 192,
+          "sourceHeight": 192,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -18,
+            "width": 24,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.9322916666666666
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "equipment_atm-n-564be1f4775d.png",
+          "sourceWidth": 192,
+          "sourceHeight": 192,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -18,
+            "width": 24,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.9322916666666666
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "equipment_atm-e-3cc40343d58c.png",
+          "sourceWidth": 192,
+          "sourceHeight": 192,
+          "footprint": {
+            "w": 2,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -18,
+            "width": 24,
+            "height": 30
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.9322916666666666
+          },
+          "effects": false
+        }
+      }
+    },
+    "equipment_safe": {
+      "views": {
+        "s": {
+          "image": "equipment_safe-s-24ed5768f922.png",
+          "sourceWidth": 64,
+          "sourceHeight": 64,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -6,
+            "width": 12,
+            "height": 18
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.953125
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "equipment_safe-w-43c4a274d9f9.png",
+          "sourceWidth": 64,
+          "sourceHeight": 64,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -6,
+            "width": 12,
+            "height": 18
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.953125
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "equipment_safe-n-9c9c12a322c6.png",
+          "sourceWidth": 64,
+          "sourceHeight": 64,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -6,
+            "width": 12,
+            "height": 18
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.953125
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "equipment_safe-e-c715526b7473.png",
+          "sourceWidth": 64,
+          "sourceHeight": 64,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": -6,
+            "width": 12,
+            "height": 18
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.96875
+          },
+          "effects": false
+        }
+      }
+    },
+    "desktop_inbox_outbox": {
+      "views": {
+        "s": {
+          "image": "desktop_inbox_outbox-s-b17e965fd8cb.png",
+          "sourceWidth": 48,
+          "sourceHeight": 48,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 8
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.6458333333333334
+          },
+          "effects": false
+        },
+        "w": {
+          "image": "desktop_inbox_outbox-w-62d637722b4d.png",
+          "sourceWidth": 48,
+          "sourceHeight": 48,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 8
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.6458333333333334
+          },
+          "effects": false
+        },
+        "n": {
+          "image": "desktop_inbox_outbox-n-106074676ccc.png",
+          "sourceWidth": 48,
+          "sourceHeight": 48,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 8
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.6666666666666666
+          },
+          "effects": false
+        },
+        "e": {
+          "image": "desktop_inbox_outbox-e-12f1dfdb2f88.png",
+          "sourceWidth": 48,
+          "sourceHeight": 48,
+          "footprint": {
+            "w": 1,
+            "h": 1
+          },
+          "bounds": {
+            "x": 0,
+            "y": 4,
+            "width": 12,
+            "height": 8
+          },
+          "mode": "approved",
+          "exposure": 1,
+          "contact": {
+            "x": 0.5,
+            "y": 0.6875
+          },
+          "effects": false
         }
       }
     }

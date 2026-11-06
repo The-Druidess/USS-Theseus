@@ -189,15 +189,15 @@ for (const id of ['red_cushion_chair', 'red_captains_chair', 'simple_red_cushion
   const savedChair = JSON.parse(JSON.stringify(chairState.serialize()));
   const restoredChair = WM.create(WM.migrate ? WM.migrate(savedChair) : savedChair).propById(placed.id);
   A.eq(restoredChair && { t: restoredChair.t, r: restoredChair.r, w: restoredChair.w, h: restoredChair.h },
-    { t: id, r: 3, ...footprint }, id + ' preserves its type, facing, and footprint across save/reload');
+    { t: WM.normalizeSeatType(id), r: 3, ...footprint }, id + ' preserves its standardized type, facing, and footprint across save/reload');
 }
 
 const ser = JSON.parse(JSON.stringify(st.serialize ? st.serialize() : st.doc()));
 const back = WM.create(WM.migrate ? WM.migrate(ser) : ser);
-const kept = back.props().find(p => p.t === 'chair');
+const kept = back.props().find(p => p.id === add.id);
 A.eq(kept && kept.r, 3, 'r survives serialize -> migrate');
 const geo = back.projectGeometry();
-const lp = geo.props.find(p => p.t === 'chair');
+const lp = geo.props.find(p => p.id === add.id);
 A.eq(lp && lp.r, 3, 'r reaches the renderer through projectGeometry');
 
 /* a turn is ONE undo step, and it restores the previous facing */

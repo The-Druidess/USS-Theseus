@@ -7,6 +7,7 @@ const root='frontend/assets/industrial/projection-correction',m=JSON.parse(fs.re
 const quiet={};
 function group(ids,reason){for(const id of ids.split(' ')){if(quiet[id])throw Error('Duplicate quiet '+id);quiet[id]=reason;}}
 group('desk desk2','Accepted workstation screen/occupancy renderer remains authoritative, including compact native fallback and separately authored facings. No added effects.');
+group('equipment_atm equipment_safe desktop_inbox_outbox','Pending equipment artwork only. Functions are unassigned; no tools, routing, financial actions, inventory or fabricated activity.');
 group('industrial_locker industrial_drawerbank industrial_supplycart industrial_toolcaddy industrial_wallpanel safe vault shelf quarters_lockerbank arc_indexwall','Storage or passive hardware; no evidenced moving mechanism or live display region on this source.');
 group('industrial_partition industrial_bench industrial_roundtable industrial_floorvent industrial_cabletray bridge_deckperimeter cablerun hazardpad rug rug_small rug_large arc_ladder','Passive structural, floor or support object. Painted surface remains still; no fabricated process.');
 group('industrial_planter plant tallplant terrarium monstera','Quiet painted foliage/colony. Old ambient sway or spores were decorative, not a live process; omitted intentionally.');

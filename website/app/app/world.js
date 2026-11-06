@@ -3175,7 +3175,7 @@ const World = (() => {
      feet-planted (squat-like, sit≈stand height), so a lift that lands the FEET on the pad crown reads
      as standing on the stool (Andrew, skeleton). At 4/2 the butt still reaches the pad while the
      drawSeatFront sliver swallows the planted feet/ankles — the legs read as dropping behind the seat. */
-  const SEAT_LIFT = { stool: 4, chair: 2 };
+  const SEAT_LIFT = { stool: 4, chair: 2, simple_red_cushion_chair: 2 };
   /* ---------- SIDE SEATS (2026-08-17) ----------
      The RECLINER pair is the first seat in the catalog drawn in PROFILE, and the couch's sit render —
      the whole prop sorted IN FRONT of the sitter, so a tall sofa back occludes the legs — hid it
@@ -6743,18 +6743,12 @@ const World = (() => {
     // one chair art everywhere: seats route through the canonical prop renderer (old F_chair = fallback)
     function drawSeatChair(tx, ty, cx, cy, face) {
       const sx = (cx == null ? tx : cx), sy = (cy == null ? ty : cy);
-      /* A WORKSTATION SEAT USES ITS OWN ART. 'seatchair' is the glow-up chair; it is not in the CATALOG,
-         so the PLACEABLE chair prop keeps its shipped art. Falls back to 'chair' if absent, which is what
-         every station saved before this existed still renders. */
-      const seatT = (typeof PropSprites !== 'undefined' && PropSprites.has('seatchair')) ? 'seatchair'
-                  : (typeof PropSprites !== 'undefined' && PropSprites.has('chair')) ? 'chair' : null;
+      const seatT = (typeof PropSprites !== 'undefined' && PropSprites.has('simple_red_cushion_chair')) ? 'simple_red_cushion_chair' : null;
       if (seatT) {
         PropSprites.setCtx(ctx); PropSprites.setNow(now);
         const chair = { t: seatT, x: sx, y: sy, w: 1, h: 1 };
-        if (typeof IndustrialTextures !== 'undefined' && IndustrialTextures.isRemaster && IndustrialTextures.isRemaster()) {
-          const r = { south: 0, west: 1, north: 2, east: 3 }[face || 'north'];
-          if (r != null) chair.r = r;
-        }
+        const r = { south: 0, west: 1, north: 2, east: 3 }[face || 'north'];
+        if (r != null) chair.r = r;
         drawLitProp(chair, false);
       } else F_chair(sx * T, sy * T);
     }
@@ -9761,7 +9755,7 @@ const World = (() => {
     const config = station && station.doc().meta.commander;
     if (!config || !geo) return;
     const p = geo.props.find(p => p.id === config.propId);
-    if (!p || p.t !== 'chair' || p.w !== 1 || p.h !== 1 || p.agentId) return;
+    if (!p || p.t !== 'simple_red_cushion_chair' || p.w !== 1 || p.h !== 1 || p.agentId) return;
     if (!DATA.SKINS[config.skin]) { console.warn('[commander] unknown skin:', config.skin); return; }
     const px = (p.x + 0.5) * T, py = (p.y + 1) * T - 1;
     commander = makeCrewBody('commander', 'COMMANDER', '#64d98b', px, py, config.skin);
@@ -9769,9 +9763,10 @@ const World = (() => {
     commander.seated = true;
     commander.sitting = true;
     commander.seatPx = px; commander.seatPy = py;
-    commander.seatLift = SEAT_LIFT.chair;
+    commander.seatLift = SEAT_LIFT[p.t];
     commander.seatKey = p.id + ':0';
     commander.usingProp = p.id;
+    commander.seatType = p.t;
     commander.dir = PropAnchor.frontOf(p);
     occupiedSeats.add(commander.seatKey);
   }
