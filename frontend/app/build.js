@@ -20,6 +20,7 @@ const Build = (() => {
     { id: 'select', key: '0', label: 'SELECT', verb: 'click an object for Move, Rotate, Copy or Delete', hint: 'click an object to select it · drag a box to select several', cursor: 'default' },
     { id: 'room', key: '1', label: 'ROOM', verb: 'click to place · drag to size', hint: 'click the deck to place a room at the last size you drew, or drag out any size', cursor: 'crosshair' },
     { id: 'hall', key: '2', label: 'HALLWAY', verb: 'click to run · drag to size', hint: 'click to run a corridor at the last length you drew, or drag along an axis for any length', cursor: 'crosshair' },
+    { id: 'wall', key: '', label: 'WALL', verb: 'click and drag to draw walls', hint: 'click and drag to draw walls that block movement and create enclosed rooms', cursor: 'crosshair' },
     // 'paint' stays the INTERNAL id (the drag mode, the model's paintTiles verb, the key map and every
     // saved reference key off it) — only the display name changed. The tool stopped being "paint" the
     // day it grew wall cladding and a material axis: it now sets what a room's surfaces are MADE OF,
@@ -49,6 +50,7 @@ const Build = (() => {
     ['select', '#...........,##..........,###.........,####........,#####.......,######......,#######.....,########....,#####.......,##.###......,#...###.....,.....###....'],
     ['room',   '############,#..........#,#..........#,#..........#,#..........#,#..........#,#..........#,#..........#,#..........#,#..........#,#..........#,#####..#####'],
     ['hall',   '............,............,............,############,............,..##..##..##,............,............,############,............,............,............'],
+    ['wall',   '........####,........####,........####,........####,........####,........####,........####,........####,........####,........####,........####,........####'],
     ['paint',  '############,#.#..#..#..#,#..#..#..#.#,#.#..#..#..#,#..#..#..#.#,#.#..#..#..#,#..#..#..#.#,#.#..#..#..#,#..#..#..#.#,#.#..#..#..#,#..#..#..#.#,############'],
     ['move',   '.....##.....,....####....,...##..##...,.....##.....,.#...##...#.,##.######.##,##.######.##,.#...##...#.,.....##.....,...##..##...,....####....,.....##.....'],
     // a BIN, not an X — an X reads "cancel/close"; a bin reads "delete", in every UI there is
@@ -88,6 +90,7 @@ const Build = (() => {
   const PREVIEW_LABEL = '▶ TEST';   // 2026-09-28: ONE test control (the name kept: the guide and Field Manual quote it) — it opens the line's TEST view (WATCH IT free · STEP THROUGH · RUN ONE REAL JOB) and plays the free walkthrough   // the top-bar preview button — the guide and Field Manual name it by this constant
   // machines the BELT tool connects with two clicks (mirrors worldmodel CONNECTABLE)
   const CONNECT_TYPES = { intake: 1, bay: 1, outbox: 1, filter: 1, splitter: 1, merger: 1, joiner: 1, loop: 1 };
+  const WALL_PROP = 'structural_wall';
 
   let opts = null, station = null, unsub = null;
   let connectFrom = null;   // connect-mode state: the armed FROM machine's propId (null = not connecting)
@@ -95,6 +98,8 @@ const Build = (() => {
   let raf = 0, frameRetryTimer = 0, running = false, frameFailures = 0;
   let cache = null, cacheGeo = null, bakeDirty = true, bakeDirtyRects = null, bakeDirtyRectsGlobal = false, bakeVisibleOnly = false, valPlan = null, valLive = null;   // valPlan = live RoutingPlan (cost-safety ghosts); valLive = energized-belt tile set
   const sceneRenderer = typeof WorldRenderer !== 'undefined' ? WorldRenderer.create() : null;
+  const shellPreviews = new Map();
+  let buildHullDoc = null;
   let planDirty = true;   // routing-plan cache flag: set by EDITS (station.onChange / open), never by pure pans — see rebake()
   let projectionDirty = false;
   const flashes = [];   // {rects, t0, bad} place/delete confirmations
@@ -154,7 +159,7 @@ const Build = (() => {
   const writeLastGroup = g => { try { localStorage.setItem(LAST_GROUP_KEY, g === 'workflow' ? 'workflow' : 'props'); } catch (e) {} };
   const propShelfScroll = new Map();
   const BUILD_GROUPS = [
-    ['props', 'Props', ['prop']], ['rooms', 'Rooms', ['room','hall']],
+    ['props', 'Props', ['prop']], ['rooms', 'Rooms', ['room','hall','wall']],
     ['surfaces', 'Surfaces', ['paint']], ['workflow', 'Conveyors', ['line','belt']],
     ['edit', 'Edit', ['select','move','dupe','reclaim']]
   ];
@@ -244,18 +249,26 @@ const Build = (() => {
 
   const T = () => (station ? station.TILE : 12);
   const MAX_REFIT_CHUNKS = 18;
+  const activeHullDoc = () => {
+    if (typeof Hulls === 'undefined' || !station) return null;
+    const layout = typeof Hulls.layoutDoc === 'function' ? Hulls.layoutDoc(Hulls.active, station) : null;
+    return layout || (Hulls.active === 'bridge' ? station.serialize() : null);
+  };
+  const activeHullBounds = () => typeof Hulls !== 'undefined' && typeof Hulls.activeBounds === 'function'
+    ? Hulls.activeBounds()
+    : null;
 
   /* ---------- lifecycle ---------- */
   function init(o) { opts = o; }
 
   function open() {
-    if (typeof Hulls !== 'undefined') Hulls.select('bridge');
     makeResumed = false;   // a fresh BUILD MODE session picks up a made-prop job still running in the station
     makeMsg = null; if (makeJob && (makeJob.status === 'done' || makeJob.status === 'failed')) makeJob = null;   // and never greets with an old message
     makeCreditsAsked = false;   // and re-reads the credit state (the player may have just linked or topped up)
     if (running) return;
     station = opts.getStation();
     if (!station) return;
+    buildHullDoc = activeHullDoc();
     spaceHeld = false; drag = null; dragPid = null; dupe = null; flashes.length = 0;   // never inherit latched state from a prior session
     /* SESSION-SCOPED UI STATE (2026-08-07 conveyor audit). Everything here outlived close() and lied on the
        next open. The load-bearing one is `layerFailed`: renderDegraded is a TRUTHFUL-TELEMETRY readout —
@@ -284,6 +297,7 @@ const Build = (() => {
     document.body.classList.add('refit-on');
     updateSafetyClearance();
     unsub = station.onChange(p => {
+      buildHullDoc = activeHullDoc();
       projectionDirty = true;
       planDirty = true;   // every edit refreshes navigation, routing and sprite state
       clearLineFields();   // …and so is every cached "where can this blueprint go" answer
@@ -307,11 +321,10 @@ const Build = (() => {
       renderSelection();
       if (tool === 'prop') renderEquipmentInfo();
     });
-    const worldBake = opts.world && opts.world.refitBake && opts.world.refitBake(station);
     projectionDirty = false;
-    cache = worldBake ? worldBake.cache : null;
-    cacheGeo = worldBake ? worldBake.geo : null;
-    bakeDirty = !worldBake; bakeDirtyRects = null; bakeDirtyRectsGlobal = false; bakeVisibleOnly = false; planDirty = true;
+    cache = null;
+    cacheGeo = null;
+    bakeDirty = !!buildHullDoc; bakeDirtyRects = null; bakeDirtyRectsGlobal = false; bakeVisibleOnly = false; planDirty = !!buildHullDoc;
     frameFailures = 0;
     clearTimeout(frameRetryTimer); frameRetryTimer = 0;
     convey = (typeof Conveyor !== 'undefined') ? Conveyor.create({ onDeliver: onBuildDeliver, onAdvance: onBuildAdvance }) : null;
@@ -359,9 +372,54 @@ const Build = (() => {
     if (typeof SFX !== 'undefined') SFX.close();
     const saved = opts.persist ? opts.persist() : false;
     if (saved && typeof StationUI !== 'undefined' && StationUI.notify) StationUI.notify('Ship layout saved locally', 'good', undefined, { transient: true });
-    if (opts.world && opts.world.refit) opts.world.refit();     // recenter the live world on the new build
+    if (opts.world && opts.world.refit) {
+      opts.world.refit();     // recenter the live world on the new build
+      if (typeof World !== 'undefined' && typeof World.frameHull === 'function' && typeof Hulls !== 'undefined') {
+        World.frameHull(Hulls.activeBounds());
+      }
+    }
     if (opts.world && opts.world.start) opts.world.start();     // resume the live sim with the new build
     if (opts.onClose) opts.onClose();
+    buildHullDoc = null;
+  }
+
+  function selectHull(id) {
+    if (!running || typeof Hulls === 'undefined') return;
+    if (id === Hulls.active) return;
+    releaseDrag();
+    connectFrom = null;
+    dupe = null;
+    selectedPropId = null;
+    movingPropId = null;
+    selectedRoomId = null;
+    groupIds = [];
+    if (typeof WorkflowPanel !== 'undefined' && WorkflowPanel.isOpen()) WorkflowPanel.close();
+    cardCloseAll();
+    hidePropCard();
+    hideTip();
+    selectTool('select');
+    Hulls.select(id, true);
+    buildHullDoc = activeHullDoc();
+    cache = null;
+    cacheGeo = null;
+    bakeDirty = !!buildHullDoc;
+    bakeDirtyRects = null;
+    bakeDirtyRectsGlobal = false;
+    bakeVisibleOnly = false;
+    projectionDirty = false;
+    planDirty = !!buildHullDoc;
+    clearLineFields();
+    root.dataset.hull = id;
+    root.dataset.hullLive = String(!!buildHullDoc);
+    root.querySelector('#refit-hull-empty').hidden = !!buildHullDoc;
+    root.querySelectorAll('#refit-hull-tabs [role="tab"]').forEach(tab => {
+      const selected = tab.dataset.hull === id;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
+    updateSafetyClearance();
+    renderSelection();
+    fitCamera();
   }
 
   const toggle = () => (running ? close() : open());
@@ -386,10 +444,15 @@ const Build = (() => {
           <button class="bb sm" id="refit-undo" title="undo (Ctrl+Z)">↶ UNDO</button>
           <button class="bb sm" id="refit-redo" title="redo (Ctrl+Shift+Z)">↷ REDO</button>
         </span>
-        <button class="bb sm" id="refit-fit" title="frame the station">⊹ FIT</button>
+        <button class="bb sm" id="refit-fit" title="frame the selected hull">⊹ FIT</button>
         <button class="bb sm" id="refit-test" title="Test this line: WATCH IT is free (a crate rides the belts, no agent runs); STEP THROUGH and RUN ONE REAL JOB run it for real.">${esc(PREVIEW_LABEL)}</button>
         <button class="bb sm" id="refit-help" title="how to build">? HELP</button>
         <button class="bb sm refit-primary" id="refit-done" title="finish + save (or press Esc twice)">SAVE & EXIT</button>
+      </div>
+      <div class="refit-hull-tabs" id="refit-hull-tabs" role="tablist" aria-label="Build mode hull levels"></div>
+      <div class="refit-hull-empty" id="refit-hull-empty" role="status" hidden>
+        <strong>LAYOUT TO BE DEFINED</strong>
+        <span>This level is a blank shell preview.</span>
       </div>
       <div class="refit-dock" role="region" aria-label="Construction kit">
         <div class="refit-dock-head"><span class="refit-dock-head-t">BUILD LIBRARY</span><button class="bb refit-presets-entry" id="refit-stations" type="button">▦ Presets</button><button class="bb sm" type="button" id="refit-kit-toggle" aria-expanded="true" aria-controls="refit-option-section">MINIMIZE ▴</button></div>
@@ -408,6 +471,9 @@ const Build = (() => {
       <div class="refit-tip" id="refit-tip"></div>
       <div class="refit-propcard" id="refit-propcard" role="tooltip"></div>`;
     document.body.appendChild(root);
+    root.dataset.hull = typeof Hulls !== 'undefined' ? Hulls.active : 'bridge';
+    root.dataset.hullLive = String(!!buildHullDoc);
+    root.querySelector('#refit-hull-empty').hidden = !!buildHullDoc;
     cv = root.querySelector('.refit-canvas');
     ctx = cv.getContext('2d');
     tip = root.querySelector('#refit-tip');
@@ -415,6 +481,34 @@ const Build = (() => {
     hintEl = root.querySelector('#refit-hint');
     undoBtn = root.querySelector('#refit-undo');
     redoBtn = root.querySelector('#refit-redo');
+
+    const levelTabs = root.querySelector('#refit-hull-tabs');
+    const sources = Array.from(document.querySelectorAll('#hull-tabs [role="tab"]'));
+    sources.forEach((source, index) => {
+      const tab = document.createElement('button');
+      tab.type = 'button';
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', 'refit-canvas');
+      tab.innerHTML = source.innerHTML;
+      tab.dataset.hull = source.dataset.hull;
+      const selected = tab.dataset.hull === root.dataset.hull;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+      tab.onclick = () => selectHull(tab.dataset.hull);
+      tab.addEventListener('keydown', event => {
+        let next;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % sources.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + sources.length - 1) % sources.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = sources.length - 1;
+        else return;
+        event.preventDefault();
+        const nextTab = levelTabs.children[next];
+        selectHull(nextTab.dataset.hull);
+        nextTab.focus();
+      });
+      levelTabs.appendChild(tab);
+    });
 
     const tools = root.querySelector('#refit-tools');
     const toolBtn = (t) => {
@@ -1273,6 +1367,12 @@ const Build = (() => {
         b.onclick = () => { hallWidth = w; renderPalette(); sfx('click'); };
         pal.appendChild(b);
       });
+    } else if (tool === 'wall') {
+      paletteLabel = 'WALLS';
+      const note = document.createElement('div');
+      note.className = 'refit-linenote';
+      note.textContent = 'Click and drag to draw walls. Walls block movement and create enclosed rooms.';
+      pal.appendChild(note);
     } else if ((tool === 'prop' && buildGroup !== 'workflow') || ((tool === 'select' || tool === 'dupe') && buildGroup === 'props')) {
       paletteLabel = 'CATALOG';
       const CATS = (typeof PropSprites !== 'undefined') ? PropSprites.CATS : {};
@@ -1549,9 +1649,10 @@ const Build = (() => {
     const dock = root.querySelector('.refit-dock');
     if (!dock) return;
     const top = root.querySelector('.refit-top');
-    const bottomSheet = window.matchMedia('(max-width: 700px)').matches;
+    const levels = root.querySelector('.refit-hull-tabs');
+    const bottomSheet = window.matchMedia('(max-width: 760px)').matches;
     if (bottomSheet) dock.style.removeProperty('top');
-    else if (top) dock.style.top = (top.offsetHeight + 10) + 'px';
+    else if (top) dock.style.top = (Math.max(top.offsetHeight, levels ? levels.offsetTop + levels.offsetHeight : 0) + 10) + 'px';
     document.body.style.setProperty('--refit-dock-clearance', bottomSheet ? (dock.offsetHeight + 20) + 'px' : '58px');
   }
 
@@ -4464,8 +4565,8 @@ const Build = (() => {
     if (running && (cv.width !== previousWidth || cv.height !== previousHeight)) fitCamera();
   }
   // the chrome-occluded margins of the canvas (device px): the build panel (left sidebar on
-  // desktop, bottom sheet on narrow screens) + the top bar — so FIT frames the station in the
-  // VISIBLE viewport instead of centering half of it behind the panel.
+  // desktop, bottom sheet on narrow screens) + the level controls — so FIT frames the selected
+  // hull in the VISIBLE viewport instead of centering it behind the editor.
   /* viewInsets reads three getBoundingClientRects — cheap once, but it is now consulted from the
      draw loop (the gesture badge and the invitation clamp to the VISIBLE glass, not the raw
      canvas), and three forced layouts per frame is exactly how a canvas app starts stuttering.
@@ -4480,10 +4581,12 @@ const Build = (() => {
     const sx = cv.width / c.width, sy = cv.height / c.height;
     const top = root.querySelector('.refit-top');
     if (top) out.t = Math.max(0, top.getBoundingClientRect().bottom - c.top) * sy;
+    const levels = root.querySelector('.refit-hull-tabs');
+    if (levels) out.t = Math.max(out.t, levels.getBoundingClientRect().bottom - c.top) * sy;
     const dock = root.querySelector('.refit-dock');
     if (dock) {
       const d = dock.getBoundingClientRect();
-      if (window.matchMedia('(max-width: 700px)').matches) out.b = Math.max(0, c.bottom - d.top) * sy;
+      if (window.matchMedia('(max-width: 760px)').matches) out.b = Math.max(0, c.bottom - d.top) * sy;
       else if (!dock.classList.contains('is-collapsed')) out.l = Math.max(0, d.right - c.left) * sx;
     }
     const wp = root.querySelector('.wf-panel');
@@ -4497,9 +4600,16 @@ const Build = (() => {
     return out;
   }
   function fitCamera() {
-    const b = station.bounds(), t = T();
-    const wx1 = b.minTx * t, wy1 = b.minTy * t, wx2 = (b.maxTx + 1) * t, wy2 = (b.maxTy + 1) * t;
-    const ww = (wx2 - wx1) + 8 * t, wh = (wy2 - wy1) + 8 * t;
+    if (!buildHullDoc) {
+      zoom = 1; panX = cv.width / 2; panY = cv.height / 2;
+      return;
+    }
+    const b = station.bounds(), hull = activeHullBounds(), t = T();
+    const wx1 = hull ? hull.x1 * t - 10 : b.minTx * t - 4 * t;
+    const wy1 = hull ? hull.y1 * t - StationBake.WALL.up - 8 : b.minTy * t - 4 * t;
+    const wx2 = hull ? (hull.x2 + 1) * t + 10 : (b.maxTx + 1) * t + 4 * t;
+    const wy2 = hull ? (hull.y2 + 1) * t + StationBake.WALL.skirt + 8 : (b.maxTy + 1) * t + 4 * t;
+    const ww = wx2 - wx1, wh = wy2 - wy1;
     const ins = viewInsets();
     const vw = Math.max(1, cv.width - ins.l - ins.r), vh = Math.max(1, cv.height - ins.t - ins.b);
     zoom = clamp(Math.min(vw / ww, vh / wh), MINZ, MAXZ);
@@ -4541,6 +4651,7 @@ const Build = (() => {
 
   function onDown(ev) {
     lastClient = { x: ev.clientX, y: ev.clientY };
+    if (!buildHullDoc) return;
     hidePropCard();
     // right-button cancels an in-progress edit (and never starts one) — then DROPS the armed tool
     // back to SELECT. The browser context menu is already suppressed on the canvas (contextmenu
@@ -4627,6 +4738,8 @@ const Build = (() => {
       drag = { mode: 'paint', roomId: id, start: w, cur: w, cells: new Set([w.tx + ',' + w.ty]), moved: false };
     } else if (tool === 'reclaim') {
       drag = { mode: 'reclaim', start: w, cur: w, cells: new Set([w.tx + ',' + w.ty]), moved: false };
+    } else if (tool === 'wall') {
+      drag = { mode: 'wall', start: w, cur: w, moved: false };
     } else { // room | hall
       drag = { mode: 'draw', start: w, cur: w, moved: false };
     }
@@ -4634,6 +4747,7 @@ const Build = (() => {
 
   function onMove(ev) {
     lastClient = { x: ev.clientX, y: ev.clientY };
+    if (!buildHullDoc) return;
     if (drag && drag.mode === 'pan') {
       const c = toCanvas(ev);
       panX += c.x - drag.sx; panY += c.y - drag.sy; drag.sx = c.x; drag.sy = c.y;
@@ -4682,6 +4796,7 @@ const Build = (() => {
     if (d.mode === 'beltrun') return commitBeltRun(d, ev);
     if (d.mode === 'paint') return commitPaint(d, ev);
     if (d.mode === 'reclaim') return commitReclaim(d, ev);
+    if (d.mode === 'wall') return commitWall(d, ev);
   }
   function onCancel() { if (drag || dragPid != null) { releaseDrag(); hideTip(); setCursor(); } }
   /* ALT-TAB DROPS THE WHOLE GESTURE, not just a pan. This cancelled `pan` only, so tabbing away mid
@@ -4736,6 +4851,29 @@ const Build = (() => {
     if (!s.dx && !s.dy) { hideTip(); return; }
     feedback(keepsHalls(() => station.moveRoom(d.roomId, s.dx, s.dy)), ev, 'relocated');
   }
+  function commitWall(d, ev) {
+    // Draw walls from start to current position using tileLine
+    const wallLine = WorldModel.tileLine(d.start, d.cur);
+    // Try to place all walls in one transaction
+    const res = station.transact(() => {
+      for (const tile of wallLine) {
+        const result = station.addProp({ t: 'structural_wall', x: tile.tx, y: tile.ty, w: 1, h: 1 });
+        if (!result.ok) return result;
+      }
+      return { ok: true, count: wallLine.length };
+    });
+    // After placing walls, detect enclosed regions and auto-create rooms
+    if (res && res.ok) {
+      deselectTool({ silent: true });
+    }
+    feedback(res, ev, (res && res.count) ? (res.count + ' wall segments placed') : 'wall placement failed');
+  }
+
+  function detectAndCreateWallRooms() {
+    // Placeholder function for detecting enclosed regions created by walls
+    // and auto-creating rooms when walls meet the hull boundary
+  }
+
   function propSpec(id) { return (typeof PropSprites !== 'undefined' && PropSprites.spec(id)) || { w: 1, h: 1 }; }
   /* ---------- PROP ORIENTATION (R / shift+R turn · M flip) ----------
      `propRot`/`propMir` are the PENDING orientation the next stamp carries. Both are asked of
@@ -5785,6 +5923,7 @@ const Build = (() => {
       showTip('PRESS ESC AGAIN TO SAVE & EXIT', true); clearTimeout(tipTimer); tipTimer = setTimeout(hideTip, ESC_EXIT_WINDOW_MS);
       return;
     }
+    if (!buildHullDoc) return;
     escExitArmedAt = 0;   // any other key disarms the pending exit
     if ((ev.ctrlKey || ev.metaKey) && (ev.key === 'z' || ev.key === 'Z')) {
       ev.preventDefault();
@@ -6055,6 +6194,16 @@ const Build = (() => {
       const v = (tool === 'hall') ? station.canPlaceHallway([rect]) : station.canPlaceRoom([rect], kind);
       return { rects: [rect], v, kind: tool };
     }
+    if (drag.mode === 'wall') {
+      // Show wall line preview
+      const wallLine = WorldModel.tileLine(drag.start, drag.cur);
+      const rects = wallLine.map(tile => ({ x1: tile.tx, y1: tile.ty, x2: tile.tx, y2: tile.ty }));
+      // Check if all tiles can be placed
+      const v = wallLine.every(tile => station.canPlaceProp('structural_wall', tile.tx, tile.ty, 1, 1).ok) 
+        ? { ok: true } 
+        : { ok: false };
+      return { rects, v, kind: 'wall' };
+    }
     if (drag.mode === 'beltrun') {
       const br = beltRun(drag.start, drag.cur);
       return { rects: [br.rect], v: station.canPlaceBeltRun(drag.start, drag.cur), belt: true, dir: br.dir };
@@ -6097,9 +6246,10 @@ const Build = (() => {
 
   /* ---------- render loop ---------- */
   function rebake() {
+    if (!buildHullDoc) return;
     // Prop-only edits still replace geometry: collision, mounts and capability
     // routing must see the new objects even when the environment pixels survive.
-    if (bakeDirty || !cache || projectionDirty) cacheGeo = station.projectGeometry();
+    if (bakeDirty || !cache || projectionDirty) cacheGeo = WorldModel.create(buildHullDoc).projectGeometry();
     if (bakeDirty || !cache) {
       const visibleRect = visibleBakeRect(cacheGeo);
       cache = StationBake.bakeIncremental
@@ -6217,9 +6367,34 @@ const Build = (() => {
     if (perfAcc) perfAdd(name, performance.now() - pt0);
   }
 
+  function drawBlankHullPreview() {
+    const id = Hulls.active;
+    let baked = shellPreviews.get(id);
+    if (!baked) {
+      const model = WorldModel.create(Hulls.shellDoc(id));
+      baked = StationBake.bake(model.projectGeometry(StationBake.WALL));
+      shellPreviews.set(id, baked);
+    }
+    const ins = viewInsetsFrame();
+    const width = Math.max(1, cv.width - ins.l - ins.r);
+    const height = Math.max(1, cv.height - ins.t - ins.b);
+    const scale = Math.min(width * .86 / baked.W, height * .64 / baked.H);
+    ctx.save();
+    try {
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.imageSmoothingEnabled = false;
+      ctx.translate(ins.l + (width - baked.W * scale) / 2, ins.t + (height - baked.H * scale) / 2);
+      ctx.scale(scale, scale);
+      StationBake.drawBase(ctx, baked, 0, 0);
+      StationBake.drawLight(ctx, baked, 0, 0);
+    } finally {
+      ctx.restore();
+    }
+  }
+
   function frame(now) {
     if (!running) return;
-    let failed = false;
+    let failed = false, hullClip = false;
     const fT0 = perfAcc ? performance.now() : 0;
     insMemo = null;   // one layout measurement per frame at most (viewInsetsFrame)
     try {
@@ -6227,7 +6402,7 @@ const Build = (() => {
     if (visibleRect && cache && StationBake.missingVisibleChunks && StationBake.missingVisibleChunks(cache, visibleRect).length) {
       bakeDirty = true; bakeVisibleOnly = true;
     }
-    if (bakeDirty || !cache || planDirty) rebake();
+    if (buildHullDoc && (bakeDirty || !cache || planDirty)) rebake();
     // an armed first ride waits out the tutorial + the first-run card (.refit-firstrun, never .refit-guide)
     // ONE VOICE: the first ride waits while the presets dialog or a preset's setup guide is open (staffing in the guide is
     // what completes the line) — it narrates on the floor once that card closes, never over it
@@ -6256,9 +6431,32 @@ const Build = (() => {
     } else if (typeof SpaceBG !== 'undefined') SpaceBG.draw(ctx, cv.width, cv.height, now, { panX, panY, scale: zoom });
     else { ctx.fillStyle = '#040302'; ctx.fillRect(0, 0, cv.width, cv.height); }
 
+    if (!buildHullDoc) {
+      drawBlankHullPreview();
+      frameFailures = 0;
+      if (root) {
+        root.dataset.renderState = 'ready';
+        root.dataset.renderFailures = '0';
+      }
+      return;
+    }
+
     ctx.setTransform(zoom, 0, 0, zoom, panX, panY);
     ctx.imageSmoothingEnabled = false;
     const ox = cache.origin.tx * t, oy = cache.origin.ty * t;
+    const hull = activeHullBounds();
+    if (hull) {
+      ctx.save();
+      hullClip = true;
+      ctx.beginPath();
+      ctx.rect(
+        hull.x1 * t - 10,
+        hull.y1 * t - StationBake.WALL.up - 8,
+        (hull.x2 - hull.x1 + 1) * t + 20,
+        (hull.y2 - hull.y1 + 1) * t + StationBake.WALL.up + StationBake.WALL.skirt + 16
+      );
+      ctx.clip();
+    }
     if (sceneRenderer) sceneRenderer.begin({ geo: cacheGeo, cache, now, scale: zoom,
       panX: panX + ox * zoom, panY: panY + oy * zoom, width: cv.width, height: cv.height,
       reducedMotion: typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches });
@@ -6334,6 +6532,7 @@ const Build = (() => {
       failed = true;
       recoverFrame(err);
     } finally {
+      if (hullClip) ctx.restore();
       if (perfAcc) perfAdd('=FRAME', performance.now() - fT0);
       scheduleFrame(failed);
     }
@@ -8009,7 +8208,7 @@ const Build = (() => {
     try { openFlowCard(propId); } catch (e) { return false; }
     return true;
   }
-  const api = { init, open, openWorkflows, editLine, testJobForProp, close, toggle, isOpen, requisition, refitNames: guideNames, openAssign, placeDeskFor, noteLineDelivered, lineOfAgentInfo, summonForRole, nagLabel: code => VAL_LABEL[code] || code,
+  const api = { init, open, openWorkflows, editLine, testJobForProp, close, toggle, isOpen, selectHull, requisition, refitNames: guideNames, openAssign, placeDeskFor, noteLineDelivered, lineOfAgentInfo, summonForRole, nagLabel: code => VAL_LABEL[code] || code,
     // the WORKFLOWS window speaks the shelf's own words and shows the shelf's own art (one name per line, never a second one)
     lineWords: () => ({ plain: LINE_PLAIN, purpose: LINE_PURPOSE }), lineSchematic: bp => lineSchematic(bp), machineStill: t => machineStill(t),
     nagWhy: valWhy };   // nagLabel: the floor's own nag copy for a compiler code (ROUTINES RUN NOW refusal reads it); nagWhy: the full fix sentence the hover card + Workflow panel say (station.layout reads it)

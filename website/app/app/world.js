@@ -2013,6 +2013,21 @@ const World = (() => {
     }
     return true;
   }
+  function frameHull(bounds) {
+    if (!cache || !geo || !station || !cv || !bounds || camAnim) return false;
+    const { x1, y1, x2, y2 } = bounds;
+    if (![x1, y1, x2, y2].every(Number.isFinite) || x2 < x1 || y2 < y1) return false;
+    camLock = null; camLerp = null; camUserAt = performance.now();
+    const left = (x1 - geo.origin.tx) * T - 10;
+    const top = (y1 - geo.origin.ty) * T - StationBake.WALL.up - 8;
+    const w = (x2 - x1 + 1) * T + 20;
+    const h = (y2 - y1 + 1) * T + StationBake.WALL.up + StationBake.WALL.skirt + 16;
+    scale = clampz(Math.min(cv.width * .86 / w, cv.height * .76 / h), MINZ, MAXZ);
+    panX = cv.width / 2 - (left + w / 2) * scale;
+    panY = cv.height * .54 - (top + h / 2) * scale;
+    fitNeeded = false; fitW = cv.width; fitH = cv.height;
+    return true;
+  }
   function toCanvas(ev) {
     const r = cv.getBoundingClientRect();
     return { x: (ev.clientX - r.left) * (cv.width / r.width), y: (ev.clientY - r.top) * (cv.height / r.height) };
@@ -6599,7 +6614,23 @@ const World = (() => {
     if (stillPass) { ctx.fillStyle = stillPass.fill; ctx.fillRect(0, 0, cv.width, cv.height); }
     else drawBackdrop(now, { panX, panY, scale });
 
+    ctx.save();
     ctx.setTransform(scale, 0, 0, scale, panX, panY); ctx.imageSmoothingEnabled = false;
+    const hullBounds = typeof Hulls !== 'undefined' && typeof Hulls.activeBounds === 'function'
+      ? Hulls.activeBounds()
+      : null;
+    if (hullBounds && geo && geo.origin) {
+      ctx.beginPath();
+      const left = (hullBounds.x1 - geo.origin.tx) * T - 10;
+      const top = (hullBounds.y1 - geo.origin.ty) * T - StationBake.WALL.up - 8;
+      ctx.rect(
+        left,
+        top,
+        (hullBounds.x2 - hullBounds.x1 + 1) * T + 20,
+        (hullBounds.y2 - hullBounds.y1 + 1) * T + StationBake.WALL.up + StationBake.WALL.skirt + 16
+      );
+      ctx.clip();
+    }
 
     /* THE GROUND — only when the station is landed. Drawn HERE, inside the world transform and
        before the bake, which is the entire reason it works: pan, zoom and the station's own
@@ -6895,6 +6926,7 @@ const World = (() => {
     // FLOOR-STATS OVERLAY REMOVED (2026-07-09 decision): the YIELD/RUNS/CACHE/SLAG/THRU/DWELL box no
     // longer floats over the world sim. The FloorStats engine stays live (event-fed) so any panel or
     // widget consumer keeps honest numbers — only the floating canvas readout is gone.
+    ctx.restore();
     if (stillPass) { if (sceneRenderer) sceneRenderer.finish(); return; }   // a still ends here: no stage chrome, no post-processing
     if (linkStaleDim) drawLinkDown(now);   // E1: honest "the live telemetry is not live" marker in the chrome
     // (station growth headline now lives in the top bar's STATION chip — see xpstore.pushTopbar)
@@ -11021,7 +11053,7 @@ const World = (() => {
     pollFeed: () => pollFeedState(),
     pollShip: () => pollShipStats()
   });
-  return { init, rebake, frameReviewRoom, renderStill, renderStillOfTiles, crewFrames, crt: CRT, renderPace, slagLog: () => (slaglog ? slaglog.recent() : []),
+  return { init, rebake, frameReviewRoom, frameHull, renderStill, renderStillOfTiles, crewFrames, crt: CRT, renderPace, slagLog: () => (slaglog ? slaglog.recent() : []),
     // LINE WATCH: the Workflow panel pushes the step-test session it polls; reads today's numbers for a line
     noteStepTest, lineStatsFor: id => (lineStats.known ? (lineStats.byLine[id] || null) : null), pollLineStats,
     // a bay's live state — the lamp's own fold (WORKING only once the sidecar confirmed the run), with how long it has held

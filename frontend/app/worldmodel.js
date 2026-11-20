@@ -388,6 +388,27 @@ const WorldModel = (() => {
   const rectH = r => r.y2 - r.y1 + 1;
   const rectsHit = (a, b) => a.x1 <= b.x2 && b.x1 <= a.x2 && a.y1 <= b.y2 && b.y1 <= a.y2; // inclusive: shares a tile
   const inRect = (r, x, y) => x >= r.x1 && x <= r.x2 && y >= r.y1 && y <= r.y2;
+  const tileLine = (start, end) => {
+    const tiles = [];
+    const x0 = Math.round(start.tx || start.x || 0);
+    const y0 = Math.round(start.ty || start.y || 0);
+    const x1 = Math.round(end.tx || end.x || 0);
+    const y1 = Math.round(end.ty || end.y || 0);
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+    let x = x0, y = y0;
+    while (true) {
+      tiles.push({ tx: x, ty: y });
+      if (x === x1 && y === y1) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) { err -= dy; x += sx; }
+      if (e2 < dx) { err += dx; y += sy; }
+    }
+    return tiles;
+  };
   const clone = o => JSON.parse(JSON.stringify(o));
   const pad2 = n => String(n).padStart(2, '0');
 
@@ -3726,7 +3747,7 @@ const WorldModel = (() => {
       return doc;
     },
     // pure helpers reused by the build layer
-    normRect, rectW, rectH, rectsHit, inRect,
+    normRect, rectW, rectH, rectsHit, inRect, tileLine,
     // install the prop-type -> {mount, surface} lookup once for every station this module makes
     setPropRules,
     // capability legibility — prop -> plain power word (WEB/FILES/…); one owned source for the palette tile + Field Manual

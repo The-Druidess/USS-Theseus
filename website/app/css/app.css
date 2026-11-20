@@ -541,8 +541,8 @@ body.theme-green { --brand-art-filter: hue-rotate(100deg); }
 .hull-shell-copy span { color: var(--ph-dim); text-transform: uppercase; letter-spacing: 2px; }
 .hull-shell-copy h2 { margin: 4px 0; font-size: 26px; text-transform: uppercase; }
 .hull-shell-copy p { margin: 0; font-size: 14px; color: var(--ph-dim); }
-#stage-wrap[data-hull]:not([data-hull="bridge"]) #stage { visibility: hidden; pointer-events: none; }
-#stage-wrap[data-hull]:not([data-hull="bridge"]) .cam-hud { visibility: hidden; }
+#stage-wrap[data-hull-live="false"] #stage { visibility: hidden; pointer-events: none; }
+#stage-wrap[data-hull-live="false"] .cam-hud { visibility: hidden; }
 @media (max-width: 600px) {
   #hull-tabs { left: 8px; right: 8px; }
   #hull-tabs button { font-size: 11px; }
@@ -3899,6 +3899,34 @@ body.crew-rail-off #screen-game.active {
   display: flex; align-items: center; gap: 12px; padding: 0 14px;
   background: linear-gradient(180deg, rgba(3,2,1,.92), rgba(3,2,1,.4) 78%, transparent);
 }
+.refit-hull-tabs {
+  position: absolute; top: 50px; left: 14px; right: 14px; z-index: 2;
+  display: flex; gap: 4px; max-width: 540px; margin: 0 auto; padding: 4px;
+  background: var(--bg); border: 1px solid var(--ph-dim); border-radius: 5px;
+}
+.refit-hull-tabs button {
+  flex: 1; min-width: 0; padding: 5px 3px; border: 1px solid transparent;
+  background: transparent; color: var(--ph-dim); font: inherit; font-size: 12px; cursor: pointer;
+}
+.refit-hull-tabs small { display: block; font-size: 10px; letter-spacing: 1px; }
+.refit-hull-tabs button[aria-selected="true"] { border-color: var(--ph); color: var(--ph); background: var(--bg2); }
+.refit-hull-tabs button:hover, .refit-hull-tabs button:focus-visible { color: var(--ph); outline: 1px solid var(--ph); }
+.refit-hull-empty {
+  position: absolute; left: 50%; top: 53%; z-index: 1; transform: translate(-50%, -50%);
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  color: var(--ph); text-align: center; letter-spacing: 2px; pointer-events: none;
+  text-shadow: 0 0 10px var(--ph-glow2);
+}
+.refit-hull-empty span { color: var(--ph-dim); font-size: 12px; letter-spacing: 1px; }
+.refit-hull-empty[hidden] { display: none; }
+.refit-overlay[data-hull-live="false"] .refit-sub,
+.refit-overlay[data-hull-live="false"] .refit-dock { display: none; }
+.refit-overlay[data-hull-live="false"] .refit-canvas { pointer-events: none; cursor: default; }
+.refit-overlay[data-hull-live="false"] .refit-zoom,
+.refit-overlay[data-hull-live="false"] #refit-history,
+.refit-overlay[data-hull-live="false"] #refit-fit,
+.refit-overlay[data-hull-live="false"] #refit-test,
+.refit-overlay[data-hull-live="false"] #refit-help { visibility: hidden; pointer-events: none; }
 .refit-title { color: var(--ink); background: var(--ph); padding: 3px 14px; letter-spacing: 3px; font-size: 18px; text-shadow: none; box-shadow: 0 0 14px var(--ph-glow2); }
 .refit-sub { color: var(--ph-dim); letter-spacing: 2px; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .refit-spacer { flex: 1; }
@@ -3931,8 +3959,8 @@ body.crew-rail-off #screen-game.active {
      over, because both dense palettes are gated on exactly this number: at 356px of content the
      material grid goes 4 → 5 columns (13 recipes in 3 rows, not 4) and the prop gallery 3 → 4
      (a whole category visible without scrolling). 376 also still reads as a SIDEBAR to
-     viewInsets (< 60% of the glass), so FIT keeps framing the station in the visible half. */
-  width: min(380px, calc(100% - 28px)); max-height: calc(100% - 68px);
+     viewInsets (< 60% of the glass), so FIT keeps framing the selected hull in the visible half. */
+  width: min(380px, calc(100% - 28px)); max-height: calc(100% - 116px);
   padding: 0; border-radius: 9px; overflow: hidden;
   background: var(--panel);
   box-shadow: 0 0 0 2px var(--ph), 0 0 0 3.5px rgba(0,0,0,.9), 0 0 22px var(--ph-glow2), inset 0 0 40px rgba(0,0,0,.85);
@@ -3957,6 +3985,9 @@ body.crew-rail-off #screen-game.active {
     font-size: 16px;
     letter-spacing: 2px;
   }
+  .refit-hull-tabs { top: 72px; left: 8px; right: 8px; max-width: none; }
+  .refit-hull-tabs button { font-size: 10px; }
+  .refit-hull-tabs small { font-size: 9px; letter-spacing: 0; }
   .refit-sub,
   .refit-spacer,
   /* the phone deck is measured at EXACTLY six action columns (see mobile-control-reachability):

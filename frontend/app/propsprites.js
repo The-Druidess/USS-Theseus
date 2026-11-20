@@ -10674,6 +10674,15 @@ const PropSprites = (() => {
     for(let xx=x+3;xx<x+w;xx+=6){px(xx,y+3,2,6,r.top);px(xx+1,y+4,1,4,r.lit);}
   };
 
+  F.structural_wall = (x,y,w,h) => {
+    const main = '#c9b8a0';
+    const light = '#d9c8b0';
+    const dark = '#a89880';
+    px(x, y, w, h, main);
+    px(x, y, w, 1, light);
+    px(x, y+h-1, w, 1, dark);
+  };
+
   /* ============ CATALOG — every placeable prop ============
      id        — F key (the draw fn) AND the model's prop.t
      label     — palette button text
@@ -10789,6 +10798,7 @@ const PropSprites = (() => {
     { id: "industrial_wallpanel", label: "SERVICE PANEL", cat: "decor", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: false, mount: 'wall' },
     { id: "industrial_floorvent", label: "FLUSH GRILLE", cat: "decor", tier: "cosmetic", w: 2, h: 1, animated: false, blocks: false, flat: true },
     { id: "industrial_cabletray", label: "CABLE CHANNEL", cat: "decor", tier: "cosmetic", w: 3, h: 1, animated: false, blocks: false, flat: true },
+    { id: "structural_wall", label: "WALL PANEL", cat: "decor", tier: "cosmetic", w: 1, h: 1, animated: false, blocks: true, wallBlock: true },
 
     /* ===================== FUNCTIONAL ===================== */
     // WORKSTATIONS — the agent's seat. Assign ONE agent; it walks here and sits to work when tasked.

@@ -5116,8 +5116,49 @@ const StationBake = (() => {
 
     bakeHullExtrusion(b);
     bakeInterstitialShadow(b);   // after the skirts: it only claims pixels no wall painted
+    drawRoundHulls(b);
     b.setTransform(1, 0, 0, 1, 0, 0);
     return baseCv;
+  }
+
+  function eraseRoundExterior(b, circle, rim = 0) {
+    const {x,y,r} = circle;
+    b.save();
+    b.setTransform(1,0,0,1,-VX,-VY);
+    b.globalCompositeOperation = 'destination-out';
+    b.globalAlpha = 1; b.fillStyle = '#000';
+    b.beginPath(); b.rect(x-r-80,y-r-80,r*2+160,r*2+160);
+    b.moveTo(x+r+rim,y); b.arc(x,y,r+rim,0,Math.PI*2,true); b.fill('evenodd');
+    b.restore();
+  }
+
+  function drawRoundHulls(b) {
+    for (const h of Object.values(G.hullViews || {})) {
+      if (!h.circle) continue;
+      const {x,y,r} = h.circle;
+      if (![x,y,r].every(Number.isFinite) || r < T || r > 120 * T) throw new Error('Invalid circular hull geometry');
+      b.save();
+      b.setTransform(1,0,0,1,-VX,-VY);
+      eraseRoundExterior(b,h.circle);
+      b.globalCompositeOperation = 'source-over';
+      b.strokeStyle = '#52616e'; b.lineWidth = 26;
+      b.beginPath(); b.arc(x,y,r,0,Math.PI*2); b.stroke();
+      b.strokeStyle = '#9fb4c0'; b.lineWidth = 18; b.stroke();
+      b.strokeStyle = '#d7e5ec'; b.lineWidth = 2;
+      for (const rr of [r-10,r+12]) { b.beginPath(); b.arc(x,y,rr,0,Math.PI*2); b.stroke(); }
+      for (let i=0;i<48;i++) {
+        const a=i*Math.PI/24;
+        b.strokeStyle = i%4 ? '#617887' : '#c5d5dc'; b.lineWidth = i%4 ? 1 : 3;
+        b.beginPath(); b.moveTo(x+Math.cos(a)*(r-8),y+Math.sin(a)*(r-8)); b.lineTo(x+Math.cos(a)*(r+10),y+Math.sin(a)*(r+10)); b.stroke();
+        if (!(i%6)) { b.fillStyle='#6ed6eb'; b.fillRect(x+Math.cos(a)*r-2,y+Math.sin(a)*r-2,4,4); }
+      }
+      // The forward viewing band is glass, not painted stars. SpaceBG remains
+      // visible through it and through the Bridge's north viewport walls.
+      b.globalCompositeOperation = 'destination-out'; b.lineWidth=16;
+      b.beginPath(); b.arc(x,y,r,-Math.PI/2-.32,-Math.PI/2+.32); b.stroke();
+      b.globalCompositeOperation = 'source-over'; b.strokeStyle='rgba(103,202,226,.22)'; b.stroke();
+      b.restore();
+    }
   }
 
   /* ---------- public ---------- */
@@ -5245,6 +5286,7 @@ const StationBake = (() => {
     if (!setBakeState(geo, viewport)) return blankBake(geo);
     const baseCv = buildBase();
     const { lightCv, interiorCv, flickers, lamps } = buildLightMap();
+    for (const h of Object.values(G.hullViews || {})) if (h.circle) eraseRoundExterior(lightCv.getContext('2d'),h.circle,14);
     const navLights = hullNavLights(baseCv, interiorCv), interiorPath = interiorLightPath(interiorCv);
     const doorOccluders = buildDoorOccluders(baseCv);
     return { baseCv, lightCv, interiorCv, interiorPath, navLights, doorOccluders, W: geo.W, H: geo.H, origin: geo.origin, flickers, lamps, wallFixtures, viewport: viewport || { x: 0, y: 0, w: geo.W, h: geo.H } };
