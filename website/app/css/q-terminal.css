@@ -23,4 +23,10 @@
 .q-command-new { border-style:dashed; }
 .q-command-match { margin:10px 0; padding:9px; border-left:2px solid var(--green,#72dc97); background:rgba(39,85,56,.2); }
 .q-command-match b { color:var(--green,#72dc97); font:12px 'VT323','Courier New',monospace; }
+.bridge-review .q-inbox-layout { grid-template-columns:1fr; }
+.bridge-review-list { display:grid; gap:10px; }
+.bridge-review-card header { display:flex; justify-content:space-between; gap:8px; }
+.bridge-review-urgent { border-color:#e29b52; }
+.bridge-review-urgency { color:#ffc579; }
+.bridge-review-check { display:flex; align-items:center; gap:8px; }
 @media(max-width:680px) { .q-inbox-layout { grid-template-columns:1fr; } .q-command-row { grid-template-columns:1fr; } }

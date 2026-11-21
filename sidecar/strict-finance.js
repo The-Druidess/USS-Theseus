@@ -114,6 +114,12 @@ function makeStrictFinance(opts) {
       audit('blocked', 'route', method + ' ' + url.pathname.match(blockedPrefix)[0]);
       return refusal('this service is suspended in local-only mode.').message;
     }
+    if (method === 'POST' && url.pathname === '/api/quests/mint') {
+      if (issue) return refusal('policy storage is unavailable or invalid.').message;
+      try { allow('route', method + ' ' + url.pathname); }
+      catch (error) { return error.message; }
+      return null;
+    }
     if (url.pathname.startsWith('/api/') && method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS'
         && !LOCAL_POST_ROUTES.has(url.pathname)) {
       audit('blocked', 'route', method + ' /api/[unapproved]');

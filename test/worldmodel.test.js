@@ -12,6 +12,25 @@ const hab = s.rooms()[0];
 A.eq(hab.kind, 'hab', 'seed room is a hab');
 A.eq(s.spawnRoomId(), hab.id, 'seed room is the spawn room');
 
+/* ---- hull layout metadata is validated and participates in undo ---- */
+const hullStation = WM.create();
+const hullRoom = hullStation.rooms()[0];
+const hullRect = hullRoom.rects[0];
+const hullLayout = Object.assign({}, hullRect, { roomIds: [hullRoom.id] });
+A.ok(!hullStation.setHullLayout('engineering', Object.assign({}, hullLayout, { roomIds: ['missing'] })).ok, 'missing hull room rejected');
+A.ok(!hullStation.setHullLayout('engineering', Object.assign({}, hullLayout, { x2: hullRect.x2 - 1 })).ok, 'room outside hull bounds rejected');
+A.ok(!hullStation.setHullLayout('engineering', Object.assign({}, hullLayout, { roomIds: [hullRoom.id, hullRoom.id] })).ok, 'duplicate hull room rejected');
+A.ok(hullStation.setHullLayout('engineering', hullLayout).ok, 'valid hull layout accepted');
+hullLayout.roomIds.push('external');
+A.eq(hullStation.serialize().meta.hulls.engineering.roomIds, [hullRoom.id], 'hull layout does not retain caller-owned arrays');
+A.ok(hullStation.undo().ok && !hullStation.serialize().meta.hulls, 'undo restores hull metadata');
+A.ok(hullStation.redo().ok && hullStation.serialize().meta.hulls.engineering, 'redo restores hull layout');
+const rolledBackHull = hullStation.transact(() => {
+  hullStation.setHullLayout('promenade', Object.assign({}, hullRect, { roomIds: [hullRoom.id] }));
+  return { ok: false };
+});
+A.ok(!rolledBackHull.ok && !hullStation.serialize().meta.hulls.promenade, 'failed transaction rolls back hull metadata');
+
 /* ---- addRoom: valid, overlap, too-small ---- */
 const ok1 = s.addRoom({ kind: 'lab', rect: { x1: 20, y1: 0, x2: 26, y2: 8 } });
 A.ok(ok1.ok, 'non-overlapping addRoom succeeds');

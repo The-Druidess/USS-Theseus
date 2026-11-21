@@ -60,6 +60,18 @@ live agent: a tile is walkable if it's in a zone, not a rounded-corner (chamfer)
 caller's `extra` blocked set (furniture/desks live in the renderer, passed per query); `path` is a BFS
 that crosses zone seams only where `canStep` allows (same zone or a door).
 
+The Walls tool places blocking panels on the active hull. Lines may reuse existing panels, so rooms
+can share walls. When a line closes off part of the floor, it creates editable room zones while
+retaining existing room identities; the wall and the new zones undo together. Select a panel and
+delete it to make an opening: the rooms remain separate. Click a room with the Room tool to edit it.
+Dragging an exposed edge of a room moves its shared wall and adjusts neighboring room zones.
+Rooms with multiple sections have handles on their exposed edges, not on internal section seams.
+Move obstructing objects or belts first; corner resizes of shared walls must be done one edge at a time.
+The Room tool can also draw a room on existing deck without deleting wall panels. Existing room
+identities and contents are retained; a boundary cannot cut through a furniture footprint.
+`extendRoomFloor(id, rects)` adds connected, unoccupied floor to an existing room as one undoable edit.
+`rezoneRooms(changes, additions)` redistributes existing floor without moving furniture or losing deck.
+
 Validation error codes: `OVERLAP`, `TOO_SMALL`, `TOO_SHORT`, `TOO_FAR`, `BAD_STYLE`, `BAD_MAT`, `SPAWN_ROOM`, `NOT_FOUND`, `NO_RECT`, `NOTHING` (undo/redo).
 
 ## Extending

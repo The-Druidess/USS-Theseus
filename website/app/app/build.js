@@ -4631,7 +4631,7 @@ const Build = (() => {
     for(let i=order.length-1;i>=0;i--){
       const p=order[i],m=mountMap.get(p.id),dp=m?{...p,mount:m}:p;
       const hit=PropSprites.hitTest?PropSprites.hitTest(dp,x,y):null;
-      if(hit===true || hit===null&&x>=p.x*t&&x<(p.x+p.w)*t&&y>=p.y*t&&y<(p.y+p.h)*t)return p.id;
+      if(hit===true || (hit===null || p.t===WALL_PROP)&&x>=p.x*t&&x<(p.x+p.w)*t&&y>=p.y*t&&y<(p.y+p.h)*t)return p.id;
     }
     return null;
   }
@@ -4666,7 +4666,7 @@ const Build = (() => {
       // card, belt tile → where this lane goes. A drag across empty deck draws a SELECTION BOX (MANY AT ONCE).
       // the SELECTED ROOM's edge handles come first: a drag on one resizes the room (THE ROOM CARD)
       const hd = selectedRoomId ? roomHandleAt(ev) : null;
-      if (hd) { drag = { mode: 'roomresize', roomId: selectedRoomId, edge: hd.e, start: w, cur: w, moved: false }; return; }
+      if (hd) { drag = { mode: 'roomresize', roomId: selectedRoomId, edge: hd.e, section: hd.section, start: w, cur: w, moved: false }; return; }
       const pid = propAtEvent(ev);
       const p = pid && station.propById(pid);
       // a member of a selected group: a drag moves the whole group, a click (no drag) selects just it; Shift+click adds / drops one
@@ -4826,6 +4826,8 @@ const Build = (() => {
       const exist = station.propAt(d.cur.tx, d.cur.ty);
       const ep = exist && station.propById(exist);
       if (ep) { onInspect(ep, ev); return; }
+      const roomId = tool === 'room' && station.roomAt(d.cur.tx, d.cur.ty);
+      if (roomId) { deselectTool({ silent: true }); openRoomCard(roomId, ev); return; }
     }
     /* a click stamps the remembered size (what the hover ghost was showing); a drag draws its own.
        Both go through the SAME snapFit the ghost drew — commit what was on screen, never the raw
@@ -4836,11 +4838,12 @@ const Build = (() => {
     const isHall = tool === 'hall';
     const rect = !d.moved ? snapFit(stampRectFor(d.cur.tx, d.cur.ty), {})
       : snapFit(isHall ? laneRect(d.start, d.cur) : norm(d.start, d.cur), { resize: true });
-    const res = isHall ? station.placeHallway({ rect }) : station.addRoom({ kind, rect });
+    const res = isHall ? station.placeHallway({ rect }) : station.drawRoomOnDeck({ kind, rect }, buildHullDoc.order);
     if (res && res.ok) {
       pushFlash([rect], false);
       rememberDrawn(rect);
       deselectTool({ silent: true });
+      if (!isHall && res.id) openRoomCard(res.id, ev);
     }
     feedback(res, ev, isHall ? 'hallway run' : 'room placed');
   }
@@ -4852,26 +4855,13 @@ const Build = (() => {
     feedback(keepsHalls(() => station.moveRoom(d.roomId, s.dx, s.dy)), ev, 'relocated');
   }
   function commitWall(d, ev) {
-    // Draw walls from start to current position using tileLine
     const wallLine = WorldModel.tileLine(d.start, d.cur);
-    // Try to place all walls in one transaction
-    const res = station.transact(() => {
-      for (const tile of wallLine) {
-        const result = station.addProp({ t: 'structural_wall', x: tile.tx, y: tile.ty, w: 1, h: 1 });
-        if (!result.ok) return result;
-      }
-      return { ok: true, count: wallLine.length };
-    });
-    // After placing walls, detect enclosed regions and auto-create rooms
+    const res = station.placeWalls(wallLine, buildHullDoc.order);
     if (res && res.ok) {
       deselectTool({ silent: true });
     }
-    feedback(res, ev, (res && res.count) ? (res.count + ' wall segments placed') : 'wall placement failed');
-  }
-
-  function detectAndCreateWallRooms() {
-    // Placeholder function for detecting enclosed regions created by walls
-    // and auto-creating rooms when walls meet the hull boundary
+    const rooms = res && res.rooms && res.rooms.length;
+    feedback(res, ev, (res && res.count) ? (res.count + ' wall segments placed' + (rooms ? ' · ' + rooms + ' room' + (rooms === 1 ? '' : 's') + ' created' : '')) : 'wall placement failed');
   }
 
   function propSpec(id) { return (typeof PropSprites !== 'undefined' && PropSprites.spec(id)) || { w: 1, h: 1 }; }
@@ -5333,8 +5323,34 @@ const Build = (() => {
     if (res && res.ok) { snapTick('move'); pushMoves(from.map(r => ({ from: r, to: { x1: r.x1 + dx, y1: r.y1 + dy, x2: r.x2 + dx, y2: r.y2 + dy } }))); renderSelection(); }
     else { sfx('bad'); flashTip(ev, (res && res.msg) || 'blocked — the room did not move'); }
   }
-  // the selected room's eight handles (corners + edge middles), in world px; a plain rectangle only (resizeRoom keeps one rect)
+  // A multi-section room exposes only its outside edges, never seams between its sections.
   function roomHandles(rm, t) {
+    if (rm.rects.length > 1) {
+      const handles = [];
+      rm.rects.forEach((r, index) => {
+        for (const edge of ['x1', 'x2', 'y1', 'y2']) {
+          const vertical = edge[0] === 'x', low = edge[1] === '1', dir = low ? -1 : 1;
+          const from = vertical ? r.y1 : r.x1, to = vertical ? r.y2 : r.x2;
+          let start = null;
+          for (let n = from; n <= to + 1; n++) {
+            const x = vertical ? r[edge] + dir : n, y = vertical ? n : r[edge] + dir;
+            const exposed = n <= to && station.roomAt(x, y) !== rm.id;
+            if (exposed && start === null) start = n;
+            if (!exposed && start !== null) {
+              const end = n - 1, fixed = (r[edge] + (low ? 0 : 1)) * t, middle = (start + end + 1) * t / 2;
+              handles.push({
+                x: vertical ? fixed : middle, y: vertical ? middle : fixed,
+                e: { [vertical ? (low ? 'l' : 'r') : (low ? 't' : 'b')]: 1 },
+                cur: vertical ? 'ew-resize' : 'ns-resize',
+                section: { index, edge, from: start, to: end }
+              });
+              start = null;
+            }
+          }
+        }
+      });
+      return handles;
+    }
     const r = rm.rects[0], X1 = r.x1 * t, X2 = (r.x2 + 1) * t, Y1 = r.y1 * t, Y2 = (r.y2 + 1) * t, mx = (X1 + X2) / 2, my = (Y1 + Y2) / 2;
     return [
       { x: X1, y: Y1, e: { l: 1, t: 1 }, cur: 'nwse-resize' }, { x: mx, y: Y1, e: { t: 1 }, cur: 'ns-resize' }, { x: X2, y: Y1, e: { r: 1, t: 1 }, cur: 'nesw-resize' },
@@ -5345,11 +5361,22 @@ const Build = (() => {
   // a handle under the pointer — or anywhere along an edge (a narrower band), so a long wall need not be grabbed at its middle
   function roomHandleAt(ev) {
     const rm = selectedRoomId && station.roomById(selectedRoomId);
-    if (!rm || rm.rects.length !== 1 || !cv) return null;
+    if (!rm || !cv) return null;
     const c = toCanvas(ev), t = T(), wx = (c.x - panX) / zoom, wy = (c.y - panY) / zoom, R = Math.max(t * 0.45, 9 / zoom);
     let best = null, bd = Infinity;
     roomHandles(rm, t).forEach((h, i) => { const d = Math.hypot(wx - h.x, wy - h.y); if (d < R && d < bd) { bd = d; best = Object.assign({ i }, h); } });
     if (best) return best;
+    if (rm.rects.length > 1) {
+      const B = Math.max(t * 0.22, 6 / zoom);
+      roomHandles(rm, t).forEach((h, i) => {
+        const vertical = h.section.edge[0] === 'x', n = vertical ? wy : wx;
+        const distance = Math.abs((vertical ? wx : wy) - (vertical ? h.x : h.y));
+        if (n >= h.section.from * t && n <= (h.section.to + 1) * t && distance < B && distance < bd) {
+          bd = distance; best = Object.assign({ i }, h);
+        }
+      });
+      return best;
+    }
     const r = rm.rects[0], X1 = r.x1 * t, X2 = (r.x2 + 1) * t, Y1 = r.y1 * t, Y2 = (r.y2 + 1) * t, B = Math.max(t * 0.22, 6 / zoom);
     const inX = wx > X1 + B && wx < X2 - B, inY = wy > Y1 + B && wy < Y2 - B;
     if (inX && Math.abs(wy - Y1) < B) return { i: 1, e: { t: 1 }, cur: 'ns-resize' };
@@ -5361,8 +5388,12 @@ const Build = (() => {
   // the rect a resize drag asks for: the grabbed edges follow the pointer by whole tiles, never past the room's minimum
   function resizedRect(d) {
     const rm = station.roomById(d.roomId); if (!rm) return null;
-    const r0 = rm.rects[0], e = d.edge, min = rm.kind === 'corridor' ? 1 : (station.MIN_ROOM || 3);
+    const r0 = rm.rects[d.section ? d.section.index : 0], e = d.edge, min = d.section ? 0 : (rm.kind === 'corridor' ? 1 : (station.MIN_ROOM || 3));
     const dx = d.cur.tx - d.start.tx, dy = d.cur.ty - d.start.ty, r = { x1: r0.x1, y1: r0.y1, x2: r0.x2, y2: r0.y2 };
+    if (d.section) {
+      if (d.section.edge[0] === 'x') { r.y1 = d.section.from; r.y2 = d.section.to; }
+      else { r.x1 = d.section.from; r.x2 = d.section.to; }
+    }
     if (e.l) r.x1 = Math.min(r0.x1 + dx, r0.x2 - min + 1);
     if (e.r) r.x2 = Math.max(r0.x2 + dx, r0.x1 + min - 1);
     if (e.t) r.y1 = Math.min(r0.y1 + dy, r0.y2 - min + 1);
@@ -5371,26 +5402,31 @@ const Build = (() => {
   }
   // the same two checks resizeRoom makes (the footprint as a room, and nothing on it left off the deck), named for the ghost
   let resizeMemo = null;
-  function resizeCheck(rm, nr) {
-    const key = [geoVer, rm.id, nr.x1, nr.y1, nr.x2, nr.y2].join('|');
+  function resizeCheck(rm, nr, section) {
+    const key = [geoVer, rm.id, nr.x1, nr.y1, nr.x2, nr.y2, section && section.index, section && section.edge, section && section.from, section && section.to].join('|');
     if (resizeMemo && resizeMemo.key === key) return resizeMemo.v;
-    let v = station.canPlaceRoom([nr], rm.kind, rm.id);
-    if (v && v.ok) {
+    let v = station.canResizeSharedRoom(rm.id, nr, buildHullDoc.order, section);
+    if (v.ok && !v.handled) v = station.canPlaceRoom([nr], rm.kind, rm.id);
+    if (v && v.ok && !v.handled) {
       const inOld = (x, y) => rm.rects.some(r => x >= r.x1 && x <= r.x2 && y >= r.y1 && y <= r.y2), inNew = (x, y) => x >= nr.x1 && x <= nr.x2 && y >= nr.y1 && y <= nr.y2;
       outer: for (const p of station.props()) for (let y = p.y; y < p.y + (p.h || 1); y++) for (let x = p.x; x < p.x + (p.w || 1); x++)
         if (inOld(x, y) && !inNew(x, y)) { v = { ok: false, error: 'CUTS_CONTENTS', msg: 'Move the ' + propLabel(p.t) + ' first · it would be left off the deck' }; break outer; }
       if (v.ok) for (const k of Object.keys(station.belts() || {})) { const q = k.split(','); if (inOld(+q[0], +q[1]) && !inNew(+q[0], +q[1])) { v = { ok: false, error: 'CUTS_CONTENTS', msg: 'A belt would be left off the deck · clear it first' }; break; } }
-    } else v = { ok: false, error: (v && v.error) || 'BLOCKED', msg: String((v && v.msg) || 'blocked').replace(/^\w/, c => c.toUpperCase()) };
+    }
+    if (!v || !v.ok) v = { ok: false, error: (v && v.error) || 'BLOCKED', msg: String((v && v.msg) || 'blocked').replace(/^\w/, c => c.toUpperCase()) };
     resizeMemo = { key, v };
     return v;
   }
   function commitRoomResize(d, ev) {
     const rm = station.roomById(d.roomId); if (!rm) return;
-    const nr = resizedRect(d), r0 = rm.rects[0];
+    const nr = resizedRect(d), r0 = rm.rects[d.section ? d.section.index : 0];
+    if (d.section && nr && nr[d.section.edge] === r0[d.section.edge]) { hideTip(); return; }
     if (!nr || (nr.x1 === r0.x1 && nr.y1 === r0.y1 && nr.x2 === r0.x2 && nr.y2 === r0.y2)) { hideTip(); return; }
-    const pre = resizeCheck(rm, nr);
-    const res = pre && pre.ok ? keepsHalls(() => station.resizeRoom(rm.id, nr)) : pre;
-    feedback(res, ev, 'resized to ' + (nr.x2 - nr.x1 + 1) + ' × ' + (nr.y2 - nr.y1 + 1) + ' · Undo puts it back');
+    const pre = resizeCheck(rm, nr, d.section);
+    const res = pre && pre.ok ? keepsHalls(() => pre.handled
+      ? station.resizeSharedRoom(rm.id, nr, buildHullDoc.order, d.section)
+      : station.resizeRoom(rm.id, nr)) : pre;
+    feedback(res, ev, d.section ? 'room edge resized · Undo puts it back' : 'resized to ' + (nr.x2 - nr.x1 + 1) + ' × ' + (nr.y2 - nr.y1 + 1) + ' · Undo puts it back');
     if (res && res.ok) { pushFlash([nr], false); renderSelection(); }
   }
   // on the floor: the selected room in gold, and its handles (the hovered one lit)
@@ -5399,7 +5435,7 @@ const Build = (() => {
     ctx.save();
     ctx.strokeStyle = 'rgba(244,200,112,.9)'; ctx.lineWidth = 1.5 / zoom;
     for (const r of rm.rects) ctx.strokeRect(r.x1 * t + 0.75 / zoom, r.y1 * t + 0.75 / zoom, (r.x2 - r.x1 + 1) * t - 1.5 / zoom, (r.y2 - r.y1 + 1) * t - 1.5 / zoom);
-    if (rm.rects.length === 1 && tool === 'select') {
+    if (tool === 'select') {
       const s = Math.max(5 / zoom, t * 0.24);
       roomHandles(rm, t).forEach((h, i) => {
         ctx.fillStyle = i === hoverHandle ? 'rgba(255,236,180,1)' : 'rgba(244,200,112,.95)'; ctx.fillRect(h.x - s / 2, h.y - s / 2, s, s);
@@ -5437,7 +5473,7 @@ const Build = (() => {
     const actions = host.querySelector('.refit-selection-actions');
     const key = (label, k, fn, cls) => { const el = document.createElement('button'); el.className = 'bb sm refit-sel-act' + (cls ? ' ' + cls : ''); el.type = 'button'; el.innerHTML = '<span>' + esc(label) + '</span>' + (k ? '<kbd>' + esc(k) + '</kbd>' : ''); el.onclick = fn; actions.appendChild(el); return el; };
     key('MOVE', 'arrows', () => { selectTool('move'); flashTip(orientEv(), 'drag the room — everything on it rides along', true); });
-    if (plain) key('RESIZE', 'edges', () => { sfx('click'); flashTip(orientEv(), 'drag a gold handle on its edge — out to grow it, in to shrink it', true); });
+    key('RESIZE', 'edges', () => { sfx('click'); flashTip(orientEv(), 'drag a gold handle on its edge — out to grow it, in to shrink it', true); });
     key('FLOOR', '3', () => { selectTool('paint'); flashTip(orientEv(), 'pick a finish, then click the room to lay it', true); });
     if (!corridor && plain && furnishReady()) key('FURNISH', '', () => { furnishOpen = !furnishOpen; sfx('click'); renderSelection(); }, 'refit-room-furnish').setAttribute('aria-expanded', String(furnishOpen));
     if (!corridor && furnishReady() && station.props().some(p => station.roomAt(p.x, p.y) === rm.id)) key('CLEAR', '', () => clearRoom(rm, orientEv()));
@@ -6111,7 +6147,13 @@ const Build = (() => {
     return { dx: dx + (s.x1 - moved.x1), dy: dy + (s.y1 - moved.y1) };
   }
 
-  let propHoverMemo = null;
+  let propHoverMemo = null, roomDrawMemo = null;
+  function roomDrawCheck(rect) {
+    const key = [geoVer, typeof Hulls !== 'undefined' ? Hulls.active : '', kind, rect.x1, rect.y1, rect.x2, rect.y2].join('|');
+    if (!roomDrawMemo || roomDrawMemo.key !== key)
+      roomDrawMemo = { key, v: station.canDrawRoomOnDeck(rect, kind, buildHullDoc.order) };
+    return roomDrawMemo.v;
+  }
   /* WILL IT CONNECT? (2026-09-23 playtest) — the ghost asks the model which EXISTING machines a placement would
      hook (station.connectionPreview: the compiler's own ring rule), so a line stamped against another, or a
      machine dropped against a lane, turns the ghost AMBER and names what it joins before the click. Placement
@@ -6182,24 +6224,24 @@ const Build = (() => {
       // ROOM / HALLWAY armed: the footprint a CLICK would stamp, previewed under the cursor and
       // validated live — so "what happens if I press here" is answered before you press. A drag
       // from the same tile takes over the moment you move (drag.mode 'draw' below).
-      if ((tool === 'room' || tool === 'hall') && hoverTile && !station.propAt(hoverTile.tx, hoverTile.ty)) {
+      if ((tool === 'room' || tool === 'hall') && hoverTile && !station.propAt(hoverTile.tx, hoverTile.ty) &&
+          !(tool === 'room' && station.roomAt(hoverTile.tx, hoverTile.ty))) {
         const rect = snapFit(stampRectFor(hoverTile.tx, hoverTile.ty), {});
-        const v = tool === 'hall' ? station.canPlaceHallway([rect]) : station.canPlaceRoom([rect], kind);
+        const v = tool === 'hall' ? station.canPlaceHallway([rect]) : roomDrawCheck(rect);
         return { rects: [rect], v, kind: tool, stamp: true };
       }
       return null;
     }
     if (drag.mode === 'draw') {
       const rect = snapFit((tool === 'hall') ? laneRect(drag.start, drag.cur) : norm(drag.start, drag.cur), { resize: true });
-      const v = (tool === 'hall') ? station.canPlaceHallway([rect]) : station.canPlaceRoom([rect], kind);
+      const v = (tool === 'hall') ? station.canPlaceHallway([rect]) : roomDrawCheck(rect);
       return { rects: [rect], v, kind: tool };
     }
     if (drag.mode === 'wall') {
       // Show wall line preview
       const wallLine = WorldModel.tileLine(drag.start, drag.cur);
       const rects = wallLine.map(tile => ({ x1: tile.tx, y1: tile.ty, x2: tile.tx, y2: tile.ty }));
-      // Check if all tiles can be placed
-      const v = wallLine.every(tile => station.canPlaceProp('structural_wall', tile.tx, tile.ty, 1, 1).ok) 
+      const v = wallLine.every(tile => station.canPlaceWallTile(tile.tx, tile.ty, buildHullDoc.order).ok)
         ? { ok: true } 
         : { ok: false };
       return { rects, v, kind: 'wall' };
@@ -6226,7 +6268,10 @@ const Build = (() => {
     }
     if (drag.mode === 'roomresize') {
       const rm = station.roomById(drag.roomId), nr = rm && resizedRect(drag); if (!nr) return null;
-      return { rects: [nr], v: resizeCheck(rm, nr), kind: 'resize' };
+      const preview = Object.assign({}, nr);
+      if (drag.section && (preview.x1 > preview.x2 || preview.y1 > preview.y2))
+        preview[drag.section.edge] = rm.rects[drag.section.index][drag.section.edge];
+      return { rects: [preview], v: resizeCheck(rm, nr, drag.section), kind: 'resize' };
     }
     if (drag.mode === 'groupmove') {
       const ps = groupIds.map(id => station.propById(id)).filter(Boolean); if (!ps.length) return null;
@@ -7639,6 +7684,7 @@ const Build = (() => {
   let footprintMemo = null;
   function structureGhost(g) {
     if (!g || !g.v || !g.v.ok || typeof WorldModel === 'undefined') return null;
+    if (g.v.carve || g.v.existing) return null;
     const move = g.move && drag && drag.mode === 'move';
     if (!move && g.kind !== 'room' && g.kind !== 'hall') return null;
     const candidate = { rects: g.rects, kind: g.kind === 'hall' ? 'corridor' : kind,
@@ -7683,6 +7729,7 @@ const Build = (() => {
 
   function placementReason(g) {
     if (g.kind === 'resize') return (g.v && g.v.msg) || 'Choose a clear space';   // a room's own refusal names its own reason
+    if (g.kind === 'room' || g.kind === 'hall') return (g.v && g.v.msg) || 'Choose a clear space';
     const code = g.v && g.v.error;
     if (code === 'OFF_DECK') return 'Place this on a room floor';
     if (code === 'NEEDS_WALL') return 'Place this against the back wall';

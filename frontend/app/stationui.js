@@ -10496,7 +10496,9 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
          primary action is a full-width button at the foot of the card and the destructive ✕ stays small and
          alone in the header, where a misclick cannot land on it while reaching for START. */
       const kindTag = QUEST_KIND_TAG[q.kind] || '';
-      const kindHtml = kindTag ? '<span class="q-kind q-kind-' + esc(q.kind) + '">' + esc(kindTag) + '</span>' : '';
+      const urgency = ['yellow', 'red'].includes(q.urgency) ? q.urgency : '';
+      const kindHtml = (kindTag ? '<span class="q-kind q-kind-' + esc(q.kind) + '">' + esc(kindTag) + '</span>' : '') +
+        (urgency ? '<span class="q-urgency-' + urgency + '">' + urgency.toUpperCase() + ' URGENCY</span>' : '');
       const rewardHtml = q.reward ? '<div class="sub q-reward"><span class="q-field-label">REWARD</span>&#9670; ' + esc(q.reward) + '</div>' : '';
       const actionRow = (goBtn || queueBtn) ? '<div class="q-actions">' + goBtn + queueBtn + '</div>' : '';
       const lifeActions = q.kind === 'ledger' && q.status !== 'done' ? '<div class="q-life-quest" data-qid="' + esc(q.id) + '">'
@@ -10561,10 +10563,10 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       '<button class="q-filter" data-category="' + c[0] + '" aria-pressed="' + (c === category) + '">' + c[1]
       + ' <span>' + open.filter(c[2]).length + '</span></button>').join('') + '</nav>';
     const journalHtml = '<div class="q-journal q-open"><nav class="q-mission-list" aria-label="Available quests">'
-      + listed.map((q, i) => '<button class="q-mission' + (q === selected ? ' selected' : '') + '" data-quest-select="' + esc(q.id)
+      + listed.map((q, i) => '<button class="q-mission' + (q === selected ? ' selected' : '') + (['yellow', 'red'].includes(q.urgency) ? ' q-mission-' + q.urgency : '') + '" data-quest-select="' + esc(q.id)
         + '" aria-pressed="' + (q === selected) + '" aria-controls="quest-briefing">'
         + '<span class="q-mission-number" aria-hidden="true">' + String(i + 1).padStart(2, '0') + '</span><span class="q-mission-copy">'
-        + '<span class="q-mission-kind">' + esc(QUEST_KIND_TAG[q.kind] || 'QUEST') + '</span><span class="q-mission-title">'
+        + '<span class="q-mission-kind">' + esc(QUEST_KIND_TAG[q.kind] || 'QUEST') + (['yellow', 'red'].includes(q.urgency) ? ' · ' + q.urgency.toUpperCase() + ' URGENCY' : '') + '</span><span class="q-mission-title">'
         + esc(q.title) + '</span></span><span class="q-mission-arrow" aria-hidden="true">›</span></button>').join('')
       + '</nav><section class="q-briefing q-grid" id="quest-briefing" aria-label="Quest briefing">'
       + (selected ? tro(selected, 0) : '<div class="q-journal-empty"><span aria-hidden="true">◇</span><h3>'
@@ -11423,7 +11425,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
   // GROWTH Tier 3: repaint the Settings AUTONOMY panel's EARNED badge if it is open (no-op otherwise — the paint fn
   // queries its own (possibly detached) host nodes, so a closed panel costs nothing). Called after a trust accept.
   const repaintAutonomy = () => { try { if (repaintAutonomyDial) repaintAutonomyDial(); } catch (_) {} };
-  return { init, enter, setRoster, setCrewPortals, leave, clearRunning, runningCount: () => runningAgents.size, isAgentRunning: (id) => agentLive(id), notify, warnIfStationLacksKey, settleNotifs, waitingNotifKeys, seenSession, flashSave, openAgent, refreshCrew: () => crewTick(), refreshCrewRooms, openArcade, toggleTerm, openTerm, showTerm, showAgent, notifsMarkRead, notifsClear, openDesk, closeTerm, rerender, refreshBoard: refreshBoardLive, pokeQuests, setTheme, getTheme, setLook, lookNow, lookOptions, repaintAutonomy, refreshSystems, toggleFamily, familyOf, registerWindow, h, motionRestState };
+  return { init, enter, setRoster, setCrewPortals, leave, clearRunning, runningCount: () => runningAgents.size, isAgentRunning: (id) => agentLive(id), qPresence: () => qPresenceStatus(Date.now(), qLastInteractionAt, qLastBusyAt, qFrontendConnected()), notify, warnIfStationLacksKey, settleNotifs, waitingNotifKeys, seenSession, flashSave, openAgent, refreshCrew: () => crewTick(), refreshCrewRooms, openArcade, toggleTerm, openTerm, showTerm, showAgent, notifsMarkRead, notifsClear, openDesk, closeTerm, rerender, refreshBoard: refreshBoardLive, pokeQuests, setTheme, getTheme, setLook, lookNow, lookOptions, repaintAutonomy, refreshSystems, toggleFamily, familyOf, registerWindow, h, motionRestState };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = { visibleTerminalRect, clampTerminalSize };

@@ -9365,6 +9365,19 @@ const Chat = (() => {
               StationUI.notify(whoOf(ws) + detail + ' in Q.', 'gold', undefined, { go: { term: 'q', section: 'inbox' } });
             }
           }
+          if (typeof BridgeReviewStore !== 'undefined' && BridgeReviewStore.capture) {
+            const sender = typeof App !== 'undefined' && App.agents
+              ? App.agents().find(a => a && a.id === (ws.agentId || 'agent')) : null;
+            const captured = BridgeReviewStore.capture(replyText, sender, thisRunId || '');
+            if (captured.text !== replyText && isActiveWs(ws) && activeLiveRow && activeLiveRow.cleanTaskIntent) activeLiveRow.cleanTaskIntent();
+            replyText = captured.text;
+            for (const item of captured.received) {
+              if (typeof StationUI !== 'undefined' && StationUI.notify) {
+                StationUI.notify(whoOf(ws) + ' pinned a Bridge review item.', 'gold', undefined,
+                  { go: { term: 'bridge-reviews', section: item.category } });
+              }
+            }
+          }
         }
         const taskQuestion = (isTask && typeof TaskIntent !== 'undefined' && TaskIntent.parse) ? TaskIntent.parse(replyText) : null;
         if (taskQuestion) {

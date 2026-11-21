@@ -128,6 +128,7 @@ function normQuest(r) {
     steps: steps,
     status: status,
     executionMode: executionMode(r.executionMode, contract),
+    urgency: ['yellow', 'red'].includes(r.urgency) ? r.urgency : null,
     whyNow: clip(r.whyNow, 300),
     disposition: dispositionOrNull(r.disposition),
     dispositionHistory: (Array.isArray(r.dispositionHistory) ? r.dispositionHistory : []).map(dispositionOrNull).filter(Boolean).slice(-20),
@@ -206,6 +207,7 @@ function makeQuestStore(deps) {
     d = d || {};
     const contract = validContract(d.contract);
     if (!contract) return Promise.resolve({ ok: false, error: 'a quest needs a valid completion contract' });
+    if (d.urgency != null && !['yellow', 'red'].includes(d.urgency)) return Promise.resolve({ ok: false, error: 'unsupported quest urgency' });
     const title = String(d.title == null ? '' : d.title).trim();
     if (!title) return Promise.resolve({ ok: false, error: 'a quest needs a title' });
     const nt = normTitle(title);
@@ -242,6 +244,7 @@ function makeQuestStore(deps) {
         steps: validSteps(d.steps),
         status: 'open',
         executionMode: executionMode(d.executionMode, contract),
+        urgency: d.urgency || null,
         whyNow: clip(d.whyNow, 300),
         disposition: null, dispositionHistory: [],
         attest: null,

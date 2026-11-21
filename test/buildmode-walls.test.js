@@ -53,8 +53,8 @@ A.ok(/\['rooms', 'Rooms', \['room','hall','wall'\]\]/.test(source), 'Rooms group
 A.ok((source.match(/\['wall',\s*'([^']+)'\]/) || [null, ''])[1].split(',').every(row => row.length === 12),
   'Walls toolbar icon is a 12-pixel grid');
 A.ok(/WorldModel\.tileLine\(d\.start, d\.cur\)/.test(source), 'Walls uses WorldModel.tileLine along its start/end line');
-A.ok(/function commitWall\(d, ev\)[\s\S]*?station\.transact\(\(\) => \{[\s\S]*?station\.addProp\(\{ t: 'structural_wall', x: tile\.tx, y: tile\.ty, w: 1, h: 1 \}\)/.test(source),
-  'one drawn wall is placed in one transaction');
+A.ok(/function commitWall\(d, ev\)[\s\S]*?station\.placeWalls\(wallLine, buildHullDoc\.order\)/.test(source),
+  'drawn walls use the hull-scoped wall mutation');
 A.ok(/deselectTool\(\{ silent: true \}\);/.test(source),
   'one wall placement deselects the tool');
 A.ok(/if \(tool === 'wall'\) \{\s*drag = \{ mode: 'wall', start: w, cur: w, moved: false \};/.test(source), 'Walls starts a drag at its first tile');

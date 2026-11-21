@@ -1255,6 +1255,9 @@ const WorldModel = (() => {
       const dirty = rm.rects.slice();
       delete doc.rooms[id];
       doc.order = doc.order.filter(x => x !== id);
+      for (const hull of Object.values(doc.meta.hulls || {})) {
+        if (Array.isArray(hull.roomIds)) hull.roomIds = hull.roomIds.filter(roomId => roomId !== id);
+      }
       // Remove the deck and its supported contents in one undo snapshot.
       // A straddling prop loses support too; neighboring-room contents stay intact.
       doc.props = doc.props.filter(p => {
@@ -1680,6 +1683,491 @@ const WorldModel = (() => {
       doc.props.push(prop);
       emit([{ x1: x, y1: y, x2: x + w - 1, y2: y + h - 1 }], { staticBakeUnchanged: t !== 'airlock' });
       return { ok: true, id };
+    }
+
+    function canPlaceWallTile(x, y, roomIds) {
+      const room = roomAt(x, y);
+      if (!room || (roomIds && !roomIds.includes(room))) return fail('OFF_DECK', 'wall must stay on this hull');
+      const at = propsAtTile(x, y) || [];
+      if (at.some(p => p.t === 'structural_wall')) return { ok: true, existing: true };
+      return canPlaceProp('structural_wall', x, y, 1, 1);
+    }
+
+    function wallComponents(roomIds) {
+      const allowed = new Set(roomIds || doc.order), floor = new Map(), walls = new Set();
+      for (const [key, id] of roomIndex()) if (allowed.has(id)) floor.set(key, id);
+      for (const p of doc.props) if (p.t === 'structural_wall') {
+        for (let y = p.y; y < p.y + p.h; y++) for (let x = p.x; x < p.x + p.w; x++) walls.add(x + ',' + y);
+      }
+      const component = new Map(), groups = [];
+      for (const key of floor.keys()) {
+        if (walls.has(key) || component.has(key)) continue;
+        const index = groups.length, queue = [key];
+        component.set(key, index);
+        for (let i = 0; i < queue.length; i++) {
+          const [x, y] = queue[i].split(',').map(Number);
+          for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+            const next = (x + dx) + ',' + (y + dy);
+            if (floor.has(next) && !walls.has(next) && !component.has(next)) {
+              component.set(next, index); queue.push(next);
+            }
+          }
+        }
+        groups.push(queue);
+      }
+      return { floor, component, groups };
+    }
+
+    function rectsForTiles(keys) {
+      const rows = new Map();
+      for (const key of keys) {
+        const [x, y] = key.split(',').map(Number);
+        if (!rows.has(y)) rows.set(y, []);
+        rows.get(y).push(x);
+      }
+      const rects = [], active = new Map();
+      for (const y of Array.from(rows.keys()).sort((a, b) => a - b)) {
+        const xs = rows.get(y).sort((a, b) => a - b), runs = [];
+        for (const x of xs) {
+          const last = runs[runs.length - 1];
+          if (last && last[1] + 1 === x) last[1] = x; else runs.push([x, x]);
+        }
+        const next = new Map();
+        for (const [x1, x2] of runs) {
+          const key = x1 + ',' + x2, previous = active.get(key);
+          if (previous && previous.y2 === y - 1) { previous.y2 = y; next.set(key, previous); }
+          else { const rect = { x1, y1: y, x2, y2: y }; rects.push(rect); next.set(key, rect); }
+        }
+        active.clear();
+        for (const [key, rect] of next) active.set(key, rect);
+      }
+      return rects;
+    }
+
+    function roomOnDeckPlan(rect, kind, roomIds) {
+      const r = normRect(rect || {});
+      if (rectW(r) < MIN_ROOM || rectH(r) < MIN_ROOM) return fail('TOO_SMALL', 'room min ' + MIN_ROOM + '×' + MIN_ROOM);
+      if (rectW(r) > MAX_SPAN || rectH(r) > MAX_SPAN) return fail('TOO_FAR', 'too far from the station');
+      const allowed = new Set(roomIds || doc.order), owners = new Map(), inside = new Set();
+      let empty = false;
+      for (let y = r.y1; y <= r.y2; y++) for (let x = r.x1; x <= r.x2; x++) {
+        const key = x + ',' + y, id = roomAt(x, y);
+        if (!id) { empty = true; continue; }
+        if (!allowed.has(id)) return fail('OFF_HULL', 'room must stay on the selected hull');
+        inside.add(key);
+        owners.set(id, (owners.get(id) || 0) + 1);
+      }
+      if (!owners.size) return canPlaceRoom([r], kind);
+      if (empty) return fail('PARTIAL_DECK', 'draw entirely on existing deck, or add a room beside it');
+      const remaining = new Map();
+      for (const [key, id] of roomIndex()) {
+        if (!owners.has(id) || inside.has(key)) continue;
+        if (!remaining.has(id)) remaining.set(id, []);
+        remaining.get(id).push(key);
+      }
+      for (const id of owners.keys()) {
+        if (!remaining.has(id)) {
+          if (owners.size === 1 && doc.rooms[id].rects.length === 1) return { ok: true, existing: id };
+          return fail('ROOM_CONSUMED', 'the new room would replace ' + (doc.rooms[id].name || id) + ' · leave some of its floor');
+        }
+      }
+      for (const p of doc.props) {
+        if (p.t === 'structural_wall') continue;
+        const f = propFootprint(p);
+        if (!rectsHit(f, r)) continue;
+        if (f.x1 < r.x1 || f.y1 < r.y1 || f.x2 > r.x2 || f.y2 > r.y2)
+          return fail('CUTS_CONTENTS', 'move the ' + p.t + ' away from the room boundary first');
+      }
+      return { ok: true, carve: true, rect: r, inside, remaining };
+    }
+
+    function drawRoomOnDeck(opts, roomIds) {
+      const kind = ROOM_KINDS[opts.kind] && opts.kind !== 'corridor' ? opts.kind : 'hab';
+      const plan = roomOnDeckPlan(opts.rect, kind, roomIds);
+      if (!plan.ok) return plan;
+      if (plan.existing) return { ok: true, id: plan.existing, existing: true };
+      if (!plan.carve) return addRoom({ kind, rect: opts.rect });
+      snapshot();
+      const paint = {}, dirty = [];
+      for (const [id, keys] of plan.remaining) {
+        const room = doc.rooms[id];
+        dirty.push(...room.rects);
+        Object.assign(paint, room.floorPaint);
+        room.rects = rectsForTiles(keys);
+        room.floorPaint = Object.fromEntries(keys.filter(key => key in paint).map(key => [key, paint[key]]));
+      }
+      const id = 'r' + (doc._nid++);
+      doc.rooms[id] = {
+        id, kind, name: ROOM_KINDS[kind].label + '-' + pad2(doc._nid - 1), rects: [plan.rect],
+        floorStyle: ROOM_KINDS[kind].floor, floorMat: null, wallStyle: null, wallMat: null,
+        hullStyle: null, hullMat: null, tier: 0, wallRoom: true,
+        floorPaint: Object.fromEntries(Array.from(plan.inside).filter(key => key in paint).map(key => [key, paint[key]]))
+      };
+      doc.order.push(id);
+      for (const hull of Object.values(doc.meta.hulls || {})) {
+        if (Array.isArray(hull.roomIds) && Array.from(plan.remaining.keys()).some(owner => hull.roomIds.includes(owner))) hull.roomIds.push(id);
+      }
+      emit(dirty.concat([plan.rect]), { global: true });
+      return { ok: true, id };
+    }
+
+    function extendRoomFloor(id, rects) {
+      const room = doc.rooms[id];
+      if (!room) return fail('NOT_FOUND', 'no such room');
+      if (!Array.isArray(rects) || !rects.length) return fail('NO_RECT', 'nothing to add');
+      if (rects.some(r => !r || !['x1', 'y1', 'x2', 'y2'].every(k => Number.isInteger(r[k])) ||
+          r.x1 > r.x2 || r.y1 > r.y2)) return fail('NO_RECT', 'floor needs whole tile coordinates');
+      const b = bounds(), cells = new Set();
+      for (const r of rects) {
+        b.minTx = Math.min(b.minTx, r.x1); b.maxTx = Math.max(b.maxTx, r.x2);
+        b.minTy = Math.min(b.minTy, r.y1); b.maxTy = Math.max(b.maxTy, r.y2);
+        if (b.maxTx - b.minTx + 1 > MAX_SPAN || b.maxTy - b.minTy + 1 > MAX_SPAN)
+          return fail('TOO_FAR', 'too far from the station');
+        for (let y = r.y1; y <= r.y2; y++) for (let x = r.x1; x <= r.x2; x++) {
+          const key = x + ',' + y;
+          if (cells.has(key) || roomAt(x, y)) return fail('OVERLAP', 'new floor overlaps existing deck');
+          if (beltAt(x, y) || (propsAtTile(x, y) || []).length) return fail('CUTS_CONTENTS', 'new floor overlaps an object or belt');
+          cells.add(key);
+        }
+      }
+      const queue = [], seen = new Set();
+      for (const key of cells) {
+        const [x, y] = key.split(',').map(Number);
+        if ([[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]].some(([nx, ny]) => roomAt(nx, ny) === id)) {
+          queue.push(key); seen.add(key);
+        }
+      }
+      for (let i = 0; i < queue.length; i++) {
+        const [x, y] = queue[i].split(',').map(Number);
+        for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+          const key = nx + ',' + ny;
+          if (cells.has(key) && !seen.has(key)) { seen.add(key); queue.push(key); }
+        }
+      }
+      if (seen.size !== cells.size) return fail('DISCONNECTED', 'new floor must join the room');
+      snapshot();
+      room.rects.push(...rects.map(r => Object.assign({}, r)));
+      emit(rects, { global: true });
+      return { ok: true, tiles: cells.size };
+    }
+
+    function rezoneRooms(changes, additions) {
+      if (!changes || typeof changes !== 'object' || Array.isArray(changes) ||
+          !Array.isArray(additions)) return fail('BAD_LAYOUT', 'invalid room changes');
+      const ids = Object.keys(changes), oldCells = new Map(), newCells = new Map(), paint = {};
+      if (!ids.length || ids.some(id => !doc.rooms[id] || !Array.isArray(changes[id])))
+        return fail('NO_ROOM', 'room no longer exists');
+      if (additions.some(a => !a || !ids.includes(a.source) || !ROOM_KINDS[a.kind] ||
+          !Array.isArray(a.rects) || !a.rects.length))
+        return fail('BAD_LAYOUT', 'invalid new room');
+      const collect = (rects, owner, cells) => {
+        for (const r of rects) {
+          if (!r || !['x1', 'y1', 'x2', 'y2'].every(k => Number.isInteger(r[k])) ||
+              r.x1 > r.x2 || r.y1 > r.y2 || rectW(r) > MAX_SPAN || rectH(r) > MAX_SPAN)
+            return fail('BAD_LAYOUT', 'invalid room footprint');
+          for (let y = r.y1; y <= r.y2; y++) for (let x = r.x1; x <= r.x2; x++) {
+            const key = x + ',' + y;
+            if (cells.has(key)) return fail('OVERLAP', 'room footprints overlap');
+            cells.set(key, owner);
+          }
+        }
+        return { ok: true };
+      };
+      for (const id of ids) {
+        const v = collect(doc.rooms[id].rects, id, oldCells);
+        if (!v.ok) return v;
+        Object.assign(paint, doc.rooms[id].floorPaint);
+      }
+      for (const id of ids) {
+        if (!changes[id].length && id === doc.meta.spawnRoomId) return fail('SPAWN_ROOM', 'cannot remove the spawn room');
+        const v = collect(changes[id], id, newCells);
+        if (!v.ok) return v;
+      }
+      for (let i = 0; i < additions.length; i++) {
+        const v = collect(additions[i].rects, '@' + i, newCells);
+        if (!v.ok) return v;
+      }
+      if (oldCells.size !== newCells.size || Array.from(oldCells.keys()).some(key => !newCells.has(key)))
+        return fail('BAD_LAYOUT', 'room changes must preserve the existing floor');
+      for (const p of doc.props) {
+        if (p.t === 'structural_wall') continue;
+        const f = propFootprint(p), before = new Set(), after = new Set();
+        for (let y = f.y1; y <= f.y2; y++) for (let x = f.x1; x <= f.x2; x++) {
+          const key = x + ',' + y;
+          before.add(oldCells.get(key) || roomAt(x, y));
+          after.add(newCells.get(key) || roomAt(x, y));
+        }
+        if (before.size === 1 && after.size > 1)
+          return fail('CUTS_CONTENTS', 'move the ' + p.t + ' away from the room boundary first');
+      }
+      snapshot();
+      const dirty = ids.flatMap(id => doc.rooms[id].rects), removed = ids.filter(id => !changes[id].length);
+      const sources = additions.map(a => clone(doc.rooms[a.source]));
+      const sourceHulls = additions.map(a => Object.values(doc.meta.hulls || {}).filter(hull =>
+        Array.isArray(hull.roomIds) && hull.roomIds.includes(a.source)));
+      for (const id of ids) {
+        if (!changes[id].length) { delete doc.rooms[id]; continue; }
+        doc.rooms[id].rects = changes[id].map(r => Object.assign({}, r));
+        doc.rooms[id].floorPaint = Object.fromEntries(Array.from(newCells).filter(([key, owner]) => owner === id && key in paint).map(([key]) => [key, paint[key]]));
+      }
+      doc.order = doc.order.filter(id => !removed.includes(id));
+      for (const hull of Object.values(doc.meta.hulls || {})) {
+        if (Array.isArray(hull.roomIds)) hull.roomIds = hull.roomIds.filter(id => !removed.includes(id));
+      }
+      const created = [];
+      additions.forEach((a, i) => {
+        const id = 'r' + (doc._nid++), room = sources[i];
+        room.id = id; room.name = a.name || ('ROOM-' + pad2(doc._nid - 1)); room.kind = a.kind;
+        room.rects = a.rects.map(r => Object.assign({}, r));
+        room.floorPaint = Object.fromEntries(Array.from(newCells).filter(([key, owner]) => owner === '@' + i && key in paint).map(([key]) => [key, paint[key]]));
+        doc.rooms[id] = room; doc.order.push(id); created.push(id);
+        for (const hull of sourceHulls[i]) hull.roomIds.push(id);
+      });
+      emit(dirty.concat(...ids.map(id => changes[id]), ...additions.map(a => a.rects)), { global: true });
+      return { ok: true, created };
+    }
+
+    function placeWalls(tiles, roomIds) {
+      if (!Array.isArray(tiles) || !tiles.length) return fail('NOTHING', 'no wall to place');
+      const unique = new Map();
+      for (const tile of tiles) {
+        if (!tile || !Number.isInteger(tile.tx) || !Number.isInteger(tile.ty)) return fail('NO_RECT', 'wall needs whole tile coordinates');
+        const v = canPlaceWallTile(tile.tx, tile.ty, roomIds);
+        if (!v.ok) return v;
+        if (!v.existing) unique.set(tile.tx + ',' + tile.ty, tile);
+      }
+      if (!unique.size) return fail('NOTHING', 'wall already exists');
+      const before = wallComponents(roomIds);
+      return transact(() => {
+        for (const tile of unique.values()) {
+          const result = addProp({ t: 'structural_wall', x: tile.tx, y: tile.ty, w: 1, h: 1 });
+          if (!result.ok) return result;
+        }
+        const after = wallComponents(roomIds), split = new Map();
+        for (const [key, old] of before.component) {
+          const current = after.component.get(key);
+          if (current === undefined) continue;
+          if (!split.has(old)) split.set(old, new Map());
+          const counts = split.get(old);
+          counts.set(current, (counts.get(current) || 0) + 1);
+        }
+        const createdComponents = new Set();
+        for (const counts of split.values()) {
+          if (counts.size < 2) continue;
+          const parts = Array.from(counts).sort((a, b) => b[1] - a[1] || a[0] - b[0]);
+          for (const [id] of parts.slice(1)) createdComponents.add(id);
+        }
+        const byRoom = new Map();
+        for (const [key, id] of before.floor) {
+          if (!byRoom.has(id)) byRoom.set(id, new Map());
+          const part = createdComponents.has(after.component.get(key)) ? after.component.get(key) : null;
+          const portions = byRoom.get(id);
+          if (!portions.has(part)) portions.set(part, []);
+          portions.get(part).push(key);
+        }
+        const newRooms = [];
+        for (const [id, portions] of byRoom) {
+          if (!portions.has(null)) continue;
+          const source = doc.rooms[id], oldRects = source.rects.slice(), paint = source.floorPaint || {};
+          const remaining = portions.get(null);
+          if (!remaining.some(key => after.component.has(key))) continue;
+          const additions = Array.from(portions).filter(([part]) => part !== null);
+          if (!additions.length) continue;
+          snapshot();
+          source.rects = rectsForTiles(remaining);
+          source.floorPaint = Object.fromEntries(remaining.filter(key => key in paint).map(key => [key, paint[key]]));
+          for (const [, keys] of additions) {
+            const roomId = 'r' + (doc._nid++);
+            const room = clone(source);
+            room.id = roomId;
+            room.name = 'ROOM-' + pad2(doc._nid - 1);
+            room.wallRoom = true;
+            if (room.kind === 'corridor') room.kind = 'hab';
+            room.rects = rectsForTiles(keys);
+            room.floorPaint = Object.fromEntries(keys.filter(key => key in paint).map(key => [key, paint[key]]));
+            doc.rooms[roomId] = room;
+            doc.order.push(roomId);
+            for (const hull of Object.values(doc.meta.hulls || {})) {
+              if (Array.isArray(hull.roomIds) && hull.roomIds.includes(id)) hull.roomIds.push(roomId);
+            }
+            newRooms.push(roomId);
+          }
+          emit(oldRects, { global: true });
+        }
+        return { ok: true, count: unique.size, rooms: newRooms };
+      });
+    }
+
+    function sharedResizePlan(id, rect, roomIds, section) {
+      const room = doc.rooms[id];
+      if (!room || (!section && room.rects.length !== 1)) return { ok: true, handled: false };
+      const source = room.rects[section ? section.index : 0];
+      if (!source) return fail('NO_ROOM', 'room section no longer exists');
+      const old = Object.assign({}, source), next = section ? Object.assign({}, rect) : normRect(rect || {});
+      if (section) {
+        if (!['x1', 'x2', 'y1', 'y2'].includes(section.edge) ||
+            !Number.isInteger(section.from) || !Number.isInteger(section.to) || section.from > section.to ||
+            !['x1', 'x2', 'y1', 'y2'].every(key => Number.isInteger(next[key])) ||
+            next.x1 > next.x2 + 1 || next.y1 > next.y2 + 1)
+          return fail('SHARED_WALL', 'invalid room edge');
+        const vertical = section.edge[0] === 'x';
+        const start = vertical ? 'y1' : 'x1', end = vertical ? 'y2' : 'x2';
+        if (section.from < source[start] || section.to > source[end])
+          return fail('SHARED_WALL', 'room edge no longer exists');
+        old[start] = section.from; old[end] = section.to;
+      }
+      const changed = ['x1', 'x2', 'y1', 'y2'].filter(edge => old[edge] !== next[edge]);
+      if (!changed.length) return { ok: true, handled: false };
+      const wallAt = (x, y) => (propsAtTile(x, y) || []).find(p => p.t === 'structural_wall');
+      const edgeWalls = (edge, inside) => {
+        const vertical = edge[0] === 'x', fixed = old[edge] + (inside ? 0 : (edge[1] === '1' ? -1 : 1));
+        const from = vertical ? old.y1 : old.x1, to = vertical ? old.y2 : old.x2;
+        const found = [];
+        for (let n = from; n <= to; n++) {
+          const wall = vertical ? wallAt(fixed, n) : wallAt(n, fixed);
+          if (wall) found.push(wall);
+        }
+        return found;
+      };
+      if (section && (changed.length !== 1 || changed[0] !== section.edge))
+        return fail('SHARED_WALL', 'move one room edge at a time');
+      if (!section && !room.wallRoom && !changed.some(edge => edgeWalls(edge, false).length || edgeWalls(edge, true).length)) return { ok: true, handled: false };
+      if (changed.length !== 1) return fail('SHARED_WALL', 'move one shared wall at a time');
+      if (!section && (rectW(next) < MIN_ROOM || rectH(next) < MIN_ROOM)) return fail('TOO_SMALL', 'room min ' + MIN_ROOM + '×' + MIN_ROOM);
+      const edge = changed[0], vertical = edge[0] === 'x', low = edge[1] === '1';
+      const delta = next[edge] - old[edge], expanding = low ? delta < 0 : delta > 0;
+      const from = vertical ? old.y1 : old.x1, to = vertical ? old.y2 : old.x2;
+      const innerWalls = edgeWalls(edge, true), outerWalls = edgeWalls(edge, false);
+      const insideBoundary = innerWalls.length > 0;
+      const boundary = old[edge] + (insideBoundary ? 0 : (low ? -1 : 1)), destination = boundary + delta;
+      const coords = (fixed, n) => vertical ? [fixed, n] : [n, fixed];
+      const direction = low ? -1 : 1, neighbors = new Map(), owners = new Map(), cells = new Map();
+      if (section) for (let n = from; n <= to; n++) {
+        const [x, y] = coords(old[edge] + direction, n);
+        if (roomAt(x, y) === id) return fail('SHARED_WALL', 'only an exposed room edge can be moved');
+      }
+      const include = owner => {
+        if (!cells.has(owner)) cells.set(owner, new Set());
+      };
+      include(id);
+      for (let n = from; n <= to; n++) {
+        const [x, y] = coords(boundary, n), [nx, ny] = coords(boundary + direction, n);
+        const carrier = roomAt(x, y), neighbor = roomAt(nx, ny);
+        if (!carrier || !neighbor || (!insideBoundary && carrier === id) || neighbor === id ||
+            (roomIds && (!roomIds.includes(carrier) || !roomIds.includes(neighbor))))
+          return fail('SHARED_WALL', 'the wall must border another room along its whole length');
+        owners.set(n, carrier); neighbors.set(n, neighbor);
+        include(carrier); include(neighbor);
+      }
+      for (const [key, owner] of roomIndex()) if (cells.has(owner)) cells.get(owner).add(key);
+      const changedCells = [];
+      const min = Math.min(old[edge], next[edge]), max = Math.max(old[edge], next[edge]);
+      for (let n = from; n <= to; n++) for (let v = min; v <= max; v++) {
+        const [x, y] = coords(v, n), inOld = x >= old.x1 && x <= old.x2 && y >= old.y1 && y <= old.y2;
+        const inNext = x >= next.x1 && x <= next.x2 && y >= next.y1 && y <= next.y2;
+        if (inOld === inNext) continue;
+        const key = x + ',' + y;
+        const owner = roomAt(x, y);
+        if (expanding ? owner !== neighbors.get(n) && !(!insideBoundary && v === boundary && owner === owners.get(n)) : owner !== id)
+          return fail('SHARED_WALL', 'the new boundary crosses another room or leaves the hull');
+        changedCells.push(key);
+      }
+      const moving = innerWalls.concat(outerWalls), movingIds = new Set(moving.map(p => p.id));
+      if (moving.some(p => p.w !== 1 || p.h !== 1)) return fail('SHARED_WALL', 'resize requires one-tile wall panels');
+      const moves = moving.map(p => {
+        const x = p.x + (vertical ? delta : 0), y = p.y + (vertical ? 0 : delta), existing = wallAt(x, y);
+        return { p, x, y, reuse: !!(existing && !movingIds.has(existing.id)) };
+      });
+      const checkClear = (x, y) => {
+        if (beltAt(x, y)) return fail('CUTS_CONTENTS', 'move the belt away from the shared wall first');
+        if ((propsAtTile(x, y) || []).some(p => p.t !== 'structural_wall' && !movingIds.has(p.id))) return fail('CUTS_CONTENTS', 'move the objects away from the shared wall first');
+        return { ok: true };
+      };
+      for (const key of changedCells) {
+        const [x, y] = key.split(',').map(Number), v = checkClear(x, y);
+        if (!v.ok) return v;
+      }
+      for (let n = from; n <= to; n++) {
+        const [x, y] = coords(destination, n);
+        if (roomAt(x, y) !== (expanding ? neighbors.get(n) : id)) return fail('SHARED_WALL', 'the new wall must stay inside the neighboring deck');
+        const v = checkClear(x, y);
+        if (!v.ok) return v;
+      }
+      for (const move of moves) {
+        const owner = roomAt(move.x, move.y);
+        if (!owner || (roomIds && !roomIds.includes(owner))) return fail('SHARED_WALL', 'the shared wall must stay on the selected hull');
+        const v = checkClear(move.x, move.y);
+        if (!v.ok) return v;
+      }
+      const caps = [];
+      if (expanding && moving.length && insideBoundary) for (const n of [from, to]) {
+        const [cornerX, cornerY] = coords(boundary, n), [innerX, innerY] = coords(boundary - direction, n);
+        const corner = wallAt(cornerX, cornerY);
+        if (!corner || !wallAt(innerX, innerY)) continue;
+        for (let v = boundary; v !== destination; v += Math.sign(delta)) {
+          const [x, y] = coords(v, n), existing = wallAt(x, y);
+          if (!roomAt(x, y) || (roomIds && !roomIds.includes(roomAt(x, y))))
+            return fail('SHARED_WALL', 'the connecting wall would leave the hull');
+          if (!existing || movingIds.has(existing.id)) {
+            const check = canPlaceProp('structural_wall', x, y, 1, 1, existing && existing.id);
+            if (!check.ok || beltAt(x, y)) return fail('CUTS_CONTENTS', 'move objects away from the connecting wall first');
+            caps.push({ x, y });
+          }
+        }
+      }
+      if (expanding && moving.length && !insideBoundary) for (const n of [from - 1, to + 1]) {
+        const [cornerX, cornerY] = coords(boundary, n);
+        if (!wallAt(cornerX, cornerY)) continue;
+        for (let v = boundary + Math.sign(delta); v !== destination + Math.sign(delta); v += Math.sign(delta)) {
+          const [x, y] = coords(v, n), existing = wallAt(x, y);
+          if (!roomAt(x, y) || (roomIds && !roomIds.includes(roomAt(x, y))))
+            return fail('SHARED_WALL', 'the connecting wall would leave the hull');
+          if (!existing) {
+            const check = canPlaceProp('structural_wall', x, y, 1, 1);
+            if (!check.ok || beltAt(x, y)) return fail('CUTS_CONTENTS', 'move objects away from the connecting wall first');
+            caps.push({ x, y });
+          }
+        }
+      }
+      const currentOwners = new Map(roomIndex());
+      const transfer = (key, target) => {
+        const owner = currentOwners.get(key);
+        if (owner !== target) { cells.get(owner).delete(key); cells.get(target).add(key); currentOwners.set(key, target); }
+      };
+      for (const key of changedCells) {
+        const [x, y] = key.split(',').map(Number);
+        transfer(key, expanding ? id : neighbors.get(vertical ? y : x));
+      }
+      for (let n = from; n <= to; n++) {
+        const [oldX, oldY] = coords(boundary, n), [newX, newY] = coords(destination, n);
+        if (!expanding && !insideBoundary) transfer(oldX + ',' + oldY, neighbors.get(n));
+        transfer(newX + ',' + newY, owners.get(n));
+      }
+      if (Array.from(cells.values()).some(set => !set.size)) return fail('SHARED_WALL', 'a neighboring room cannot be removed by resizing');
+      return { ok: true, handled: true, cells, moves, caps };
+    }
+
+    function resizeSharedRoom(id, rect, roomIds, section) {
+      const plan = sharedResizePlan(id, rect, roomIds, section);
+      if (!plan.ok || !plan.handled) return plan;
+      snapshot();
+      const dirty = [], paint = {};
+      for (const id of plan.cells.keys()) {
+        const room = doc.rooms[id];
+        dirty.push(...room.rects);
+        Object.assign(paint, room.floorPaint);
+      }
+      for (const [id, cells] of plan.cells) {
+        const room = doc.rooms[id];
+        room.rects = rectsForTiles(cells);
+        room.floorPaint = Object.fromEntries(Array.from(cells).filter(key => key in paint).map(key => [key, paint[key]]));
+      }
+      const reused = new Set(plan.moves.filter(move => move.reuse).map(move => move.p.id));
+      if (reused.size) doc.props = doc.props.filter(p => !reused.has(p.id));
+      for (const move of plan.moves) if (!move.reuse) { move.p.x = move.x; move.p.y = move.y; }
+      for (const cap of plan.caps) doc.props.push({ id: 'p' + (doc._nid++), t: 'structural_wall', x: cap.x, y: cap.y, w: 1, h: 1 });
+      emit(dirty.concat(...Array.from(plan.cells.keys(), id => doc.rooms[id].rects)), { global: true });
+      return { ok: true, handled: true };
     }
 
     /* turn a PLACED prop a quarter turn (default clockwise). Whether a turn RESIZES the prop is the
@@ -3474,10 +3962,42 @@ const WorldModel = (() => {
         const p = config && propById(config.propId);
         if (!p || p.t !== CHAIR_TYPE || p.w !== 1 || p.h !== 1 || p.agentId) return fail('BAD_COMMANDER_SEAT', 'Commander needs an unassigned single-tile chair');
         if (typeof config.skin !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(config.skin)) return fail('BAD_SKIN', 'A skin catalog key is required');
+        if (config.standInAgentId || config.consolePropId) {
+          const consoleProp = propById(config.consolePropId);
+          if (typeof config.standInAgentId !== 'string' || !AID_RE.test(config.standInAgentId) || !consoleProp || CAP_PROP_MAP[consoleProp.t] !== 'computer' ||
+              consoleProp.agentId || roomAt(consoleProp.x, consoleProp.y) !== roomAt(p.x, p.y) ||
+              p.y !== consoleProp.y + consoleProp.h || p.x < consoleProp.x || p.x >= consoleProp.x + consoleProp.w)
+            return fail('BAD_BRIDGE_STATION', 'The stand-in needs an unassigned workstation directly in front of the captain chair');
+        }
       }
       snapshot();
       if (config === null) delete doc.meta.commander;
-      else doc.meta.commander = { propId: config.propId, skin: config.skin };
+      else {
+        doc.meta.commander = { propId: config.propId, skin: config.skin };
+        if (config.standInAgentId) {
+          doc.meta.commander.standInAgentId = config.standInAgentId;
+          doc.meta.commander.consolePropId = config.consolePropId;
+        }
+      }
+      emit([], { global: true });
+      return { ok: true };
+    }
+    function setHullLayout(id, layout) {
+      if (!['bridge', 'promenade', 'engineering', 'jefferies'].includes(id) || !layout ||
+          ![layout.x1, layout.y1, layout.x2, layout.y2].every(Number.isInteger) ||
+          layout.x1 > layout.x2 || layout.y1 > layout.y2 ||
+          !Array.isArray(layout.roomIds) || !layout.roomIds.length ||
+          new Set(layout.roomIds).size !== layout.roomIds.length)
+        return fail('BAD_HULL_LAYOUT', 'Hull layout needs valid bounds and unique rooms');
+      for (const rid of layout.roomIds) {
+        const room = doc.rooms[rid];
+        if (!room || !room.rects.length || room.rects.some(r =>
+          r.x1 < layout.x1 || r.y1 < layout.y1 || r.x2 > layout.x2 || r.y2 > layout.y2))
+          return fail('BAD_HULL_LAYOUT', 'Hull rooms must exist within its bounds');
+      }
+      snapshot();
+      if (!doc.meta.hulls) doc.meta.hulls = {};
+      doc.meta.hulls[id] = clone(layout);
       emit([], { global: true });
       return { ok: true };
     }
@@ -3558,7 +4078,7 @@ const WorldModel = (() => {
       hullMatOfRoom: id => hullMatOfRoom(doc.rooms[id]),
       hullStyleOfRoom: id => hullStyleOfRoom(doc.rooms[id]),
       // validation (no mutation — for ghost previews)
-      canPlaceRoom, canPlaceHallway, canPlaceProp, canPlaceBeltRun, canPlaceBlueprint, roomSpots,
+      canPlaceRoom, canDrawRoomOnDeck: roomOnDeckPlan, canPlaceHallway, canPlaceProp, canPlaceWallTile, canResizeSharedRoom: sharedResizePlan, canPlaceBeltRun, canPlaceBlueprint, roomSpots,
       // mount rules: injected so the model never imports the prop catalog (see MOUNT RULES).
       // surfaceHostOf is the read surface the world layer uses to decide whether a placed prop is
       // ACTUALLY standing on a table right now — a prop whose table was reclaimed renders back on the
@@ -3585,14 +4105,14 @@ const WorldModel = (() => {
         return surfaceHostFor(propFootprint(propById(p.id) || p), p.id) ? 'surface' : null;
       },
       // mutations
-      addRoom, placeHallway, removeRoom, moveRoom, moveRooms, resizeRoom, setRoomKind, setFloor, setMaterial, setDeck, setWalls, setHull, paintTiles, renameRoom,
-      addProp, removeProp, moveProp, moveProps, rotateProp, faceProp, mirrorProp, assignPropAgent, assignDesk, ensureWorkstation, configureJunction, swapJoinerMerger, bindConnector, bindPlugin, placePluginTerminal, setDoorState, setPropProject, setPropBrief, setPropRole, setPropHands, setPropLabel, setPropLimits,
+      addRoom, drawRoomOnDeck, extendRoomFloor, rezoneRooms, placeHallway, removeRoom, moveRoom, moveRooms, resizeRoom, resizeSharedRoom, setRoomKind, setFloor, setMaterial, setDeck, setWalls, setHull, paintTiles, renameRoom,
+      addProp, removeProp, placeWalls, moveProp, moveProps, rotateProp, faceProp, mirrorProp, assignPropAgent, assignDesk, ensureWorkstation, configureJunction, swapJoinerMerger, bindConnector, bindPlugin, placePluginTerminal, setDoorState, setPropProject, setPropBrief, setPropRole, setPropHands, setPropLabel, setPropLimits,
       setBelt, removeBelt, removeBelts, placeBeltRun, connectBelt, connectionPreview, hookedBelts, stampBlueprint, insertBayBetween, canInsertBayBetween, transact, lineGraph, applyLineLayout, blueprintGraph,
       // agent-bay binding queries
       propsByType, propsByAgent, pipelineEdges, setPipelineEdges, addPipelineEdge, removePipelineEdge, agentRoomId, bayObjects,
       capForProp: t => CAP_PROP_MAP[t] || null,   // a prop type's capability objectType (single source for the UI)
       capabilitiesForProp,
-      undo, redo, canUndo, canRedo, replaceLayout, setCommanderSeat,
+      undo, redo, canUndo, canRedo, replaceLayout, setCommanderSeat, setHullLayout,
       // projection + io
       projectGeometry, serialize, onChange,
       // the floor's explicit connections (world tiles), or null when not adopted — see LINKS above
@@ -3618,6 +4138,14 @@ const WorldModel = (() => {
     // drop order entries with no live room object, and repair any room missing a rects[] array —
     // so a truncated / hand-edited save can never crash the read paths (eachRectWorld/bounds/project).
     doc.order = doc.order.filter(id => doc.rooms[id] && typeof doc.rooms[id] === 'object');
+    for (const [id, hull] of Object.entries((doc.meta && doc.meta.hulls) || {})) {
+      if (!hull || !Array.isArray(hull.roomIds)) continue;
+      const missing = hull.roomIds.filter(roomId => !doc.rooms[roomId]);
+      if (!missing.length || missing.length === hull.roomIds.length) continue;
+      hull.roomIds = hull.roomIds.filter(roomId => !!doc.rooms[roomId]);
+      if (typeof console !== 'undefined' && console.warn)
+        console.warn('[station] Removed missing room references from ' + id + ' hull: ' + missing.join(', '));
+    }
     // floorMat is additive (docs predate the material axis): null/unknown means "inherit the kind
     // default", so a legacy blob and a hand-edited one both fall back to the exact pre-material look.
     for (const id of doc.order) {

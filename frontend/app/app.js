@@ -430,6 +430,7 @@ const App = (() => {
       if (cd) p += '\n\n' + cd;
     }
     if (typeof QTerminalStore !== 'undefined' && QTerminalStore.promptClause) p += QTerminalStore.promptClause(a);
+    if (typeof BridgeReviewStore !== 'undefined' && BridgeReviewStore.promptClause) p += BridgeReviewStore.promptClause(a);
     // R1 MID-TASK FORK: the fork instruction rides ONLY while the style model's confidence is low
     // (Fork.shouldOffer over the live understanding read) — self-retiring: once the station knows how the
     // Commander likes work done, this block vanishes and forks stop appearing. Fail-closed on any hiccup.
@@ -1635,7 +1636,8 @@ const App = (() => {
     const roster = liveAgents();
     const dossier = (typeof DossierStore !== 'undefined') ? DossierStore.serialize() : undefined;   // the station-wide Commander model
     const qTerminal = (typeof QTerminalStore !== 'undefined' && QTerminalStore.serialize) ? QTerminalStore.serialize() : undefined;
-    const doc = Save.write(Object.assign({ _saveDirty: true, _saveRevision: typeof CloudSave !== 'undefined' && CloudSave.revision ? CloudSave.revision() : 0, agent: hero, agents: roster.length > 1 ? roster.map(serializeAgentLite) : undefined, usage: Harness.totals(), prov, reasoningEffort, reasoningMigrated: '0125' /* = REASONING_MIGRATION; a literal so persist() also runs when lifted alone */, station: station ? station.serialize() : undefined, stationStats, profile, worksignal, dossier, qTerminal }, Workstreams.serialize()));
+    const bridgeReviews = (typeof BridgeReviewStore !== 'undefined' && BridgeReviewStore.serialize) ? BridgeReviewStore.serialize() : undefined;
+    const doc = Save.write(Object.assign({ _saveDirty: true, _saveRevision: typeof CloudSave !== 'undefined' && CloudSave.revision ? CloudSave.revision() : 0, agent: hero, agents: roster.length > 1 ? roster.map(serializeAgentLite) : undefined, usage: Harness.totals(), prov, reasoningEffort, reasoningMigrated: '0125' /* = REASONING_MIGRATION; a literal so persist() also runs when lifted alone */, station: station ? station.serialize() : undefined, stationStats, profile, worksignal, dossier, qTerminal, bridgeReviews }, Workstreams.serialize()));
     if (doc && typeof CloudSave !== 'undefined') CloudSave.push(doc);   // durable write-through to the sidecar (debounced, best-effort)
     if (rosterPushFailed) pushRoster();   // a prior roster POST failed — retry it opportunistically on this persist
     if (!doc) {
@@ -3370,6 +3372,19 @@ const App = (() => {
     // newest result, its last jobs — never DELIVERABLES (every finished run on the station) and never another line's work.
     if (World.setOnOutbox) World.setOnOutbox(ob => { if (typeof WorkflowsWindow !== 'undefined' && WorkflowsWindow.openOutbox) WorkflowsWindow.openOutbox(ob && ob.id); });
     if (World.setOnMissionBoard) World.setOnMissionBoard(() => { if (typeof StationUI !== 'undefined' && StationUI.openTerm) StationUI.openTerm('quests'); });   // G1b: click the MISSION BOARD → the QUEST LOG (the board is a projection, never a gate)
+    if (World.setOnBridgeSurface) World.setOnBridgeSurface(surface => {
+      const routes = {
+        commswall: ['bridge-reviews', 'communications'],
+        ticker: ['bridge-reviews', 'security'],
+        chartwall: ['bridge-reviews', 'science'],
+        research_trendpillar: ['bridge-reviews', 'treasury'],
+        calwall: ['bridge-reviews', 'operations'],
+        bridge_dispatch_pylon: ['bridge-dispatch'],
+        pub_mailpod: ['q']
+      };
+      const route = surface && ((surface.t === 'bench' || surface.t === 'console') ? ['bridge-systems'] : routes[surface.t]);
+      if (route && typeof StationUI !== 'undefined' && StationUI.openTerm) StationUI.openTerm(route[0], route[1]);
+    });
     if (World.setOnTrophyCase) World.setOnTrophyCase(() => { if (typeof StationUI !== 'undefined' && StationUI.openTerm) StationUI.openTerm('trophies'); });   // G3b: click the TROPHY CASE → the TROPHY surface (a projection of real completions, never a gate)
     // a PLUGIN TERMINAL is the plugin's body: a click opens its window. An unbound or turned-off one says so and opens
     // EXTENSIONS, where plugins are approved — never a dead click.
@@ -5803,6 +5818,9 @@ const App = (() => {
     const saved = (typeof CloudSave !== 'undefined') ? await CloudSave.reconcile(Save.load()) : Save.load();
     if (saved && saved.qTerminal && typeof QTerminalStore !== 'undefined' && QTerminalStore.hydrate) {
       if (!QTerminalStore.hydrate(saved.qTerminal)) console.warn('[Q terminal] The durable inbox could not be restored into local storage.');
+    }
+    if (saved && saved.bridgeReviews && typeof BridgeReviewStore !== 'undefined' && BridgeReviewStore.hydrate) {
+      if (!BridgeReviewStore.hydrate(saved.bridgeReviews)) console.warn('[Bridge review] The durable review pins could not be restored into local storage.');
     }
     // FORWARD-VERSION GATE (P0.3), step 2 — a durable REMOTE from a newer build. reconcile() refuses to adopt it
     // into the cache and hands back a future-save sentinel instead of a resumable doc. Same hard stop: gate, return,

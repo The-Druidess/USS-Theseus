@@ -15,6 +15,9 @@ A.eq(s.contract, { type: 'prop', key: 'dish' }, 'the completion contract is carr
 A.eq(s.status, 'open', 'open status preserved');
 A.eq(s.groundedIn, 'goals dim', 'the grounding cite survives');
 A.eq(s.steps.length, 1, 'steps carry through');
+A.eq(QLS._shape({ id: 'q:yellow', urgency: 'yellow' }).urgency, 'yellow', 'yellow urgency reaches the mission board');
+A.eq(QLS._shape({ id: 'q:red', urgency: 'red' }).urgency, 'red', 'red urgency reaches the mission board');
+A.eq(QLS._shape({ id: 'q:unknown', urgency: 'blue' }).urgency, null, 'unknown urgency is not presented as valid');
 
 /* ---------- _shape: a pending attest is present only while confirmed:null ---------- */
 const pend = QLS._shape({ id: 'q:6', kind: 'user', title: 'Ship the report', status: 'open', contract: { type: 'attest', key: '' }, attest: { agentId: 'agent', runId: 'r1', evidence: 'built and tested the report', at: 5, confirmed: null } });

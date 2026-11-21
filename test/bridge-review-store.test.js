@@ -2,6 +2,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
+const { fnBody } = require('./_assert');
 
 const storage = new Map();
 global.localStorage = {
@@ -90,6 +92,25 @@ for (const id of ['commswall', 'ticker', 'chartwall', 'research_trendpillar', 'c
 }
 const world = fs.readFileSync(path.join(__dirname, '../frontend/app/world.js'), 'utf8');
 assert.match(world, /if \(surface && onBridgeSurface\) \{ onBridgeSurface\(surface\); return; \}/, 'bridge surfaces route from physical clicks');
+const bridgeHit = Function('station', 'geo', 'Hulls', 'T', fnBody(world, 'function bridgeSurfaceAt(') + '\nreturn bridgeSurfaceAt;')(
+  { doc: () => ({ meta: {} }), spawnRoomId: () => 'bridge', roomAt: (x, y) => y < 20 ? 'bridge' : 'other' },
+  { origin: { tx: 0, ty: 0 }, props: [
+    { id: 'port', t: 'bench', x: 1, y: 1, w: 4, h: 1, label: 'AFT TERMINAL / PORT' },
+    { id: 'starboard', t: 'bench', x: 6, y: 1, w: 4, h: 1, label: 'AFT TERMINAL / STARBOARD' },
+    { id: 'owned', t: 'bench', x: 11, y: 1, w: 4, h: 1, label: 'AFT TERMINAL / PORT', agentId: 'crew' },
+    { id: 'other', t: 'bench', x: 16, y: 1, w: 4, h: 1, label: 'BENCH' },
+    { id: 'outside', t: 'bench', x: 1, y: 21, w: 4, h: 1, label: 'AFT TERMINAL / PORT' }
+  ] }, { active: 'bridge' }, 12);
+assert.equal(bridgeHit({ x: 13, y: 13 }).id, 'port');
+assert.equal(bridgeHit({ x: 73, y: 13 }).id, 'starboard');
+assert.equal(bridgeHit({ x: 133, y: 13 }), null, 'owned benches retain their normal workstation behavior');
+assert.equal(bridgeHit({ x: 193, y: 13 }), null, 'ordinary benches are not launchers');
+assert.equal(bridgeHit({ x: 13, y: 253 }), null, 'launchers are restricted to the Bridge');
+const captainHit = Function('station', 'geo', 'Hulls', 'T', 'isWorkstationProp', fnBody(world, 'function bridgeSurfaceAt(') + '\nreturn bridgeSurfaceAt;')(
+  { doc: () => ({ meta: { commander: { consolePropId: 'captain' } } }), spawnRoomId: () => 'bridge', roomAt: () => 'bridge' },
+  { origin: { tx: 0, ty: 0 }, props: [{ id: 'captain', t: 'console', x: 1, y: 1, w: 2, h: 1 }] },
+  { active: 'bridge' }, 12, t => t === 'console');
+assert.equal(captainHit({ x: 13, y: 13 }).id, 'captain', 'the captain interface is physically clickable');
 const app = fs.readFileSync(path.join(__dirname, '../frontend/app/app.js'), 'utf8');
 for (const id of ['commswall', 'ticker', 'chartwall', 'research_trendpillar', 'calwall', 'bridge_dispatch_pylon', 'pub_mailpod']) {
   assert.ok(app.includes(id + ':'), id + ' has an app window route');
@@ -98,6 +119,42 @@ assert.match(app, /bridgeReviews,? \}/, 'Bridge review state is included in stat
 assert.match(app, /BridgeReviewStore\.hydrate\(saved\.bridgeReviews\)/, 'saved Bridge review state is restored');
 assert.match(app, /BridgeReviewStore\.promptClause\(a\)/, 'shared review records are composed into agent briefings');
 const reviewWindow = fs.readFileSync(path.join(__dirname, '../frontend/app/windows/bridge-reviews.js'), 'utf8');
+assert.match(reviewWindow, /registerWindow\('bridge-systems'/, 'both aft terminals open the shared systems launcher');
 assert.match(reviewWindow, /granted permission for this specific operation for one execution/);
 assert.match(reviewWindow, /Continuing or recurring execution is permitted only if Q explicitly specifies that scope/);
+
+const edit = Store.add('science', { title: 'Comms findings', details: 'Inspect the relay.' });
+assert.equal(Store.setRecommendation(edit.item.id, '', 'Replace the relay.').ok, false);
+assert.equal(Store.setRecommendation(edit.item.id, 'Diagnostic report', 'Inspect the relay.').ok, true);
+assert.equal(Store.approve(edit.item.id, 'Q').ok, true);
+assert.equal(Store.setRecommendation(edit.item.id, 'Revised report', 'Inspect the relay.').ok, true);
+assert.equal(Store.get(edit.item.id).approval, null, 'changed evidence requires new approval');
+assert.equal(Store.approve(edit.item.id, 'Q').ok, true);
+assert.equal(Store.claimDispatch(edit.item.id, 'stream-science').ok, true);
+assert.equal(Store.setRecommendation(edit.item.id, 'Other report', 'Change the relay.').ok, false);
+
+const officer = { id: 'science-officer', name: 'Chief Science Officer' };
+const pin = 'BRIDGE_PIN: ' + JSON.stringify({ category: 'science', title: 'Relay study', details: 'Signal degraded', source: 'Study 1', recommendation: 'Inspect antenna', urgent: true });
+const captured = Store.capture('Report ready.\n' + pin, officer, 'run-one');
+assert.equal(captured.text, 'Report ready.');
+assert.equal(captured.received.length, 1);
+assert.equal(captured.received[0].urgent, true, 'officer urgency flags are retained');
+assert.equal(captured.received[0].approval, null, 'officer pins cannot authorize their own recommendations');
+assert.equal(Store.hydrate(Store.serialize()), true);
+assert.equal(Store.capture(pin, officer, 'run-one').received.length, 0, 'replayed runs do not duplicate pins');
+assert.equal(Store.capture(pin, { name: 'Unlisted Agent' }, 'run-two').text, pin, 'unlisted agents cannot create pins');
+assert.equal(Store.capture('BRIDGE_PIN: invalid', officer, 'run-three').received.length, 0);
+
+const hull = { active: 'bridge' };
+const hit = vm.runInNewContext('(' + fnBody(world, 'function bridgeSurfaceAt(') + ')', {
+  T: 12, Hulls: hull, geo: { origin: { tx: 10, ty: 20 }, props: [
+    { t: 'commswall', x: 2, y: 3, w: 2, h: 1 },
+    { t: 'ticker', x: 8, y: 3, w: 2, h: 1 }
+  ] }, station: { doc: () => ({ meta: {} }), spawnRoomId: () => 'bridge', roomAt: x => x < 15 ? 'bridge' : 'other' }
+});
+assert.equal(hit({ x: 25, y: 37 }).t, 'commswall', 'Bridge console responds to its projected footprint');
+assert.equal(hit({ x: 97, y: 37 }), null, 'other rooms do not acquire Bridge console behavior');
+assert.equal(hit({ x: 1, y: 1 }), null, 'clicks outside consoles do not open a window');
+hull.active = 'promenade';
+assert.equal(hit({ x: 25, y: 37 }), null, 'Bridge consoles are inactive on another hull');
 delete global.App;

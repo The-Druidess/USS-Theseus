@@ -63,6 +63,19 @@ const attestContract = () => ({ type: 'attest', key: '' });
 
   // ---- 3. TITLE-DEDUP vs OPEN quests (normalized) ----
   {
+    const fs = memFs();
+    const s = freshStore(fs);
+    const r = await s.mint({ title: 'Security review', contract: attestContract(), urgency: 'yellow' }, 100);
+    A.ok(r.ok, 'yellow urgency quest is accepted');
+    A.eq(freshStore(fs).get(r.id).urgency, 'yellow', 'yellow urgency survives reload');
+    const red = await s.mint({ title: 'Treasury review', contract: attestContract(), urgency: 'red' }, 101);
+    A.ok(red.ok, 'red urgency quest is accepted');
+    A.eq(freshStore(fs).get(red.id).urgency, 'red', 'red urgency survives reload');
+    A.ok(!(await s.mint({ title: 'Unsupported urgency', contract: attestContract(), urgency: 'blue' }, 102)).ok,
+      'unsupported urgency is rejected');
+  }
+
+  {
     const s = freshStore();
     await s.mint({ title: 'Build a JSON validator', contract: runContract('r1') }, 1);
     const dup = await s.mint({ title: '  build   a JSON   validator ', contract: runContract('r2') }, 2);

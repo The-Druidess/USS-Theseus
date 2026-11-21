@@ -181,8 +181,8 @@ A.ok(/every agent on the station will know this about you/.test(descs[3]), 'an u
    the two button collections; business state still comes through the real renderer's QuestStore seam. */
 const vm = require('node:vm');
 let questRows = [
-  { id: 'st:crew', kind: 'station', title: 'Recruit a specialist', desc: 'Bring another mind aboard.', reward: 'A larger crew', status: 'open' },
-  { id: 'ds:stack', kind: 'dossier', title: 'Your <tools>', desc: 'Share your tools.', reward: 'Better context', status: 'open' }
+  { id: 'st:crew', kind: 'station', title: 'Recruit a specialist', desc: 'Bring another mind aboard.', reward: 'A larger crew', status: 'open', urgency: 'yellow' },
+  { id: 'ds:stack', kind: 'dossier', title: 'Your <tools>', desc: 'Share your tools.', reward: 'Better context', status: 'open', urgency: 'red' }
 ];
 let rendered = '', buttons = {}, focused = '', detailNodes = [];
 const resultDisclosure = () => ({ className: 'q-return-proof', open: true, closest: () => null,
@@ -205,7 +205,7 @@ const body = {
         focus() { focused = id; }
       });
     }
-    for (const m of html.matchAll(/<button class="(q-filter|q-mission(?: selected)?)" ([^>]+)>/g)) {
+    for (const m of html.matchAll(/<button class="(q-filter|q-mission(?: selected)?(?: q-mission-(?:yellow|red))?)" ([^>]+)>/g)) {
       const data = /data-(category|quest-select)="([^"]*)"/.exec(m[2]);
       if (!data) continue;
       const key = data[1] === 'category' ? 'category' : 'questSelect';
@@ -228,6 +228,8 @@ const ctx = vm.createContext({ body, QuestStore: { view: () => ({ quests: questR
 const journalSource = station.slice(station.indexOf('  function buildQuests(body)'), station.indexOf('    // COMMANDER JOURNEY writes')) + '\n}';
 vm.runInContext(journalSource, ctx);
 ctx.buildQuests(body);
+A.ok(rendered.includes('q-mission-yellow') && rendered.includes('YELLOW URGENCY'), 'yellow urgency is shown in the mission list and briefing');
+A.ok(rendered.includes('q-mission-red') && rendered.includes('RED URGENCY'), 'red urgency is shown in the mission list');
 A.eq(body.dataset.questView, 'available', 'available quests lead on first open');
 detailNodes[0].open = false;
 ctx.buildQuests(body);
@@ -250,6 +252,7 @@ A.eq(body.dataset.questSelected, 'st:crew', 'journal initially selects the first
 A.eq((rendered.match(/class="gx-tro q-card /g) || []).length, 1, 'journal renders exactly one open briefing, not nine competing cards');
 buttons['.q-mission'][1].click();
 A.eq(body.dataset.questSelected, 'ds:stack', 'selecting a mission replaces the briefing');
+A.ok(rendered.includes('q-urgency-red') && rendered.includes('RED URGENCY'), 'the selected mission briefing shows red urgency');
 A.eq(focused, 'ds:stack', 'keyboard focus returns to the selected mission');
 A.ok(rendered.includes('Your &lt;tools&gt;') && !rendered.includes('Your <tools>'), 'quest titles stay escaped in the list and briefing');
 list.scrollTop = 120;

@@ -37,6 +37,22 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     assert.equal(status.body.enforcement.audit.durable, true);
     assert.equal((await f.json('GET', '/api/spotify/status')).status, 200);
     assert.equal((await f.json('POST', '/api/activity', {})).status, 200);
+    const mission = await f.json('POST', '/api/quests/mint', {
+      title: 'Security follow-up', desc: 'Review Q authentication.', agentId: 'security',
+      kind: 'user', createdBy: 'Q', urgency: 'yellow', contract: { type: 'attest', key: '' }
+    });
+    assert.equal(mission.status, 200);
+    assert.equal(mission.body.ok, true);
+    let quests = (await f.json('GET', '/api/quests')).body.quests;
+    assert.equal(quests.find(q => q.id === mission.body.id).urgency, 'yellow');
+    const treasury = await f.json('POST', '/api/quests/mint', {
+      title: 'Treasury follow-up', agentId: 'treasurer', kind: 'user',
+      createdBy: 'Q', urgency: 'red', contract: { type: 'attest', key: '' }
+    });
+    assert.equal(treasury.status, 200);
+    assert.equal(treasury.body.ok, true);
+    assert.equal((await f.json('POST', '/api/quests/update', { id: mission.body.id, op: 'attest' })).status, 423);
+    assert.equal(calls().length, 0, 'creating a mission does not start inference');
     assert.throws(() => enable(f.workspace, ['other:latest']), /ownership is busy/, 'cannot activate/change policy under a live sidecar');
     assert.match((await run({})).text, /Local finance check complete/);
     const before = calls().length;
@@ -64,6 +80,9 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     assert(recorded.counts.allowed > 0 && recorded.counts.blocked > 0, 'actual admissions and refusals reach the durable audit');
     await f.restart();
     const restarted = (await f.json('GET', '/api/finance/strict')).body;
+    quests = (await f.json('GET', '/api/quests')).body.quests;
+    assert.equal(quests.find(q => q.id === mission.body.id).urgency, 'yellow', 'mission and urgency survive restart');
+    assert.equal(quests.find(q => q.id === treasury.body.id).urgency, 'red', 'red urgency survives restart');
     assert.equal(restarted.enabled, true, 'policy survives restart');
     assert(restarted.enforcement.audit.counts.allowed >= recorded.counts.allowed);
     assert(restarted.enforcement.audit.counts.blocked >= recorded.counts.blocked, 'restart cannot erase blocked decisions');

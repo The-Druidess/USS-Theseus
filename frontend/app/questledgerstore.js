@@ -62,6 +62,7 @@ const QuestLedgerStore = (() => {
       goalId: (r && r.goalId) || null,
       milestoneId: (r && r.milestoneId) || null,
       executionMode: (r && r.executionMode) || (c.type === 'attest' ? 'commander' : 'agent'),
+      urgency: r && ['yellow', 'red'].includes(r.urgency) ? r.urgency : null,
       whyNow: String((r && r.whyNow) || ''),
       disposition: r && r.disposition || null
     };

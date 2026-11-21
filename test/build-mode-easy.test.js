@@ -203,15 +203,15 @@ for (const k of ["key('MOVE', 'arrows'", "key('RESIZE', 'edges'", "key('FLOOR', 
 A.ok(/if \(isSpawn\) \{ del\.disabled = true;/.test(rc), '…and the spawn room is protected');
 A.ok(/matSwatchCanvas\(matId \|\| 'plate', hue, 7, 4\)/.test(rc), 'its art well is the room\'s own deck, painted by the bake');
 const rha = fn('roomHandleAt');
-A.ok(/if \(!rm \|\| rm\.rects\.length !== 1 \|\| !cv\) return null;/.test(rha) && /Math\.max\(t \* 0\.45, 9 \/ zoom\)/.test(rha) && /Math\.abs\(wy - Y1\) < B/.test(rha),
+A.ok(/if \(!rm \|\| !cv\) return null;/.test(rha) && /Math\.max\(t \* 0\.45, 9 \/ zoom\)/.test(rha) && /Math\.abs\(wy - Y1\) < B/.test(rha),
   'handles: eight on a plain rectangle (corners + edge middles), or anywhere along an edge');
-A.ok(/const hd = selectedRoomId \? roomHandleAt\(ev\) : null;\n      if \(hd\) \{ drag = \{ mode: 'roomresize', roomId: selectedRoomId, edge: hd\.e, start: w, cur: w, moved: false \}; return; \}/.test(fn('onDown')),
+A.ok(/const hd = selectedRoomId \? roomHandleAt\(ev\) : null;\n      if \(hd\) \{ drag = \{ mode: 'roomresize', roomId: selectedRoomId, edge: hd\.e, section: hd\.section, start: w, cur: w, moved: false \}; return; \}/.test(fn('onDown')),
   'a press on the selected room\'s handle starts a resize before anything else is hit');
 A.ok(/r\.x1 = Math\.min\(r0\.x1 \+ dx, r0\.x2 - min \+ 1\)/.test(fn('resizedRect')) && /station\.MIN_ROOM \|\| 3/.test(fn('resizedRect')), 'a grabbed edge follows by whole tiles, never past the room minimum');
 const rk = fn('resizeCheck');
 A.ok(/station\.canPlaceRoom\(\[nr\], rm\.kind, rm\.id\)/.test(rk) && /it would be left off the deck/.test(rk) && /A belt would be left off the deck/.test(rk),
   'the ghost asks resizeRoom\'s own two questions, naming what is in the way');
-A.ok(/const res = pre && pre\.ok \? keepsHalls\(\(\) => station\.resizeRoom\(rm\.id, nr\)\) : pre;/.test(fn('commitRoomResize')), 'the release resizes through WorldModel.resizeRoom (one undo), keeping every hallway joined');
+A.ok(/keepsHalls\(\(\) => pre\.handled[\s\S]*station\.resizeSharedRoom\(rm\.id, nr, buildHullDoc\.order, d\.section\)[\s\S]*station\.resizeRoom\(rm\.id, nr\)/.test(fn('commitRoomResize')), 'the release resizes shared walls or ordinary rooms while keeping hallways joined');
 A.ok(/if \(g\.kind === 'resize'\) return/.test(fn('placementReason')), 'a resize refusal says the room\'s own reason (never "Blocked by" a prop inside it)');
 A.ok(/station\.moveRoom\(rm\.id, dx, dy\)/.test(fn('nudgeRoom')) && /deleteSelectedRoom\(orientEv\(\)\)/.test(key) && /nudgeRoom\(RA\[0\] \* n, RA\[1\] \* n, orientEv\(\)\)/.test(key),
   'with a room selected the arrows nudge it (its contents ride) and Delete deletes it');

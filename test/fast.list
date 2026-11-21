@@ -554,6 +554,8 @@ test/bridge-officer-skins.test.js
 test/quark-skin.test.js
 test/treasurer-sprite-preview.test.js
 test/world-commander.test.js
+test/bridge-workstations.test.js
+test/bridge-review-store.test.js
 test/q-terminal.test.js
 test/capprop-map.contract.test.js
 test/dock-terms-open.test.js

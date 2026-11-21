@@ -104,7 +104,7 @@ const World = (() => {
   let fitW = 0, fitH = 0;   // canvas size the last fitCamera() framed against — a fit on a hidden/degenerate stage doesn't count as a real view
   const MINZ = 0.5, MAXZ = 6;
   const clampz = (v, a, b) => v < a ? a : v > b ? b : v;
-  let drag = null, hoverAgent = null, onClick = null, onArcade = null, onOutbox = null, onMissionBoard = null, onTrophyCase = null, onPluginTerminal = null, onBayAssign = null, onIntakeFeed = null, onIntakeSample = null, onDesk = null, wakeAt = 0;
+  let drag = null, hoverAgent = null, onClick = null, onArcade = null, onOutbox = null, onMissionBoard = null, onBridgeSurface = null, onTrophyCase = null, onPluginTerminal = null, onBayAssign = null, onIntakeFeed = null, onIntakeSample = null, onDesk = null, wakeAt = 0;
   let camLerp = null;   // {scale,panX,panY} target — a gentle one-on-one framing for voice conversations
   let arrivalScene = null;
   let wakeDark = 0, wakeDarkTarget = 0, awakeFrozen = false;   // the AWAKENING: a darkness veil that lifts to first light, + a freeze so the newborn holds still during its first meeting
@@ -1067,7 +1067,7 @@ const World = (() => {
     //    Uses the SAME desk+seat resolver as crew (deskPropFor/deskSeat) so the hero & crew seat identically.
     const home = agent && deskPropFor(agent.id), hs = home && deskSeat(home);
     if (home && hs) {
-      desk = { tx: home.x, ty: home.y, w: home.w || 1, h: home.h || 1 }; seat = { tx: hs.tx, ty: hs.ty, cx: hs.cx, cy: hs.cy, face: hs.face };
+      desk = { tx: home.x, ty: home.y, w: home.w || 1, h: home.h || 1 }; seat = { tx: hs.tx, ty: hs.ty, cx: hs.cx, cy: hs.cy, face: hs.face, chair: hs.chair };
       deskPropId = home.id; deskFace = hs.face;
       for (let dx = 0; dx < (desk.w || 1); dx++) for (let dy = 0; dy < (desk.h || 1); dy++) blocked.add((desk.tx + dx) + ',' + (desk.ty + dy));
       return;   // the placed prop + its chair are drawn by the render loop (skip the synthetic desk/chair)
@@ -1100,7 +1100,21 @@ const World = (() => {
   // and work" step, reached EITHER straight from on-duty OR after the conveyor-fetch leg below.
   function goToSeat(now) {
     agent.goal = 'work';
+    if ((!seat || !seat.chair) && agent._assignedSeat) {
+      releaseSeat(); agent._assignedSeat = false; agent.usingProp = null;
+    }
+    if (seat && seat.chair) {
+      const key = seat.chair.id + ':0';
+      if (agent.seatKey !== key && occupiedSeats.has(key)) {
+        agent.pathPts = null; agent.target = null; agent.state = 'idle'; agent.sitting = false;
+        agent.working = true; agent.settleUntil = 0; agent.workRetryAt = now + 750;
+        return;
+      }
+      if (agent.seatKey !== key) { releaseSeat(); agent.seatKey = key; occupiedSeats.add(key); }
+      agent._assignedSeat = true;
+    }
     if (!seat || !setPathTo({ x: seat.tx, y: seat.ty })) {
+      if (agent._assignedSeat) { releaseSeat(); agent._assignedSeat = false; }
       agent.pathPts = null; agent.target = null; agent.state = 'idle'; agent.sitting = false;
       agent.working = true; agent.settleUntil = 0; agent.workRetryAt = now + 750;
       // Keep real work visible while the floor is unreachable; retry without fabricating travel.
@@ -1532,7 +1546,7 @@ const World = (() => {
       hoverBay = (hit || hoverOutbox || hoverCrate) ? null : boundBayAt(wp);   // LINE WATCH: a bound bay's lamp glance
       if (hoverCrate) hoverBeltTile = null;   // one voice: the crate's glance replaces the belt's route tag under it
       hoverPlate = (hit || hoverOutbox || hoverCrate || hoverBay) ? null : lwPlateAt(wp);   // LINE WATCH: an INBOX's whole reading
-      cv.style.cursor = (hit || hoverOutbox || hoverCrate || (hoverBay && failedBayAt(wp)) || arcadeAt(wp) || missionBoardAt(wp) || trophyCaseAt(wp) || pluginTerminalAt(wp) || unboundBayAt(wp) || intakeSampleAt(wp) || intakeFeedAt(wp) || (onDesk && deskAt(wp))) ? 'pointer' : 'default';   // arcade cabinets + a stacked OUTBOX + the MISSION BOARD + the TROPHY CASE + an unbound BAY + a complete-line INBOX + a starved INTAKE are clickable too
+      cv.style.cursor = (hit || hoverOutbox || hoverCrate || (hoverBay && failedBayAt(wp)) || arcadeAt(wp) || missionBoardAt(wp) || (onBridgeSurface && bridgeSurfaceAt(wp)) || trophyCaseAt(wp) || pluginTerminalAt(wp) || unboundBayAt(wp) || intakeSampleAt(wp) || intakeFeedAt(wp) || (onDesk && deskAt(wp))) ? 'pointer' : 'default';
     });
     cv.addEventListener('mouseup', ev => {
       if (kindleArmed) { kindleHolding = false; return; }   // releasing during the kindle lets the spark ebb
@@ -1566,6 +1580,8 @@ const World = (() => {
       // G1b: the MISSION BOARD is the quest log's body — clicking it opens the log (never gated, never dead)
       const mb = missionBoardAt(wp);
       if (mb && onMissionBoard) { onMissionBoard(mb); return; }
+      const surface = bridgeSurfaceAt(wp);
+      if (surface && onBridgeSurface) { onBridgeSurface(surface); return; }
       // G3b: the TROPHY CASE opens the trophy surface (honest even when empty — it shows dust, never a dead click)
       const tc = trophyCaseAt(wp);
       if (tc && onTrophyCase) { onTrophyCase(tc); return; }
@@ -2200,7 +2216,16 @@ const World = (() => {
     // that merely finished its walk stands at the tile centre, half a tile off the chair it is supposed
     // to be sitting in. Snap onto seatFoot here, the same anchor drawSeatChair uses, so arriving on foot
     // lands exactly where the teleport-fallback seating already did. Body moves; the chair does not.
-    if (self.goal === 'work') { if (self === agent && seat) { const f = seatFoot(seat); self.px = f.x; self.py = f.y; } self.sitting = true; self.working = false; self.dir = deskFace || 'north'; self.state = 'idle'; self.settleUntil = now + U.irnd(450, 900); }   // sit a beat (loading context) before the screens light + typing starts
+    if (self.goal === 'work') {
+      if (self === agent && seat) {
+        const f = seatFoot(seat); self.px = f.x; self.py = f.y;
+        if (seat.chair && self.seatKey === seat.chair.id + ':0') {
+          self.seated = true; self.seatPx = (seat.chair.x + 0.5) * T; self.seatPy = (seat.chair.y + 1) * T - 1;
+          self.seatLift = SEAT_LIFT[seat.chair.t] || 0; self.usingProp = seat.chair.id;
+        }
+      }
+      self.sitting = true; self.working = false; self.dir = deskFace || 'north'; self.state = 'idle'; self.settleUntil = now + U.irnd(450, 900);
+    }   // sit a beat (loading context) before the screens light + typing starts
     else if (self.goal === 'use') {
       self.sitting = self.useSit; self.working = false; self.dir = self.useFace; self.state = 'idle';
       // W2: the prop decides what using it looks like (how long it holds you, how the gaze behaves).
@@ -2854,6 +2879,28 @@ const World = (() => {
       }
     }
   }
+  function stepAssignedSeat(b, s, dt, now, reserved) {
+    const key = s.chair.id + ':0';
+    if (b.seatKey !== key) {
+      if (occupiedSeats.has(key) && !reserved) return;
+      seizeFromIdle(b);
+      b.target = null; b.pathPts = null;
+      b.seatKey = key;
+      occupiedSeats.add(key);
+    }
+    b._assignedSeat = true;
+    b.seated = false;
+    stepCrewToSeat(b, s, dt, now);
+    const foot = seatFoot(s);
+    if (b.sitting && !b.target && Math.hypot(b.px - foot.x, b.py - foot.y) < 1.1) {
+      b.seated = true;
+      b.seatPx = (s.chair.x + 0.5) * T;
+      b.seatPy = (s.chair.y + 1) * T - 1;
+      b.seatLift = SEAT_LIFT[s.chair.t] || 0;
+      b.usingProp = s.chair.id;
+      b.dir = 'north';
+    }
+  }
   /* ---------- per-body sentience engine (Tier B2) ----------
      The HERO's idle/dwell ladder (tick ~1644-1687), generalised to the CURRENT body (`self`). The caller in
      stepCrew sets self=b, calls this, then UNCONDITIONALLY restores self=agent — so every read/write here lands on
@@ -2978,12 +3025,18 @@ const World = (() => {
       if (b.unplaced) continue;
       containBody(b, now);   // never step (or render) a body that is off the floor
       if (crewIsAwaiting(b)) { b.working = false; b.sitting = false; b.target = null; b.pathPts = null; b.goal = 'awaiting'; b.state = 'idle'; continue; }
+      if (stepCaptainPost(b, dt, now)) continue;
       if (b.working) {                                 // running → sit at its desk if it has one, else stand where work is delivered
         const dp = deskPropFor(b.agentId), s = dp ? deskSeat(dp) : null;
-        if (s) stepCrewToSeat(b, s, dt, now);
+        if ((!s || !s.chair) && b._assignedSeat) {
+          seizeFromIdle(b); b._assignedSeat = false; b.sitting = false; b.target = null; b.pathPts = null;
+        }
+        if (s && s.chair) stepAssignedSeat(b, s, dt, now, false);
+        else if (s) stepCrewToSeat(b, s, dt, now);
         else { b.pathPts = null; b.target = null; b.state = 'idle'; b.sitting = false; }
         continue;                                      // J4: the working seize sits ABOVE the engine — a task always wins
       }
+      if (b._assignedSeat) { seizeFromIdle(b); b._assignedSeat = false; b.sitting = false; b.target = null; b.pathPts = null; }
       // PLACED + NON-WORKING → run the full sentience engine on THIS body, caged to its own zone.
       // DESK-STUCK FIX (Andrew escape 2026-07-07): this was gated on `b.summoned`, which starved every
       // PLAN-DERIVED (bay-bound) crew body of the idle engine — so a bay body froze wherever work was last
@@ -3040,7 +3093,10 @@ const World = (() => {
   // no one yet, so no agent is drawn to it either ("...or simply not assigned to them"). This keeps complex
   // multi-agent factory floors legible: agents never wander to another agent's (or an unclaimed) workstation.
   function isOwnableProp(t) { return !!(station && typeof station.capForProp === 'function' && station.capForProp(t)) || t === 'bay'; }
-  function mayTouchProp(agentId, p) { return !p || !isOwnableProp(p.t) || p.agentId === agentId; }
+  function mayTouchProp(agentId, p) {
+    if (p && p.t === 'simple_red_cushion_chair' && p.agentId) return p.agentId === agentId;
+    return !p || !isOwnableProp(p.t) || p.agentId === agentId;
+  }
 
   /* ---------- placed workstations = clones of the hero's desk+chair ----------
      A placed PC (any computer-capability prop) is a real workstation: it gets a chair attached in front and
@@ -3058,6 +3114,10 @@ const World = (() => {
   // south-facing seat contract, even when a save retains a remaster-mode rotation.
   function deskSeat(prop) {
     if (typeof PropAnchor === 'undefined' || !geo || !prop) return null;
+    const chair = prop.agentId && geo.props.find(p => p.t === 'simple_red_cushion_chair' &&
+      p.agentId === prop.agentId && p.y === prop.y + (prop.h || 1) &&
+      p.x >= prop.x && p.x < prop.x + (prop.w || 1));
+    if (chair) return chairApproach(chair);
     const hostId = prop.t === 'laptop' && station.surfaceHostOf ? station.surfaceHostOf(prop) : null;
     const host = hostId && geo.props.find(item => item.id === hostId);
     if (prop.t === 'laptop' && !host) return null;
@@ -3074,6 +3134,10 @@ const World = (() => {
       s.cy = seatCy(prop, a.ty);
     }
     return s;
+  }
+  function chairApproach(chair) {
+    const a = PropAnchor.deriveAnchor(chair, geo, { approach: 'south', extra: blocked });
+    return a ? { tx: a.tx, ty: a.ty, face: 'north', chair } : null;
   }
   // Fractional centres are render/foot anchors only; pathfinding keeps the actual
   // walkable tile. Never centre more than half a tile away from that safe anchor.
@@ -6207,6 +6271,7 @@ const World = (() => {
     for(const body of [agent,...crew].filter(Boolean)){body._gaitStart={x:body.px,y:body.py,odo:body.odo||0};body._travelStep=0;body._resolvedTravelHeading=null;}
     if (!agent || agent.unplaced || !geo || awakeFrozen) return;   // frozen during the awakening: the newborn holds still, facing the Commander
     self = agent;                                                  // B1: the hero tick runs with self===agent (engine core reads the current body via self) — byte-identical hero path
+    updateCaptainPost();
     if (!agent.lastTaskAt) agent.lastTaskAt = now;                 // anchor downtime at the first live tick
     // TIER D · D3 — STATION-LEVEL SLOT SWEEP (G4): the whole-encounter hard timeout + broken-participant check run
     // here EVERY tick, independent of any body's own stepper — so even if BOTH participants get seized in the same
@@ -6226,6 +6291,11 @@ const World = (() => {
     tickNeeds(dt);                                              // the inner meters drain/refill by what it is doing
     if (!agent.sitting && !agent.seated) ensureAgentValid();       // CONTAINMENT BACKSTOP (2026-07-12): a standing hero off the floor re-homes NOW, not at the next refit (rederive was the only caller — any missed frame-shift left it adrift until then)
     stepCrew(dt, now);                                             // the OTHER agents wander the station while idle (the hero is below)
+    if (stepCaptainPost(agent, dt, now)) {
+      separateBodies(now);
+      if (agent) finishGait(agent); for (const body of crew) finishGait(body);
+      return;
+    }
     const SPEED = 34 * (agent.pers ? agent.pers.pace : 1);         // temperament: each agent walks at its own pace
     // settle: a beat of sitting (loading context) before the screens light + typing latches on
     if (agent.goal === 'work' && !agent.working && agent.settleUntil && now >= agent.settleUntil) { agent.working = true; agent.settleUntil = 0; }
@@ -6280,6 +6350,7 @@ const World = (() => {
     }
     if (!awaitPrompt && activity === 'task' && agent.goal === 'work' && !agent.sitting && !agent.target && now >= (agent.workRetryAt || 0)) goToSeat(now);
     if (activity !== 'task' && (agent.goal === 'work' || agent.goal === 'summon' || agent.goal === 'fetch')) {
+      if (agent._assignedSeat) { releaseSeat(); agent._assignedSeat = false; agent.usingProp = null; }
       agent.goal = null; agent.sitting = false; agent.working = false; agent.thinkUntil = 0; agent.settleUntil = 0; agent.pathPts = null; agent.target = null; agent.state = 'idle'; agent.idleUntil = now + 200; agent.lastTaskAt = now; agent.taskViaConveyor = false;   // just finished real work → relaxed, downtime clock resets
     }
     // freshly placed thing + free to roam → divert and go check it out (even mid-stroll), throttled
@@ -6768,7 +6839,7 @@ const World = (() => {
         // to assigned PCs so a decorative/unmanned console keeps its existing look and the chair only ever
         // appears where an agent will actually sit (chair + sitter stay in lockstep — see stepCrewToSeat).
         const embeddedSeat=typeof PropRemaster!=='undefined'&&PropRemaster.viewGeometry(p.t,['s','w','n','e'][(p.r|0)&3])?.spec.embeddedSeat;
-        if (p.agentId && isWorkstationProp(p.t) && !embeddedSeat) { const s = deskSeat(p); if (s) items.push({ y: seatFoot(s).y + 1, draw: () => drawSeatChair(s.tx, s.ty, s.cx, s.cy, s.face) }); }
+        if (p.agentId && isWorkstationProp(p.t) && !embeddedSeat) { const s = deskSeat(p); if (s && !s.chair) items.push({ y: seatFoot(s).y + 1, draw: () => drawSeatChair(s.tx, s.ty, s.cx, s.cy, s.face) }); }
       }
     }
     // one chair art everywhere: seats route through the canonical prop renderer (old F_chair = fallback)
@@ -8488,6 +8559,7 @@ const World = (() => {
     ctx.restore();
   }
   function setOnMissionBoard(fn) { onMissionBoard = fn; }   // G1b: click a placed MISSION BOARD → open the quest log
+  function setOnBridgeSurface(fn) { onBridgeSurface = fn; }
   function setOnTrophyCase(fn) { onTrophyCase = fn; }   // G3b: click a placed TROPHY CASE → open the trophy surface
   function setOnPluginTerminal(fn) { onPluginTerminal = fn; }   // click a placed PLUGIN TERMINAL → that plugin's window (or why not)
   function setOnDesk(fn) { onDesk = fn; }   // DESK SCREEN: click an agent's workstation → that agent's live work (deskscreen.js)
@@ -8580,6 +8652,21 @@ const World = (() => {
       const x0 = p.x * T, y0 = p.y * T - 6;
       const x1 = (p.x + (p.w || 1)) * T, y1 = (p.y + (p.h || 1)) * T + 4;
       if (wp.x >= x0 && wp.x < x1 && wp.y >= y0 && wp.y < y1) return p;
+    }
+    return null;
+  }
+  function bridgeSurfaceAt(wp) {
+    if (!station || !geo || !geo.props || !geo.origin ||
+        (typeof Hulls !== 'undefined' && Hulls.active !== 'bridge')) return null;
+    const types = ['commswall', 'ticker', 'chartwall', 'research_trendpillar', 'calwall', 'bridge_dispatch_pylon', 'pub_mailpod'];
+    const bridgeId = station.spawnRoomId();
+    const captainConsole = station.doc().meta.commander && station.doc().meta.commander.consolePropId;
+    for (const p of geo.props) {
+      const aftTerminal = p.t === 'bench' && !p.agentId && /^AFT TERMINAL \/ (PORT|STARBOARD)$/.test(p.label || '');
+      const captainTerminal = captainConsole && p.id === captainConsole && !p.agentId && isWorkstationProp(p.t);
+      if ((!types.includes(p.t) && !aftTerminal && !captainTerminal) || station.roomAt(p.x + geo.origin.tx, p.y + geo.origin.ty) !== bridgeId) continue;
+      if (wp.x >= p.x * T && wp.x < (p.x + (p.w || 1)) * T &&
+          wp.y >= p.y * T - 6 && wp.y < (p.y + (p.h || 1)) * T + 4) return p;
     }
     return null;
   }
@@ -9781,11 +9868,79 @@ const World = (() => {
     ctx.restore();
     b._pose = 'approved_q_throne.sit.' + b.dir;
   }
+  function captainSeatMode(config) {
+    if (!config || !config.standInAgentId) return 'q';
+    const presence = typeof StationUI !== 'undefined' && StationUI.qPresence ? StationUI.qPresence() : null;
+    if (presence === 'ONLINE' || presence === 'BUSY' || !presence) return 'q';
+    if (presence !== 'AWAY' && presence !== 'OFFLINE') return 'q';
+    const store = typeof AutonomyStore !== 'undefined' ? AutonomyStore : null;
+    const status = store && store.status && store.status();
+    const summary = status && status.loaded && store.summary && store.summary();
+    return summary && summary.actsUnattended === true ? 'agent' : 'empty';
+  }
+  let captainPost = { mode: null, key: null, agentId: null };
+  function clearCaptainPost(b) {
+    if (!b || !b._captainPost) return;
+    if (b === agent && awaitPrompt) {
+      if (b.seatKey === captainPost.key) occupiedSeats.delete(b.seatKey);
+      b.seatKey = null; b.seated = false; b.pendSeat = null; b.seatLift = 0;
+      b._captainPost = false; b._assignedSeat = false; b.sitting = false;
+      if (captainPost.key && b.usingProp === captainPost.key.slice(0, -2)) b.usingProp = null;
+      return;
+    }
+    seizeFromIdle(b);
+    b._captainPost = false; b._assignedSeat = false;
+    b.sitting = false; b.target = null; b.pathPts = null; b.state = 'idle';
+    if (b === agent && activity !== 'task') b.working = false;
+  }
+  function updateCaptainPost() {
+    const config = station && station.doc().meta.commander;
+    const chair = config && config.standInAgentId && geo && geo.props.find(p => p.id === config.propId &&
+      p.t === 'simple_red_cushion_chair' && p.w === 1 && p.h === 1 && !p.agentId);
+    const key = chair ? chair.id + ':0' : null;
+    const mode = chair ? captainSeatMode(config) : null;
+    const aid = chair ? config.standInAgentId : null;
+    if (mode !== captainPost.mode || key !== captainPost.key || aid !== captainPost.agentId) {
+      clearCaptainPost(bodyForAgent(captainPost.agentId));
+      if (captainPost.key) occupiedSeats.delete(captainPost.key);
+      captainPost = { mode, key, agentId: aid };
+      syncCommander();
+    }
+    if (key) occupiedSeats.add(key);
+  }
+  function stepCaptainPost(b, dt, now) {
+    if (!b || b.unplaced || captainPost.mode !== 'agent' || (b.agentId || b.id) !== captainPost.agentId) return false;
+    if (b === agent && awaitPrompt) {
+      clearCaptainPost(b);
+      occupiedSeats.add(captainPost.key);
+      return false;
+    }
+    const config = station.doc().meta.commander;
+    const chair = geo.props.find(p => p.id === config.propId);
+    const terminal = geo.props.find(p => p.id === config.consolePropId && !p.agentId && isWorkstationProp(p.t));
+    if (!chair || !terminal || chair.y !== terminal.y + terminal.h ||
+        chair.x < terminal.x || chair.x >= terminal.x + terminal.w) {
+      clearCaptainPost(b);
+      occupiedSeats.add(captainPost.key);
+      return false;
+    }
+    if (!b._captainPost) {
+      seizeFromIdle(b);
+      b._captainPost = true; b.target = null; b.pathPts = null; b.sitting = false; b.state = 'idle';
+    }
+    const s = chairApproach(chair);
+    if (s) stepAssignedSeat(b, s, dt, now, true);
+    else { b.sitting = false; b.seated = false; b.target = null; b.pathPts = null; b.state = 'idle'; }
+    b.goal = 'captain';
+    if (b === agent) b.working = activity === 'task';
+    return true;
+  }
   function syncCommander() {
     if (commander) occupiedSeats.delete(commander.seatKey);
     commander = null;
     const config = station && station.doc().meta.commander;
     if (!config || !geo) return;
+    if (config.standInAgentId && typeof captainSeatMode === 'function' && captainSeatMode(config) !== 'q') return;
     const p = geo.props.find(p => p.id === config.propId);
     if (!p || p.t !== 'simple_red_cushion_chair' || p.w !== 1 || p.h !== 1 || p.agentId) return;
     if (!DATA.SKINS[config.skin]) { console.warn('[commander] unknown skin:', config.skin); return; }
@@ -11093,7 +11248,7 @@ const World = (() => {
        floor to the router. `station: false` = no floor loaded (nothing is known). */
     planStatus: () => Object.assign({ station: !!station, pending: !!(station && (geoDirty || !geo)),
       errors: (routingPlan && routingPlan.errors ? routingPlan.errors : []).filter(e => !e.warn), hash: routingPlan ? routingPlan.hash : null }, planPoster.state()),
-    loadStation, spawn, spawnAgent, despawnAgent, setSkin, relabel, setActivityFor, agentRunsLive, dropRun: noteRunEnd, focusBody, lockBody, cameraMode, cameraState, restoreCamera, setFrameCap, setOverlays, setCinecamIdle, setChatFocus, chatFocusPing, start, stop, setActivity, wakeIn, beginAwakening, playArrival, cancelArrival, setWakeProgress, igniteSpark, armKindle, kindleHold, camPushIn, camCreep, camPunch, camPullBack, awakenTurn, truthPulse, beginFlood, collapseFlood, endAwakening, releaseAwakening, say, focusAgent, getActivity: () => activity, getUse: () => (agent ? agent.usingProp : null), setOnClick, setOnArcade, setOnOutbox, setOnMissionBoard, setOnTrophyCase, setOnPluginTerminal, setOnDesk, setOnBayAssign, setOnIntakeFeed, setOnIntakeSample, refit, pauseBridge, resumeBridge, linkState, _dbgSeedRun, _dbgAgeRun, _dbgReconcile, _dbgSweep, _dbgLinkState, _dbgDropBridge, _dbgCurveState, _dbgLoseCurveContext, _dbgLoseCanvases, _dbgCanvasLoss, _dbgKillStageContext, _dbgStageState, _dbgBeltLegibility, _dbgPropClientPoint, _dbgDeskClientPoint, _dbgSleep, _dbgUseProp, _dbgArrive, _dbgLeisure,
+    loadStation, spawn, spawnAgent, despawnAgent, setSkin, relabel, setActivityFor, agentRunsLive, dropRun: noteRunEnd, focusBody, lockBody, cameraMode, cameraState, restoreCamera, setFrameCap, setOverlays, setCinecamIdle, setChatFocus, chatFocusPing, start, stop, setActivity, wakeIn, beginAwakening, playArrival, cancelArrival, setWakeProgress, igniteSpark, armKindle, kindleHold, camPushIn, camCreep, camPunch, camPullBack, awakenTurn, truthPulse, beginFlood, collapseFlood, endAwakening, releaseAwakening, say, focusAgent, getActivity: () => activity, getUse: () => (agent ? agent.usingProp : null), setOnClick, setOnArcade, setOnOutbox, setOnMissionBoard, setOnBridgeSurface, setOnTrophyCase, setOnPluginTerminal, setOnDesk, setOnBayAssign, setOnIntakeFeed, setOnIntakeSample, refit, pauseBridge, resumeBridge, linkState, _dbgSeedRun, _dbgAgeRun, _dbgReconcile, _dbgSweep, _dbgLinkState, _dbgDropBridge, _dbgCurveState, _dbgLoseCurveContext, _dbgLoseCanvases, _dbgCanvasLoss, _dbgKillStageContext, _dbgStageState, _dbgBeltLegibility, _dbgPropClientPoint, _dbgDeskClientPoint, _dbgSleep, _dbgUseProp, _dbgArrive, _dbgLeisure,
     // AGENT GROWTH: XpStore pushes pre-computed Xp.compute() snapshots here; pulseLevelUp fires
     // the addressed body's gold ring. The colony headline is the top-bar STATION chip.
     setXp: (agentId, a) => {

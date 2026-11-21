@@ -20,6 +20,7 @@ The station is home. A user asks an agent for useful work in COMMS, reviews the 
 | Recipe | Starts a prepared task with your inputs. | Inputs, expected result, launch action; exact prompt remains inspectable. |
 | Skill | Reusable instructions for an agent. | Purpose and any required tools; instructions alone do not connect a service. |
 | Routine | Repeats a task on a schedule. | Target, schedule, enabled state and where to review the result. |
+| Strict-finance mission creation | Authenticated local mission creation writes a quest record only; it does not start an agent, enable scheduling, or permit agent tools or paid services. | A saved quest appears in the mission list; yellow and red urgency are explicitly labeled and highlighted. |
 | Connection | Gives the agent access to an outside service. | Service/account, actual connection state and access; saved credentials alone are not proof of readiness. |
 
 ## Equipment rules: use runtime authority
@@ -55,6 +56,14 @@ The station is home. A user asks an agent for useful work in COMMS, reviews the 
 Normal COMMS work answers in that conversation. A conveyor runs when work reaches its configured intake or trigger; directly messaging a step agent does not inherently launch the whole line. PREVIEW illustrates routing without running an AI job. RUN A SAMPLE JOB uses the real execution path.
 
 Q is the Commander-facing inbox on the Bridge. The built-in USS Theseus Prime Directive is included in every agent's composed system prompt as shared project guidance, alongside role-specific instructions; Q can customize it, but it cannot be left empty. It grants no tools, permissions, or approval and cannot override higher-priority system or safety instructions. The Commander may also explicitly send its text into an agent's COMMS conversation.
+
+On the Bridge, the comms wall, ticker, chart wall, trend pillar and calendar wall open their respective review logs. Users and listed Bridge officers can pin open items, mark urgency and supply sourced recommendations. Officers can submit a standalone `BRIDGE_PIN: <JSON object>` line in COMMS; an accepted pin is information, not an authorization. The research button requests an officer's analysis in COMMS without authorizing implementation. Q may authorize the exact recommendation once and dispatch it to the responsible officer; existing access, financial controls and escalation requirements still apply. The treasury book reports that factory income and expenses are not connected rather than inventing trends.
+
+The unassigned aft port and starboard terminals open the same shared systems launcher. It opens existing station interfaces and does not grant additional access or bypass their permissions or approvals.
+
+The Bridge center chairs are paired with the ambassador's and first officer's assigned workstations. Q occupies the captain chair while present; when Q is away or offline, the Commander AI may occupy it only while confirmed unattended autonomy is enabled. Otherwise it remains reserved and empty. The captain's interface opens the shared systems launcher; these visual assignments do not change authority or start work.
+
+The mission board opens the quest log without gating work. The dispatch pylon sends through the selected agent's normal COMMS session, and the mail pod opens Q's existing inbox for messages submitted by crew.
 
 Q's human operating directive is stored separately from the project Prime Directive and role directives. When saved, its text is included in each agent's composed system prompt as context for communication and collaboration, not as proof that a decision was made or as permission to exceed authority or higher-priority instructions. Agents can request a copy using `Q_HUMAN_DIRECTIVE_REQUEST`.
 

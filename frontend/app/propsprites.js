@@ -10865,12 +10865,12 @@ const PropSprites = (() => {
     { id: "screens", label: "SCREENS", cat: "screens", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: false },
     { id: "tank", label: "TANK", cat: "screens", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "whiteboard", label: "WHITEBOARD", cat: "screens", tier: "cosmetic", w: 4, h: 1, animated: true, blocks: false },
-    { id: "ticker", label: "TICKER", cat: "screens", tier: "cosmetic", w: 4, h: 1, animated: true, blocks: false },
-    { id: "chartwall", label: "CHART WALL", cat: "screens", tier: "cosmetic", w: 3, h: 1, animated: true, blocks: false },
+    { id: "ticker", label: "TICKER", cat: "screens", tier: "functional", w: 4, h: 1, animated: true, blocks: false },
+    { id: "chartwall", label: "CHART WALL", cat: "screens", tier: "functional", w: 3, h: 1, animated: true, blocks: false },
     { id: "wartable", label: "WAR TABLE", cat: "screens", tier: "cosmetic", w: 5, h: 2, animated: true, blocks: true },
-    { id: "calwall", label: "CAL WALL", cat: "screens", tier: "cosmetic", w: 6, h: 1, animated: true, blocks: false },
+    { id: "calwall", label: "CAL WALL", cat: "screens", tier: "functional", w: 6, h: 1, animated: true, blocks: false },
     { id: "bridge_tacscreen", label: "TAC SCREEN", cat: "screens", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: false },
-    { id: "bridge_dispatch_pylon", label: "DISPATCH PYLON", cat: "screens", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
+    { id: "bridge_dispatch_pylon", label: "DISPATCH PYLON", cat: "screens", tier: "functional", w: 1, h: 2, animated: true, blocks: true },
     { id: "bridge_orderqueue", label: "ORDER QUEUE", cat: "screens", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "war_pivotpanel", label: "PIVOT PANEL", cat: "screens", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "war_threatcore", label: "THREAT CORE", cat: "screens", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
@@ -10880,7 +10880,7 @@ const PropSprites = (() => {
     { id: "easel", label: "EASEL", cat: "lab", tier: "cosmetic", w: 3, h: 2, animated: true, blocks: true },
     { id: "tube", label: "TUBE", cat: "lab", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "research_corelens", label: "CORE LENS", cat: "lab", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
-    { id: "research_trendpillar", label: "TREND PILLAR", cat: "lab", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
+    { id: "research_trendpillar", label: "TREND PILLAR", cat: "lab", tier: "functional", w: 1, h: 2, animated: true, blocks: true },
     { id: "research_samplecart", label: "SAMPLE CART", cat: "lab", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "research_papers", label: "PAPERS", cat: "lab", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: false, stack: true },
     { id: "etsy_threadrack", label: "THREAD RACK", cat: "lab", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
@@ -10900,7 +10900,7 @@ const PropSprites = (() => {
     { id: "treasury_coinsorter", label: "COIN SORTER", cat: "storage", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     { id: "treasury_token_furnace", label: "TOKEN FURNACE", cat: "storage", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
     // COMMS — antennas & mail dressing.
-    { id: "commswall", label: "COMMS WALL", cat: "comms", tier: "cosmetic", w: 6, h: 1, animated: true, blocks: false },
+    { id: "commswall", label: "COMMS WALL", cat: "comms", tier: "functional", w: 6, h: 1, animated: true, blocks: false },
     // ONE CANONICAL INBOX (2026-09-23 playtest): this decor tray used to be labelled INBOX too, so searching "inbox"
     // offered two different INBOX pieces (2x2 workflow machine, 2x1 decor). The id never renames (saves keep rendering).
     { id: "comms_inbox", label: "MAIL TRAY", cat: "comms", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true, desc: "Decoration — a desk mail tray. It routes nothing: the workflow INBOX, where outside work enters a line, is in Conveyors › MACHINES." },
@@ -10908,7 +10908,7 @@ const PropSprites = (() => {
     { id: "gigs_amp", label: "AMP", cat: "comms", tier: "cosmetic", w: 1, h: 1, animated: true, blocks: true, stack: true },
     { id: "pub_publishpress", label: "PUBLISH PRESS", cat: "comms", tier: "cosmetic", w: 2, h: 2, animated: true, blocks: true },
     { id: "pub_outboundchute", label: "OUTBOUND CHUTE", cat: "comms", tier: "cosmetic", w: 1, h: 2, animated: true, blocks: true },
-    { id: "pub_mailpod", label: "MAIL POD", cat: "comms", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
+    { id: "pub_mailpod", label: "MAIL POD", cat: "comms", tier: "functional", w: 2, h: 1, animated: true, blocks: true },
     { id: "arc_indexwall", label: "INDEX WALL", cat: "comms", tier: "cosmetic", w: 4, h: 1, animated: true, blocks: false },
     { id: "arc_microfiche", label: "MICROFICHE", cat: "comms", tier: "cosmetic", w: 2, h: 1, animated: true, blocks: true },
     // LOUNGE — morale & downtime (idle agents drift here).
@@ -11119,10 +11119,11 @@ const PropSprites = (() => {
       MISSIONBOARD are display-surface exceptions, while JUKEBOX is a decorative music cabinet. Their
       authored views change only which side is visible, and their reserved footprints stay fixed. */
   const REMASTER_DIRECTIONAL = new Set(['desk','desk2','seatchair','trophycase','missionboard','jukebox']);
+  const BRIDGE_SURFACE_ROTATION = new Set(['commswall','ticker','chartwall','research_trendpillar','calwall','bridge_dispatch_pylon','pub_mailpod']);
   const rotatable = id => {
     const s=spec(id);
     if (id === 'jukebox') return remasterStyle();
-    return (remasterStyle() && REMASTER_DIRECTIONAL.has(id)) || (!!s && s.tier !== 'functional');
+    return BRIDGE_SURFACE_ROTATION.has(id) || (remasterStyle() && REMASTER_DIRECTIONAL.has(id)) || (!!s && s.tier !== 'functional');
   };
 
   /* which fn draws prop `id` at facing `r`, whether it must be mirrored to get there, and whether it
