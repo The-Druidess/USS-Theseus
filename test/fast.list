@@ -557,6 +557,7 @@ test/world-commander.test.js
 test/bridge-workstations.test.js
 test/bridge-review-store.test.js
 test/q-terminal.test.js
+test/crew-directive.test.js
 test/capprop-map.contract.test.js
 test/dock-terms-open.test.js
 test/settings-p1-ui.test.js

@@ -5,12 +5,12 @@ const fn=name=>A.fnBody(src,'function '+name+'(');
 const WM=require('../frontend/app/worldmodel');
 const footOf=(x,y)=>({x:x*12+6,y:y*12+11}),tileOf=(x,y)=>({x:Math.floor(x/12),y:Math.floor(y/12)});
 function runtime(g){return Function('geo','blocked','footOf','tileOf',`
-const T=12, CORNER_LOOK=2.5, movementBlockers=(b,v)=>v, beltUnion=()=>blocked, tileBlockedFor=(v,x,y)=>v.has(x+','+y);
+const T=12, CORNER_LOOK=2.5, fnow=0, movementBlockers=(b,v)=>v, beltUnion=()=>blocked, tileBlockedFor=(v,x,y)=>v.has(x+','+y);
 const stepGait=(b,dx,dy,d,sp,last,dt)=>Math.min(d,sp*dt/1000);
 const gaitMove=(b,dx,dy,d,s)=>{b.px+=dx/d*s;b.py+=dy/d*s};
 // This fixture has one worker; multi-body right-of-way is exercised by hallway-traffic.test.js.
 const stepTraffic=()=>false;
-${['seatFoot','startBodyPath','canRoundCorner','crewNextWaypoint','stepCrewToSeat'].map(fn).join('\n')}
+${['seatFoot','startBodyPath','canRoundCorner','advanceBodyWaypoint','crewNextWaypoint','stepCrewToSeat'].map(fn).join('\n')}
 return stepCrewToSeat;`)(g,new Set(),footOf,tileOf);}
 const st=WM.create();st.addRoom({kind:'lab',rect:{x1:24,y1:0,x2:36,y2:12}});let g=st.projectGeometry(),step=runtime(g);
 let b={px:90,py:95,working:true},seat={tx:32,ty:8,cx:31.5,face:'north'};

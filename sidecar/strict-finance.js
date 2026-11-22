@@ -9,6 +9,7 @@ const READ_TOOLS = new Set([
   'station.settings', 'session.list', 'session.peek', 'team.subagents', 'team.config',
   'loop.list', 'notebook.read', 'fs.list',
   'treasury.status',
+  'crew.directive',
 ]);
 const LOCAL_POST_ROUTES = new Set([
   '/api/run', '/api/cancel', '/api/run/steer', '/api/station/ack', '/api/session',
@@ -93,6 +94,10 @@ function makeStrictFinance(opts) {
   }
   function assertTool(call, tool) {
     if (!enabled()) return;
+    if (tool.provenance === 'host' && call.name === 'quest.update' && call.args?.op === 'read') {
+      allow('tool', 'quest.update:read');
+      return;
+    }
     if (tool.provenance === 'host' && READ_TOOLS.has(call.name)) {
       // Telemetry must stay readable even when the audit store itself needs repair.
       if (call.name !== 'treasury.status') allow('tool', call.name);
@@ -114,7 +119,7 @@ function makeStrictFinance(opts) {
       audit('blocked', 'route', method + ' ' + url.pathname.match(blockedPrefix)[0]);
       return refusal('this service is suspended in local-only mode.').message;
     }
-    if (method === 'POST' && url.pathname === '/api/quests/mint') {
+    if (method === 'POST' && ['/api/quests/mint', '/api/quests/notes'].includes(url.pathname)) {
       if (issue) return refusal('policy storage is unavailable or invalid.').message;
       try { allow('route', method + ' ' + url.pathname); }
       catch (error) { return error.message; }

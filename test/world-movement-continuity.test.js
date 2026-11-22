@@ -33,4 +33,24 @@ const crewNextWaypoint=b=>{b.target=b.pathPts[b.pathIdx++]},stepGait=(b,dx,dy,d,
 ${seatFn};return stepCrewToSeat;`)();
 const worker={px:0,py:0,target:{x:1,y:0},pathPts:[{x:1,y:0},{x:30,y:0}],pathIdx:1,pauseUntil:9999};seatStep(worker,{},16,1000);
 A.ok(worker.px>0,'workstation route advances through waypoint without an idle frame or leisure pause');
+const transit = Function('available','warnings',`
+const geo={props:[{id:'a',t:'transporter_pad',x:2,y:2,w:3,h:3},{id:'b',t:'transporter_pad',x:12,y:2,w:3,h:3}],
+ walkable:()=>available};
+const blocked=new Set(),fnow=1000,footOf=(x,y)=>({x,y}),tileOf=(x,y)=>({x,y});
+const movementBlockers=()=>blocked,console={warn:message=>warnings.push(message)};
+${fn('advanceBodyWaypoint')}
+return advanceBodyWaypoint;`);
+const marker={x:13,y:3,transportFrom:'a',transportTo:'b'};
+let traveler={px:3,py:3,pathPts:[marker,{x:15,y:3}],pathIdx:0};
+transit(true,[])(traveler);
+A.eq([traveler.px,traveler.py], [13,3], 'transporter moves an agent from source to arrival pad');
+A.eq(traveler.target, {x:15,y:3}, 'the agent continues to its original destination');
+const warnings=[];
+traveler={px:3,py:3,pathPts:[marker],pathIdx:0};
+transit(false,warnings)(traveler);
+A.eq([traveler.px,traveler.py], [3,3], 'an occupied arrival leaves the agent at the source');
+A.ok(!traveler.target && warnings.length === 1, 'failed transit clears the route and reports the failure');
+traveler={px:4,py:3,pathPts:[marker],pathIdx:0};
+transit(true,[])(traveler);
+A.eq([traveler.px,traveler.py], [4,3], 'an agent not on the source pad cannot transport');
 A.report('world-movement-continuity');

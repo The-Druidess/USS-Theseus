@@ -32,7 +32,8 @@
   const BLOCK_CAP = 2200;
 
   const HEADER = 'STATION QUESTS — your standing objectives for the Commander. These progress the game in sync '
-    + 'with the Commander\'s real work. To interact, use the quest.update tool: op:"start" binds the ONE named run '
+    + 'with the Commander\'s real work. Use quest.update op:"read" with the quest id to read its briefing and reference notes. '
+    + 'To interact, use the quest.update tool: op:"start" binds the ONE named run '
     + 'quest you are beginning to this run; op:"progress" ticks a named step '
     + '(pass a short note on what you did); op:"attest_complete" PROPOSES a quest done with concrete evidence — it '
     + 'is NEVER complete until the Commander confirms. Never claim a quest done in prose alone; a mechanical quest '

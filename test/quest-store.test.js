@@ -8,6 +8,8 @@
 'use strict';
 const A = require('./_assert.js');
 const path = require('path');
+const nodeFs = require('fs');
+const vm = require('vm');
 const { makeQuestStore, normalize } = require('../sidecar/quest-store.js');
 
 // ---- a tiny in-memory fs sufficient for durable-store (readFileSync/writeFileSync/rename/mkdirSync/...) ----
@@ -62,6 +64,36 @@ const attestContract = () => ({ type: 'attest', key: '' });
   }
 
   // ---- 3. TITLE-DEDUP vs OPEN quests (normalized) ----
+  {
+    const fs = memFs();
+    const s = freshStore(fs);
+    const { id } = await s.mint({ title: 'Security', contract: attestContract(), urgency: 'yellow', agentId: 'security' }, 100);
+    const before = s.get(id);
+    A.ok((await s.setNotes(id, 'Future design\nKeep open', '')).ok, 'notes attach to an open mission');
+    const after = freshStore(fs).get(id);
+    A.eq(after.notes, 'Future design\nKeep open', 'notes survive a store reload');
+    A.eq([after.status, after.urgency, after.agentId, after.contract], [before.status, before.urgency, before.agentId, before.contract], 'notes do not change mission lifecycle or assignment');
+    A.ok((await s.setNotes(id, 'stale edit', '')).conflict, 'stale notes cannot overwrite a concurrent edit');
+    A.ok(!(await s.setNotes(id, 'x'.repeat(6001), after.notes)).ok, 'oversized notes are rejected instead of truncated');
+    A.ok(!(await s.setNotes('q:missing', 'note', '')).ok, 'missing missions are rejected');
+    A.eq(s.get(id).notes, after.notes, 'rejected writes preserve notes');
+
+    const source = nodeFs.readFileSync(path.join(__dirname, '../sidecar/index.js'), 'utf8');
+    const start = source.indexOf('async function handleQuestsNotes(');
+    const end = source.indexOf('// POST /api/quests/update', start);
+    const ctx = vm.createContext({ questStore: s, readBody: async req => req.body, console });
+    vm.runInContext(source.slice(start, end), ctx);
+    async function request(body) {
+      const res = { writeHead(code) { this.code = code; }, end(text) { this.data = JSON.parse(text); } };
+      await ctx.handleQuestsNotes({ body }, res);
+      return res;
+    }
+    A.eq((await request('{')).code, 400, 'malformed notes requests are rejected');
+    A.eq((await request(JSON.stringify({ id, notes: 'newer', expectedNotes: '' }))).code, 409, 'HTTP reports conflicting notes');
+    A.eq((await request(JSON.stringify({ id, notes: 'newer', expectedNotes: after.notes }))).code, 200, 'HTTP saves notes');
+    A.eq(freshStore(fs).get(id).notes, 'newer', 'HTTP write is durable');
+  }
+
   {
     const fs = memFs();
     const s = freshStore(fs);

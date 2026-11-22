@@ -2107,7 +2107,7 @@ const World = (() => {
   }
   function canRoundCorner(b) {
     const next = b.pathPts && b.pathPts[b.pathIdx];
-    if (!next || !geo || !geo.clearFootSegment) return false;
+    if (!next || next.transportTo || !geo || !geo.clearFootSegment) return false;
     const foot = footOf(next.x, next.y);
     return geo.clearFootSegment(b.px, b.py, foot.x, foot.y, blocked);
   }
@@ -2119,8 +2119,9 @@ const World = (() => {
     if (tileBlockedFor(blockers, dest.x, dest.y)) return false;
     // prop awareness: prefer a route that steps around walkable machinery/decor (soft no-tread set),
     // fall back to the plain route when the soft set is the only way through (or the dest sits on it)
-    const p = geo.path(cur.x, cur.y, dest.x, dest.y, movementBlockers(self, beltUnion()))
-      || geo.path(cur.x, cur.y, dest.x, dest.y, blockers);
+    const route = extra => (typeof Hulls !== 'undefined' && typeof Hulls.transportRoute === 'function' && Hulls.transportRoute(station, geo, cur, dest, extra))
+      || geo.path(cur.x, cur.y, dest.x, dest.y, extra);
+    const p = route(movementBlockers(self, beltUnion())) || route(blockers);
     if (!p) return false;
     startBodyPath(self, p);
     nextWaypoint();
@@ -2128,10 +2129,30 @@ const World = (() => {
     return true;
   }
   function nextWaypoint() {
-    if (!self.pathPts || self.pathIdx >= self.pathPts.length) { self.target = null; return; }
-    const wp = self.pathPts[self.pathIdx++];
-    self.target = footOf(wp.x, wp.y);
-    maybeStrollBeat();   // CONSIDERED MOVEMENT: a casual stroll occasionally hesitates / doubles back — not a sprite on rails
+    advanceBodyWaypoint(self);
+    if (self.target) maybeStrollBeat();
+  }
+  function advanceBodyWaypoint(body) {
+    if (!body.pathPts || body.pathIdx >= body.pathPts.length) { body.target = null; return; }
+    let wp = body.pathPts[body.pathIdx++];
+    if (wp.transportTo) {
+      const source = geo.props.find(p => p.id === wp.transportFrom && p.t === 'transporter_pad');
+      const dest = geo.props.find(p => p.id === wp.transportTo && p.t === 'transporter_pad');
+      const sourceTile = source && { x: source.x + Math.floor((source.w || 1) / 2), y: source.y + Math.floor((source.h || 1) / 2) };
+      const here = tileOf(body.px, body.py);
+      if (!source || !dest || here.x !== sourceTile.x || here.y !== sourceTile.y ||
+          !geo.walkable(wp.x, wp.y, movementBlockers(body, blocked))) {
+        console.warn('[transporter] Transit unavailable; the agent remains on its current hull');
+        body.pathPts = null; body.target = null; body.state = 'idle'; body.workRetryAt = fnow + 750;
+        return;
+      }
+      const arrival = footOf(wp.x, wp.y);
+      body.px = arrival.x; body.py = arrival.y;
+      body._gaitStart = null; body.spd = 0;
+      if (body.pathIdx >= body.pathPts.length) { body.target = arrival; return; }
+      wp = body.pathPts[body.pathIdx++];
+    }
+    body.target = footOf(wp.x, wp.y);
   }
   /* ---------- THE INTENT TELL (legibility, NOT a new beat) ----------
      An idle body used to decide and step off in the SAME frame, so the decision was invisible: the viewer saw
@@ -2375,7 +2396,7 @@ const World = (() => {
      Non-blocking props (bays, inbox/outbox chutes, filters, dropped decor) stay WALKABLE — bodies
      dock on bay tiles, airlocks are doors — but a body with prop awareness steps AROUND the
      machinery when any other route exists. Rugs and airlocks are meant to be crossed; skip them. */
-  const SOFT_CROSS = new Set(['rug', 'rug_small', 'rug_large', 'airlock']);
+  const SOFT_CROSS = new Set(['rug', 'rug_small', 'rug_large', 'airlock', 'transporter_pad']);
   function beltUnion() {
     const s = new Set(blocked);
     const belts = (geo && geo.belts) || [];
@@ -2831,9 +2852,7 @@ const World = (() => {
      so an idle crew body has needs/temperament/want-engine/quirks, caged to its own zone, not just a random stroll.
      crewNextWaypoint is the path-stepper the working-path (stepCrewToSeat) still uses. */
   function crewNextWaypoint(b) {
-    if (!b.pathPts || b.pathIdx >= b.pathPts.length) { b.target = null; return; }
-    const wp = b.pathPts[b.pathIdx++];
-    b.target = footOf(wp.x, wp.y);
+    advanceBodyWaypoint(b);
   }
   /* a working crew body walks to the chair in front of its assigned desk and sits facing it — the hero's exact
      desk pose, generalised to crew: foot on the front tile, dir north, sitting (the chair sprite y-sorts behind
@@ -2851,8 +2870,10 @@ const World = (() => {
       const blockers = movementBlockers(b, blocked);
       if (tileBlockedFor(blockers, s.tx, s.ty)) { b.state = 'idle'; b.sitting = false; return; }
       // prop awareness: prefer the machinery-avoiding route to the chair; fall back when it's the only way
-      const p = geo.path(cur.x, cur.y, s.tx, s.ty, movementBlockers(b, beltUnion()))
-        || geo.path(cur.x, cur.y, s.tx, s.ty, blockers);
+      const dest = { x: s.tx, y: s.ty };
+      const route = extra => (typeof Hulls !== 'undefined' && typeof Hulls.transportRoute === 'function' && Hulls.transportRoute(station, geo, cur, dest, extra))
+        || geo.path(cur.x, cur.y, dest.x, dest.y, extra);
+      const p = route(movementBlockers(b, beltUnion())) || route(blockers);
       if (p && p.length) { startBodyPath(b, p); crewNextWaypoint(b); }
       else if (!p) { b.pathPts = null; b.target = null; b.sitting = false; b.state = 'idle'; b.workRetryAt = now + 750; return; }
       else { b.target = foot; }   // same tile: walk the remaining fraction to the centred seat
@@ -2863,6 +2884,7 @@ const World = (() => {
       // Consume reached corners in this frame, then spend its movement step on the next leg.
       while (more && (d < 1e-6 || (d < CORNER_LOOK && canRoundCorner(b)))) {
         crewNextWaypoint(b);
+        if (!b.target) return;
         dx = b.target.x - b.px; dy = b.target.y - b.py; d = Math.hypot(dx, dy);
         more = !!(b.pathPts && b.pathIdx < b.pathPts.length);
       }
@@ -2952,6 +2974,7 @@ const World = (() => {
         // Consume reached corners in this frame, then spend its movement step on the next leg.
         while (more && (d < 1e-6 || (d < CORNER_LOOK && canRoundCorner(self)))) {
           nextWaypoint();
+          if (!self.target) return;
           dx = self.target.x - self.px; dy = self.target.y - self.py; d = Math.hypot(dx, dy);
           more = !!(self.pathPts && self.pathIdx < self.pathPts.length);
           if (now < (self.pauseUntil || 0)) break;
@@ -6392,6 +6415,7 @@ const World = (() => {
         // Consume reached corners in this frame, then spend its movement step on the next leg.
         while (more && (d < 1e-6 || (d < CORNER_LOOK && canRoundCorner(agent)))) {
           nextWaypoint();
+          if (!agent.target) return;
           dx = agent.target.x - agent.px; dy = agent.target.y - agent.py; d = Math.hypot(dx, dy);
           more = !!(agent.pathPts && agent.pathIdx < agent.pathPts.length);
           if (now < (agent.pauseUntil || 0)) break;

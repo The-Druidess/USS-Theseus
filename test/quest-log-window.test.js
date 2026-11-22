@@ -25,6 +25,10 @@ const journey = read('frontend/app/journeystore.js');
 const refresh = read('frontend/app/questrefreshstore.js');
 const css = read('frontend/css/app.css');
 const motion = read('frontend/css/motion.css');
+A.ok(station.includes('<summary>MISSION NOTES</summary>') && station.includes("esc(q.notes).replace(/\\n/g, '<br>')"),
+  'mission notes are displayed as escaped multiline text');
+A.ok(station.includes("'\\n\\nQuest notes:\\n' + String(q.notes).trim()"),
+  'mission notes follow the quest into its prepared conversation');
 
 // A successful save clears only its submitted fields, including when the store has already
 // replaced the original DOM. Newer input during an async save must remain dirty and intact.

@@ -2066,6 +2066,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     { key: 'context', file: 'context.md', badge: 'YOU WRITE THIS',
       desc: 'About you and your world — your project, domain, and what "good" looks like. Grounds every run.',
       ph: 'e.g. I build TypeScript web apps solo; "good" = tested, minimal diffs, no hand-waving.' },
+    { key: 'directive', file: 'directive.md', badge: 'YOU WRITE THIS',
+      desc: 'This agent’s individual directive. Saved changes apply to its standing instructions; other agents may request a read-only copy.',
+      ph: 'Write this agent’s individual directive.' },
+    { key: 'directiveDraft', file: 'pending-directive-draft.md', badge: 'NOT ACTIVE',
+      desc: 'A preserved draft from the former Q role editor. Saving this draft does not activate it; copy it to directive.md to apply it.',
+      ph: 'Pending directive draft.' },
     { key: 'manual', file: 'operating-manual.md', badge: 'YOU WRITE THIS',
       desc: 'House rules appended to every run — tone, format, the do-nots. Always obeyed.',
       ph: '- Cite your sources.\n- Keep it terse.\n- Never message anyone without asking first.' }
@@ -2789,7 +2795,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const purpose = CONFIG_FILES.find(f => f.key === 'purpose');
     const content = [
       purpose ? fileCard(a, purpose) : '',
-      CONFIG_FILES.filter(f => f.key !== 'purpose').map(f => fileCard(a, f)).join(''),
+      CONFIG_FILES.filter(f => f.key !== 'purpose' && (f.key !== 'directiveDraft' || docVal(a, f.key))).map(f => fileCard(a, f)).join(''),
       modelCard(a), personaCard(a),
       agSkills(a.id) + accessAnswerCard(a), agCommand(a)
     ];
@@ -3057,7 +3063,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       if (access.config && access.config.apply) access.config.apply({ [key]: val }, a && a.id);
       delete agEdit[key]; delete agEditBase[key]; sfx('click');
       const meta = CONFIG_FILES.find(f => f.key === key);
-      notify('saved ' + (meta ? meta.file : key) + ' — your agent runs on it now', 'good');
+      notify('saved ' + (meta ? meta.file : key) + (key === 'directiveDraft' ? ' — draft remains inactive' : ' — your agent runs on it now'), 'good');
       rerender('agents');
     }));
     // keep focus in the editor across the rerender that opened it (ignore reserved '__' keys like the header rename)
@@ -9845,6 +9851,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       const cw = questCompletesWhen(q);
       const ask = 'Help me with this quest: ' + String(q.title || '').trim()
         + (q.desc ? ' — ' + String(q.desc).trim() : '')
+        + (q.notes ? '\n\nQuest notes:\n' + String(q.notes).trim() : '')
         + (cw ? '\n\nIt counts as done when: ' + cw : '');
       const startsWork = !existing && q.executionMode === 'agent' && Chat.send && !(Chat.isBusy && Chat.isBusy());
       if (startsWork) {
@@ -10515,6 +10522,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
         + '</div>'
         + '<div class="q-hd"><span class="gl" aria-hidden="true">' + (q.status === 'done' ? '&#9733;' : '&#9671;') + '</span><h3 class="nm">' + esc(q.title) + '</h3></div>'
         + '<div class="sub">' + esc(q.status === 'done' ? ('▸ ' + q.reward) : q.desc) + '</div>'
+        + (q.notes ? '<details class="q-mt"><summary>MISSION NOTES</summary><div class="sub">' + esc(q.notes).replace(/\n/g, '<br>') + '</div></details>' : '')
         + cwHtml + (q.status === 'done' ? '' : rewardHtml) + attestHtml + declineHtml + actionRow + lifeActions + '</div>';
     };
     const meterHtml = m

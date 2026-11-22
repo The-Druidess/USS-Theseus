@@ -346,6 +346,7 @@ const { makeProvenanceIndex } = require('./deliverable-provenance.js'); // WHO m
 const { makeQuestStore } = require('./quest-store.js'); // QUEST V2 §A: station-wide harness-owned quest ledger (contract-enforced)
 const { makeJourneyStore } = require('./journey-store.js'); // Commander journey: verified outcomes -> mastery/adaptation/evolution (never XP or gating)
 const { makeQuestTools } = require('./tools/builtin/quests.js'); // QUEST V2 §B: quest.update — the agent's read/write reach into the ledger
+const { makeCrewDirectiveTool, DIRECTIVE_LANGUAGE } = require('./tools/builtin/crew-directive.js');
 const { questBlock, withQuests } = require('./questinject.js'); // QUEST V2 §B: fold an agent's OPEN quests into its system prompt (pure, dossierinject idiom)
 const QuestSweeps = require('./questsweeps.js');
 const GoalAdvance = require('./goal-advance.js'); // USER-STUDY LOOP: pure — a finished quest slate settles its plan step; journey completions fold onto the goal mirror
@@ -11373,6 +11374,7 @@ const ROUTES = [
   // ---- QUEST V2 §A: the harness-owned quest ledger (frontend polls /api/quests on the existing 1s tick) ----
   { m: 'GET', qsplit: '/api/quests', h: handleQuestsList },
   { m: 'POST', exact: '/api/quests/mint', h: handleQuestsMint },
+  { m: 'POST', exact: '/api/quests/notes', h: handleQuestsNotes },
   { m: 'POST', exact: '/api/quests/update', h: handleQuestsUpdate },
   { m: 'POST', exact: '/api/quests/confirm', h: handleQuestsConfirm },
   { m: 'POST', exact: '/api/quests/dismiss', h: handleQuestsDismiss },
@@ -16063,6 +16065,18 @@ async function handleQuestsMint(req, res) {
   if (!r || !r.ok) return json(400, { ok: false, error: (r && r.error) || 'could not mint that quest', id: r && r.id });
   json(200, { ok: true, id: r.id });
 }
+// POST /api/quests/notes { id, notes, expectedNotes } — update an open quest without changing its lifecycle.
+async function handleQuestsNotes(req, res) {
+  const json = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
+  let body; try { body = JSON.parse(await readBody(req, 1 << 16)) || {}; } catch (_) { return json(400, { ok: false, error: 'bad request' }); }
+  try {
+    const result = await questStore.setNotes(body.id, body.notes, body.expectedNotes);
+    return json(result.ok ? 200 : result.conflict ? 409 : 400, result);
+  } catch (e) {
+    console.warn('[quests] notes save failed:', (e && e.message) || e);
+    return json(500, { ok: false, error: 'could not save quest notes' });
+  }
+}
 // POST /api/quests/update { id, op:'tick'|'attest', stepKey?, note?, evidence?, agentId?, runId? }.
 //   tick   → flip a named open step (progress display; never completes the quest).
 //   attest → the agent proposes completion with evidence (attest contracts only; never completes).
@@ -18646,6 +18660,9 @@ async function runOnceCore(o) {
   if (o.streamId) runStartExtra.streamId = String(o.streamId);
   const runStartedAt = Date.now();
   let system = rawSystem;
+  if (!o.internal && !o.outputOnly && !String(system || '').includes(DIRECTIVE_LANGUAGE)) {
+    system = String(system || '') + '\n\n' + DIRECTIVE_LANGUAGE;
+  }
   if (agentId === 'portal-treasurer' && !o.internal && !o.outputOnly) {
     system = String(system || '') + require('./tools/builtin/treasury.js').treasuryContext(strictFinance.status(ledger, runStartedAt));
   }
@@ -19248,6 +19265,7 @@ async function runOnceCore(o) {
   makeToolSearchTool({ registry }).register(registry);   // tool.search — finds a GRANTED but unadvertised tool (CAP_REGISTRY `deferred: true`) and reveals it for the rest of the run; rides the computer object so no surface is stranded
   makeCodeTools({}).register(registry);   // code.run — child Node/vm owns no authority; every nested read returns through this run's parent dispatcher
   makeQuestTools({ store: questStore, clock: { now: () => Date.now() }, activeGoal: () => commanderGoals.get() }).register(registry);   // QUEST V2 §B + journey binding: personalized mints inherit the current goal id/domain evidence
+  makeCrewDirectiveTool({ roster: agentRosterRaw }).register(registry);
   // STUDIO (media skills): image_generate / image_analyze use an OpenRouter key when one is available.
   // Gated by a 'studio' object (in the default office below) exactly like web/files; outputs save to the workspace.
   imageTools.register(registry);

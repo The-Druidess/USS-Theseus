@@ -309,9 +309,40 @@ const App = (() => {
     if (typeof a.docs.identity !== 'string') a.docs.identity = baseIdentity(a.name, a.role);
     if (typeof a.docs.purpose !== 'string') a.docs.purpose = a.purpose || '';
     if (typeof a.docs.manual !== 'string') a.docs.manual = '';
+    if (typeof a.docs.directive !== 'string') a.docs.directive = '';
+    if (typeof a.docs.directiveDraft !== 'string') a.docs.directiveDraft = '';
     if (!a.docs.manual.trim() && isChiefSecurityAgent(a)) a.docs.manual = DEFAULT_CHIEF_SECURITY_MANUAL;
     if (typeof a.docs.context !== 'string') a.docs.context = '';   // about the Commander & their world (authored at the awakening; back-filled for older saves)
     return a.docs;
+  }
+  function migrateAgentDirective(a) {
+    if (!a.docs || typeof a.docs !== 'object') a.docs = {};
+    if (typeof QTerminalStore === 'undefined' || !QTerminalStore.authorityFor) return;
+    const authority = QTerminalStore.authorityFor(a);
+    const roster = QTerminalStore.parseHierarchy(QTerminalStore.hierarchy());
+    const entry = roster.ok && roster.entries.find(row => row.name === authority.role);
+    if (!entry || entry.role === 'commander-q') return;
+    const key = 'role:' + entry.role;
+    if (typeof a.docs.directive !== 'string') {
+      const text = QTerminalStore.roleDirective(entry.role);
+      const title = QTerminalStore.title(key);
+      a.docs.directive = text ? (title ? 'TITLE: ' + title + '\n' : '') + text : '';
+    }
+    if (typeof a.docs.directiveDraft !== 'string') {
+      const draft = QTerminalStore.drafts()[key];
+      a.docs.directiveDraft = draft ? (draft.title ? 'TITLE: ' + draft.title + '\n' : '') + draft.text : '';
+    }
+    if (!a.docs.directivePurposeMigrated) {
+      const legacy = QTerminalStore.serialize().roleDirectives[entry.role];
+      const purpose = a.docs.purpose;
+      if (legacy && a.docs.directive.includes(legacy) && typeof purpose === 'string' && purpose.includes(legacy)) {
+        const index = purpose.indexOf(legacy);
+        const prefix = purpose.slice(0, index).replace(/\n#{1,6}\s+[^\n]*directive[^\n]*\n+$/i, '\n');
+        a.docs.purpose = (prefix + purpose.slice(index + legacy.length)).trim();
+        if (a.purpose === purpose) a.purpose = a.docs.purpose;
+      }
+      a.docs.directivePurposeMigrated = true;
+    }
   }
   // MIGRATION (pre-overhaul saves): the OLD awakening Beat 1 baked the chosen voice into identity.md as a
   // literal "VOICE & MANNER:\n<free text>" block. Voice now comes from the chosen archetype (Personas.compose),
@@ -422,6 +453,8 @@ const App = (() => {
     if (context) p += '\n\nABOUT YOUR COMMANDER & THEIR WORLD (context.md):\n' + context;
     const manual = (d.manual || '').trim();
     if (manual) p += '\n\nSTANDING ORDERS (operating-manual.md) — always follow these:\n' + manual;
+    const directive = (d.directive || '').trim();
+    if (directive) p += '\n\nYOUR INDIVIDUAL DIRECTIVE (directive.md):\n' + directive;
     // THE COMMANDER DOSSIER: the station-wide model of the user, folded in so every agent knows the
     // Commander (durable beliefs only → the prefix stays byte-stable for the cache). '' until something
     // is known, so a cold station adds nothing here.
@@ -461,6 +494,8 @@ const App = (() => {
       if (typeof patch.identity === 'string') d.identity = patch.identity;
       if (typeof patch.purpose === 'string') { d.purpose = patch.purpose; a.purpose = patch.purpose.trim(); }
       if (typeof patch.manual === 'string') d.manual = patch.manual;
+      if (typeof patch.directive === 'string') d.directive = patch.directive;
+      if (typeof patch.directiveDraft === 'string') d.directiveDraft = patch.directiveDraft;
       if (typeof patch.context === 'string') d.context = patch.context;
       if (typeof patch.model === 'string' && patch.model.trim()) {
         a.model = patch.model.trim();
@@ -722,8 +757,8 @@ const App = (() => {
       StationUI.openTerm('q');
       return true;
     }
-    if (typeof TreasurerPortal !== 'undefined' && TreasurerPortal.openFor(agentId)) return true;
     const i = liveAgents().findIndex(a => a && a.id === agentId);
+    if (i < 0 && typeof TreasurerPortal !== 'undefined' && TreasurerPortal.openFor(agentId)) return true;
     if (i < 0 || typeof StationUI === 'undefined' || !StationUI.openAgent) return false;
     StationUI.openAgent(i);
     return true;
@@ -1027,6 +1062,7 @@ const App = (() => {
                   approvalMode: s.approvalMode || 'ask', executionProfile: executionProfileOf(s), workshop: !!s.workshop, purpose: s.purpose || null, specialtyId: s.specialtyId || null,
                   skills: Array.isArray(s.skills) ? s.skills.slice() : [],   // Class Loadouts S1: restore the per-agent skill package
                   docs: s.docs, stats: (s.stats && typeof s.stats === 'object') ? s.stats : null, createdAt: s.createdAt || Date.now() };
+      migrateAgentDirective(a);
       agentDocs(a);
       a.systemPrompt = composeSystemPrompt(a);
       agents.set(a.id, a);
@@ -1530,6 +1566,7 @@ const App = (() => {
       // focused agent's pin, and stamping it onto every unpinned agent sent their routines/channel runs to it (#24).
       const fallbackProv = stationDefaultWire().provider || ((typeof Harness !== 'undefined' && Harness.getProv) ? Harness.getProv() : 'openrouter');
       const list = liveAgents().map(a => ({ agentId: a.id, system: a.systemPrompt || '', name: a.name || a.id, model: a.model || '', provider: a.provider || fallbackProv, role: rosterRole(a), approvalMode: (a.approvalMode === 'full' ? 'full' : 'ask'), executionProfile: executionProfileOf(a),
+        directive: agentDocs(a).directive, directiveManual: agentDocs(a).manual,
         track: rosterTrack(a),    // S3: this agent's EARNED track record, so the lead's dispatch briefing can pick on evidence (see rosterTrack)
         workshop: !!a.workshop,   // W3: the away-build grant travels with the roster so the consent broker can honor it
         skills: Array.isArray(a.skills) ? a.skills : [], reasoningEffort: a.reasoningEffort || null }));   // #4: each agent's OWN provider; Class Loadouts S1: per-agent skill package + applied effort
@@ -3322,6 +3359,7 @@ const App = (() => {
     // until the debounced save lands, and can strand existing epoch-1 feedback on another generation.
     // Keep the missing date unknown. Only onWake creates a new Commander identity.
     if (!agent.role) agent.role = 'orchestrator';  // older hero saves predate the role field — the first agent is the lead
+    migrateAgentDirective(agent);
     agentDocs(agent);                              // seed config docs for older saves that predate them
     stripLegacyVoiceBlock(agent);                  // one-time: drop the old awakening's inline VOICE & MANNER so it doesn't double up with the archetype layer
     stripLegacySoloClause(agent);                  // one-time: swap the frozen "right now its only agent" identity block for the timeless clause (crew truth now rides rosterClause)
@@ -3380,7 +3418,7 @@ const App = (() => {
         research_trendpillar: ['bridge-reviews', 'treasury'],
         calwall: ['bridge-reviews', 'operations'],
         bridge_dispatch_pylon: ['bridge-dispatch'],
-        pub_mailpod: ['q']
+        pub_mailpod: ['q-mail']
       };
       const route = surface && ((surface.t === 'bench' || surface.t === 'console') ? ['bridge-systems'] : routes[surface.t]);
       if (route && typeof StationUI !== 'undefined' && StationUI.openTerm) StationUI.openTerm(route[0], route[1]);

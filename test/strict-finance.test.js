@@ -56,12 +56,22 @@ assert.equal(guard.routeRefusal('GET', '/api/budget/status'), null);
 assert.equal(guard.routeRefusal('GET', '/api/spotify/status'), null, 'local token-presence status does not refresh or contact Spotify');
 assert.equal(guard.routeRefusal('POST', '/api/activity'), null, 'watching the station must still count as human presence');
 assert.equal(guard.routeRefusal('POST', '/api/quests/mint'), null, 'local quest creation is admitted');
+assert.equal(guard.routeRefusal('POST', '/api/quests/notes'), null, 'local quest notes are admitted');
+assert.match(guard.routeRefusal('PUT', '/api/quests/notes'), /Strict finance/);
+assert.match(corrupt.routeRefusal('POST', '/api/quests/notes'), /policy storage/);
 assert.match(guard.routeRefusal('PUT', '/api/quests/mint'), /Strict finance/);
 assert.match(guard.routeRefusal('POST', '/api/quests/update'), /Strict finance/);
 assert.match(corrupt.routeRefusal('POST', '/api/quests/mint'), /policy storage/);
 const noAudit = makeStrictFinance({ read: () => config, onError() {}, audit: { record: () => false } });
 assert.match(noAudit.routeRefusal('POST', '/api/quests/mint'), /audit storage/);
+assert.match(noAudit.routeRefusal('POST', '/api/quests/notes'), /audit storage/);
 denied(() => guard.assertTool({ name: 'quest.update', args: {} }, { provenance: 'host' }));
+assert.doesNotThrow(() => guard.assertTool({ name: 'quest.update', args: { op: 'read', id: 'q:1' } }, { provenance: 'host' }));
+for (const op of ['mint', 'start', 'progress', 'attest_complete']) {
+  denied(() => guard.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'host' }));
+}
+denied(() => guard.assertTool({ name: 'quest.update', args: { op: 'read' } }, { provenance: 'connector' }));
+denied(() => noAudit.assertTool({ name: 'quest.update', args: { op: 'read' } }, { provenance: 'host' }));
 assert.match(guard.routeRefusal('GET', '/plugins/example'), /Strict finance/);
 assert.match(guard.routeRefusal('GET', '/api/browser/view'), /Strict finance/);
 
@@ -98,6 +108,8 @@ assert.throws(() => calendarTotals([{ ts: midnight, usd: -1 }], now), /Invalid/)
 assert.throws(() => calendarTotals([{ ts: now + 1, usd: 1 }], now), /Future/);
 
 async function main() {
+  guard.assertTool({ name: 'crew.directive' }, { provenance: 'host' });
+  assert.throws(() => guard.assertTool({ name: 'crew.directive' }, { provenance: 'connector' }), /Strict finance/);
   let calls = 0;
   const fetchImpl = async (url, init) => { calls++; assert.equal(init.redirect, 'manual'); return { status: 200 }; };
   for (const address of ['https://api.anthropic.com/v1/messages', 'https://api.pixellab.ai/mcp',

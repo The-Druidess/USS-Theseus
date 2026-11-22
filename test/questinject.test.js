@@ -40,6 +40,7 @@ A.eq(withQuests(SYS, questBlock([])), SYS + '\n\n' + questBlock([]), 'an empty l
   const b = questBlock([q]);
   A.ok(b.indexOf('STATION QUESTS') === 0, 'block starts with the STATION QUESTS header');
   A.ok(b.indexOf('quest.update') >= 0, 'header tells the agent to use the quest.update tool');
+  A.ok(b.indexOf('op:"read"') >= 0 && b.indexOf('reference notes') >= 0, 'agents are told how to read mission references');
   A.ok(b.indexOf('op:"mint"') >= 0 && b.indexOf('At most ONE mint per run') >= 0, 'the full block carries the minting doctrine too (rides every task run)');
   A.ok(b.indexOf('[q:1] Automate the CSV export') >= 0, 'stanza carries id + title');
   A.ok(b.indexOf('next step (b): write the script') >= 0, 'stanza names the FIRST not-done step (a is done → b)');

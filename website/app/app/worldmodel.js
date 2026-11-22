@@ -3252,6 +3252,12 @@ const WorldModel = (() => {
 
     function undo() {
       if (!undoStack.length) return fail('NOTHING', 'nothing to undo');
+      if (doc.meta.lockHullSize58) {
+        const target = undoStack[undoStack.length - 1];
+        if (!target.meta.lockHullSize58) return fail('HULL_SIZE_LOCKED', 'Unlock hull sizes before undoing the lock');
+        const check = checkHullSizeLock(target, Object.keys(doc.meta.hulls || {}));
+        if (!check.ok) return check;
+      }
       redoStack.push(snap());
       restore(undoStack.pop());
       emit([]);   // empty dirty = full re-bake
@@ -3259,6 +3265,12 @@ const WorldModel = (() => {
     }
     function redo() {
       if (!redoStack.length) return fail('NOTHING', 'nothing to redo');
+      if (doc.meta.lockHullSize58) {
+        const target = redoStack[redoStack.length - 1];
+        if (!target.meta.lockHullSize58) return fail('HULL_SIZE_LOCKED', 'Unlock hull sizes before redoing the unlock');
+        const check = checkHullSizeLock(target, Object.keys(doc.meta.hulls || {}));
+        if (!check.ok) return check;
+      }
       undoStack.push(snap());
       restore(redoStack.pop());
       emit([]);
@@ -4001,6 +4013,68 @@ const WorldModel = (() => {
       emit([], { global: true });
       return { ok: true };
     }
+    // The lock is opt-in per station; legacy and unrelated stations remain unrestricted.
+    function checkHullSizeLock(state, requiredIds) {
+      for (const id of requiredIds || []) {
+        if (id !== 'jefferies' && !(state.meta && state.meta.hulls && state.meta.hulls[id]))
+          return fail('HULL_SIZE_LOCKED', 'A locked hull cannot be removed by a layout replacement');
+      }
+      for (const [id, hull] of Object.entries((state.meta && state.meta.hulls) || {})) {
+        if (id === 'jefferies') continue;
+        if (!hull || !Array.isArray(hull.roomIds) || !hull.roomIds.length ||
+            new Set(hull.roomIds).size !== hull.roomIds.length ||
+            ![hull.x1, hull.y1, hull.x2, hull.y2].every(Number.isInteger) ||
+            hull.x2 - hull.x1 !== 57 || hull.y2 - hull.y1 !== 57)
+          return fail('HULL_SIZE_LOCKED', 'Non-Jefferies hulls are locked to 58×58 tiles');
+        const members = new Set(hull.roomIds);
+        const inside = r => r.x1 >= hull.x1 && r.y1 >= hull.y1 && r.x2 <= hull.x2 && r.y2 <= hull.y2;
+        const overlaps = r => r.x1 <= hull.x2 && r.x2 >= hull.x1 && r.y1 <= hull.y2 && r.y2 >= hull.y1;
+        for (const rid of members) {
+          const room = state.rooms[rid];
+          if (!room || !room.rects.length || room.rects.some(r => !inside(r)))
+            return fail('HULL_SIZE_LOCKED', 'A room cannot extend beyond its locked hull');
+        }
+        const rects = [];
+        for (const room of Object.values(state.rooms)) {
+          if (!room || !Array.isArray(room.rects) || !room.rects.length) continue;
+          if (!members.has(room.id) && room.rects.some(overlaps) && !room.rects.every(inside))
+            return fail('HULL_SIZE_LOCKED', 'A room cannot cross a locked hull boundary');
+          if (members.has(room.id) || room.rects.every(inside)) rects.push(...room.rects);
+        }
+        if (!rects.length || Math.min(...rects.map(r => r.x1)) !== hull.x1 ||
+            Math.max(...rects.map(r => r.x2)) !== hull.x2 ||
+            Math.min(...rects.map(r => r.y1)) !== hull.y1 ||
+            Math.max(...rects.map(r => r.y2)) !== hull.y2)
+          return fail('HULL_SIZE_LOCKED', 'The outside of a locked hull must remain 58×58 tiles');
+      }
+      return { ok: true };
+    }
+    function setHullSizeLock(enabled) {
+      if (typeof enabled !== 'boolean') return fail('BAD_HULL_LOCK', 'Hull size lock requires true or false');
+      if (enabled) {
+        const check = checkHullSizeLock(doc);
+        if (!check.ok) return check;
+      }
+      if (!!doc.meta.lockHullSize58 === enabled) return { ok: true };
+      snapshot();
+      if (enabled) doc.meta.lockHullSize58 = true;
+      else delete doc.meta.lockHullSize58;
+      emit([], { global: true });
+      return { ok: true };
+    }
+    function lockedGeometry(fn) {
+      return (...args) => {
+        if (!doc.meta.lockHullSize58) return fn(...args);
+        const requiredIds = Object.keys(doc.meta.hulls || {});
+        return transact(() => {
+          const result = fn(...args);
+          if (!result || !result.ok) return result;
+          if (!doc.meta.lockHullSize58) return fail('HULL_SIZE_LOCKED', 'Unlock hull sizes before replacing the size lock');
+          const check = checkHullSizeLock(doc, requiredIds);
+          return check.ok ? result : check;
+        });
+      };
+    }
     function ensureWorkstation(agentId) {
       const aid = String(agentId || '').trim();
       if (!aid || !AID_RE.test(aid)) return fail('BAD_AGENT');
@@ -4105,14 +4179,20 @@ const WorldModel = (() => {
         return surfaceHostFor(propFootprint(propById(p.id) || p), p.id) ? 'surface' : null;
       },
       // mutations
-      addRoom, drawRoomOnDeck, extendRoomFloor, rezoneRooms, placeHallway, removeRoom, moveRoom, moveRooms, resizeRoom, resizeSharedRoom, setRoomKind, setFloor, setMaterial, setDeck, setWalls, setHull, paintTiles, renameRoom,
-      addProp, removeProp, placeWalls, moveProp, moveProps, rotateProp, faceProp, mirrorProp, assignPropAgent, assignDesk, ensureWorkstation, configureJunction, swapJoinerMerger, bindConnector, bindPlugin, placePluginTerminal, setDoorState, setPropProject, setPropBrief, setPropRole, setPropHands, setPropLabel, setPropLimits,
+      addRoom: lockedGeometry(addRoom), drawRoomOnDeck: lockedGeometry(drawRoomOnDeck),
+      extendRoomFloor: lockedGeometry(extendRoomFloor), rezoneRooms: lockedGeometry(rezoneRooms),
+      placeHallway: lockedGeometry(placeHallway), removeRoom: lockedGeometry(removeRoom),
+      moveRoom: lockedGeometry(moveRoom), moveRooms: lockedGeometry(moveRooms),
+      resizeRoom: lockedGeometry(resizeRoom), resizeSharedRoom: lockedGeometry(resizeSharedRoom),
+      setRoomKind, setFloor, setMaterial, setDeck, setWalls, setHull, paintTiles, renameRoom,
+      addProp, removeProp, placeWalls: lockedGeometry(placeWalls), moveProp, moveProps, rotateProp, faceProp, mirrorProp, assignPropAgent, assignDesk, ensureWorkstation, configureJunction, swapJoinerMerger, bindConnector, bindPlugin, placePluginTerminal, setDoorState, setPropProject, setPropBrief, setPropRole, setPropHands, setPropLabel, setPropLimits,
       setBelt, removeBelt, removeBelts, placeBeltRun, connectBelt, connectionPreview, hookedBelts, stampBlueprint, insertBayBetween, canInsertBayBetween, transact, lineGraph, applyLineLayout, blueprintGraph,
       // agent-bay binding queries
       propsByType, propsByAgent, pipelineEdges, setPipelineEdges, addPipelineEdge, removePipelineEdge, agentRoomId, bayObjects,
       capForProp: t => CAP_PROP_MAP[t] || null,   // a prop type's capability objectType (single source for the UI)
       capabilitiesForProp,
-      undo, redo, canUndo, canRedo, replaceLayout, setCommanderSeat, setHullLayout,
+      undo, redo, canUndo, canRedo, replaceLayout: lockedGeometry(replaceLayout), setCommanderSeat,
+      setHullLayout: lockedGeometry(setHullLayout), setHullSizeLock,
       // projection + io
       projectGeometry, serialize, onChange,
       // the floor's explicit connections (world tiles), or null when not adopted — see LINKS above

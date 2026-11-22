@@ -2,6 +2,7 @@
 const assert = require('assert');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const saved = new Map();
 saved.set('starnet.q-terminal.v1', JSON.stringify({ directive: '' }));
@@ -10,12 +11,60 @@ global.localStorage = {
   setItem: (key, value) => saved.set(key, value)
 };
 const Q = require('../frontend/app/qterminal.js');
+assert.equal(Q.draftReadyAt({ savedAt: Date.parse('2026-11-21T06:59:59.999Z') }), Date.parse('2026-11-21T07:00:00Z'));
+assert.equal(Q.draftReadyAt({ savedAt: Date.parse('2026-11-21T07:00:00Z') }), Date.parse('2026-11-22T07:00:00Z'));
+assert.equal(Q.draftReadyAt({ savedAt: Date.parse('2026-06-21T06:00:00Z') }), Date.parse('2026-06-21T07:00:00Z'));
+assert.equal(Q.draftReadyAt({ savedAt: 0 }), null);
+assert.equal(Q.draftReadyAt({ savedAt: Number.MAX_VALUE }), null);
 const qWindowSource = fs.readFileSync(path.join(__dirname, '../frontend/app/windows/q.js'), 'utf8');
 assert.ok(qWindowSource.includes('id="q-coordination-policy"') &&
-  qWindowSource.includes('data-q-action="save-coordination-policy"'),
+  qWindowSource.includes('data-q-key="coordination"'),
   'Q has a dedicated editable coordination-policy control');
-assert.ok(/setCoordinationPolicy\(body\.querySelector\('#q-coordination-policy'\)\.value, event\)/.test(qWindowSource),
-  'Q interface save uses the trusted event-gated policy setter');
+assert.ok(/Q\.saveDraft\(button\.dataset\.qKey, input\.value, text\.value, event\)/.test(qWindowSource),
+  'Q interface saves through the trusted draft control');
+
+{
+  const windows = {};
+  const sent = [{ id: 'm1', agentId: 'crew', kind: 'note', text: 'Question', status: 'replied', response: 'Answer', createdAt: 1 }];
+  const fakeStore = Object.assign({}, Q, { messages: () => sent, commands: () => [] });
+  const context = {
+    StationUI: { h: { esc: String, present: [], notify() {} }, registerWindow: (id, title, build) => { windows[id] = build; } },
+    QTerminalStore: fakeStore
+  };
+  vm.runInNewContext(qWindowSource, context);
+  const directiveBody = { isConnected: true };
+  const mailBody = { isConnected: true };
+  windows.q(directiveBody);
+  windows['q-mail'](mailBody);
+  assert.match(directiveBody.innerHTML, /id="q-directive"/);
+  assert.match(directiveBody.innerHTML, /ADD A NEW DIRECTIVE/);
+  assert.match(directiveBody.innerHTML, /Automatic midnight handoff and activation are not available yet/);
+  for (const key of ['prime', 'human', 'hierarchy', 'coordination']) {
+    assert.ok(directiveBody.innerHTML.includes('data-q-title="' + key + '"'), key + ' has an editable title');
+  }
+  assert.doesNotMatch(directiveBody.innerHTML, /BRIDGE CREW ROLE DIRECTIVES|data-q-title="role:/);
+  assert.doesNotMatch(directiveBody.innerHTML, /Q inbox|Q outbox|add-command/);
+  assert.match(directiveBody.innerHTML, /not authenticated/);
+  assert.match(mailBody.innerHTML, /Q inbox/);
+  assert.match(mailBody.innerHTML, /Q outbox/);
+  assert.match(mailBody.innerHTML, /Answer/);
+  assert.doesNotMatch(mailBody.innerHTML, /id="q-directive"|save-hierarchy/);
+  directiveBody.innerHTML = 'unsaved editor remains untouched';
+  context.QTerminalView.refresh();
+  assert.equal(directiveBody.innerHTML, 'unsaved editor remains untouched', 'incoming mail does not erase the directive editor');
+  const input = { dataset: { qTitle: 'prime' }, value: 'A-01 New title' };
+  const textarea = { value: 'Unpublished content' };
+  const status = { textContent: '' };
+  const heading = { textContent: '' };
+  const section = { querySelector: selector => selector === 'h4' ? heading
+    : selector === '[data-q-editor]' ? textarea : selector === '[data-q-draft-status]' ? status : input };
+  const button = { dataset: { qAction: 'save-draft', qKey: 'prime' }, closest: () => section };
+  fakeStore.saveDraft = (key, title, text) => ({ ok: key === 'prime', draft: { title, text } });
+  directiveBody.onclick({ target: { closest: selector => selector === '[data-q-action]' ? button : null } });
+  assert.equal(heading.textContent, 'A-01 New title');
+  assert.match(status.textContent, /not available/);
+  assert.equal(directiveBody.innerHTML, 'unsaved editor remains untouched', 'saving a draft does not discard other unsaved text');
+}
 
 const defaultDirective = Q.directive();
 assert.match(defaultDirective, /The USS Theseus/);
@@ -141,7 +190,7 @@ assert.strictEqual(promptRefreshes, 1, 'rejected hierarchy changes do not refres
 assert.strictEqual(Q.setRoleDirective('commander', 'A commander directive.').ok, false, 'programmatic calls cannot authorize role directives');
 assert.strictEqual(Q.roleDirective('commander'), '', 'rejected role directive updates leave the store unchanged');
 assert.match(Q.promptClause({ id: 'agent', name: 'COMMANDER' }), /YOUR ROSTER ASSIGNMENT: The Commander — Clearance Level 1 \(listed\)/);
-assert.match(Q.promptClause({ id: 'chief', name: 'FIRST OFFICER' }), /YOUR ROLE-SPECIFIC DIRECTIVE — THE FIRST OFFICER:[\s\S]*FIRST OFFICER \(NUMBER TWO\) — CLEARANCE LEVEL 2/);
+assert.doesNotMatch(Q.promptClause({ id: 'chief', name: 'FIRST OFFICER' }), /YOUR ROLE-SPECIFIC DIRECTIVE/);
 assert.match(Q.promptClause({ id: 'new-agent', name: 'New Agent' }), /YOUR ROSTER ASSIGNMENT: New Agent — unlisted \(below all listed roles; no assigned clearance level\)/);
 assert.match(Q.promptClause(), /Only Q \(Clearance Level 0, the human Commander\) may alter the hierarchy/);
 delete global.App;
@@ -274,14 +323,14 @@ assert.strictEqual(reloaded.hydrate({
 assert.strictEqual(reloaded.qDirective(), 'Q will lead predictably and fairly.');
 assert.strictEqual(reloaded.roleDirective('The Commander'), commanderDirective);
 assert.match(reloaded.promptClause(), /Q’S HUMAN OPERATING DIRECTIVE:[\s\S]*Q will lead predictably and fairly\./);
-assert.match(reloaded.promptClause({ id: 'agent', name: 'COMMANDER' }), /YOUR ROLE-SPECIFIC DIRECTIVE — THE COMMANDER:[\s\S]*Commander role directive fixture\./);
+assert.doesNotMatch(reloaded.promptClause({ id: 'agent', name: 'COMMANDER' }), /Commander role directive fixture\./);
 global.App = { agents: () => [{ id: 'agent', name: 'COMMANDER' }] };
 const qDirectiveReply = reloaded.capture('Q_HUMAN_DIRECTIVE_REQUEST', 'agent', 'workstream-1', 'run-4');
 assert.strictEqual(qDirectiveReply.text, 'Q · HUMAN OPERATING DIRECTIVE:\nQ will lead predictably and fairly.');
 const roleReply = reloaded.capture('Q_ROLE_DIRECTIVE_REQUEST', 'agent', 'workstream-1', 'run-2');
-assert.strictEqual(roleReply.text, 'Q · DIRECTIVE FOR THE COMMANDER:\n' + commanderDirective);
+assert.match(roleReply.text, /no longer served by Q.*crew\.directive/);
 const otherRoleReply = reloaded.capture('Q_ROLE_DIRECTIVE_REQUEST: First Officer', 'agent', 'workstream-1', 'run-3');
-assert.strictEqual(otherRoleReply.text, 'Q · DIRECTIVE FOR FIRST OFFICER:\n' + reloaded.roleDirective('First Officer'));
+assert.match(otherRoleReply.text, /no longer served by Q.*crew\.directive/);
 assert.strictEqual(reloaded.hydrate({
   directive: 'Restored directive.',
   hierarchy: defaultHierarchy,
@@ -295,5 +344,100 @@ assert.strictEqual(reloaded.roleDirective('commander'), '', 'role directives do 
 delete global.App;
 assert.match(reloaded.promptClause(), /Restored directive\./, 'saved Prime Directive is available in every composed agent prompt');
 assert.strictEqual(reloaded.messages().length, 0);
+
+{
+  assert.equal(reloaded.title('prime'), '', 'legacy state retains its original unnumbered heading');
+  assert.equal(reloaded.setTitle('prime', 'A-01 Prime').ok, false, 'title changes require the Q control');
+  const priorEvent = global.Event, priorElement = global.Element;
+  global.Event = class TrustedTitleEvent { constructor(target) { this.isTrusted = true; this.target = target; } };
+  global.Element = class TitleControl { closest(selector) { return selector === '[data-q-action="save-title"]'; } };
+  const event = new Event(new Element());
+  for (const invalid of ['', 'A-1 Name', 'AA-01 Name', 'A-100 Name', 'A-01 ', 'A-01 First\nSecond', 'A-01 ' + 'x'.repeat(196)]) {
+    assert.equal(reloaded.setTitle('prime', invalid, event).ok, false, 'invalid title rejected: ' + JSON.stringify(invalid));
+  }
+  assert.equal(reloaded.setTitle('role:unknown', 'A-01 Unknown', event).ok, false);
+  for (const [key, value] of Object.entries({
+    prime: 'P-01 Prime Directive', human: 'Q-02 Q Directive', hierarchy: 'H-03 Roster',
+    coordination: 'C-04 Coordination', 'role:commander': 'R-05 Commander'
+  })) assert.equal(reloaded.setTitle(key, value, event).ok, true, key + ' title saves');
+  assert.equal(reloaded.directive(), 'Restored directive.', 'renaming preserves directive content');
+  assert.equal(reloaded.hydrate({ ...reloaded.serialize(), qDirective: 'Human directive.',
+    roleDirectives: { commander: 'Commander directive.' } }), true);
+  const serialized = reloaded.serialize();
+  assert.equal(reloaded.hydrate(serialized), true);
+  delete require.cache[require.resolve('../frontend/app/qterminal.js')];
+  const persisted = require('../frontend/app/qterminal.js');
+  assert.deepStrictEqual(persisted.serialize().titles, serialized.titles, 'titles survive station snapshots and local reloads');
+  assert.match(persisted.promptClause(), /TITLE: P-01 Prime Directive\nRestored directive\./);
+  assert.match(persisted.promptClause(), /TITLE: H-03 Roster\nThe Captain/);
+  assert.doesNotMatch(persisted.promptClause({ id: 'agent', name: 'COMMANDER' }), /TITLE: R-05 Commander\nCommander directive\./);
+  assert.match(persisted.capture('Q_COORDINATION_REQUEST', 'agent', '', '').text, /TITLE: C-04 Coordination\n/);
+  assert.match(persisted.capture('Q_HUMAN_DIRECTIVE_REQUEST', 'agent', '', '').text, /TITLE: Q-02 Q Directive\nHuman directive\./);
+  assert.match(persisted.capture('Q_ROLE_DIRECTIVE_REQUEST: Commander', 'agent', '', '').text, /no longer served by Q/);
+  const setItem = global.localStorage.setItem;
+  global.localStorage.setItem = () => { throw new Error('test storage failure'); };
+  const priorError = console.error;
+  console.error = () => {};
+  try {
+    assert.equal(persisted.setTitle('prime', 'P-02 Unsaved', event).ok, false);
+    assert.equal(persisted.title('prime'), 'P-01 Prime Directive', 'failed persistence does not change the in-memory title');
+  } finally { global.localStorage.setItem = setItem; console.error = priorError; }
+  global.Event = priorEvent; global.Element = priorElement;
+}
+
+{
+  const priorEvent = global.Event, priorElement = global.Element;
+  global.Event = class TrustedDraftEvent { constructor(target) { this.isTrusted = true; this.target = target; } };
+  global.Element = class DraftControl { closest(selector) { return selector === '[data-q-action="save-draft"]'; } };
+  const event = new Event(new Element());
+  const activeText = reloaded.directive(), activeTitle = reloaded.title('prime');
+  assert.equal(reloaded.saveDraft('prime', 'P-01 Updated', 'Draft text', {}).ok, false);
+  assert.equal(reloaded.saveDraft('new', 'P-1 Invalid', 'Draft text', event).ok, false);
+  assert.equal(reloaded.saveDraft('hierarchy', '', 'invalid roster', event).ok, false);
+  assert.equal(reloaded.saveDraft('coordination', '', 'x'.repeat(6001), event).ok, false);
+  assert.equal(reloaded.saveDraft('prime', 'P-01 Updated', 'Draft text', event).ok, true);
+  const created = reloaded.saveDraft('new', 'N-01 New directive', 'New draft text', event);
+  assert.equal(created.ok, true);
+  assert.equal(reloaded.directive(), activeText, 'saving a draft does not activate it');
+  assert.equal(reloaded.title('prime'), activeTitle, 'saving a draft does not rename the active directive');
+  assert.doesNotMatch(reloaded.promptClause(), /Draft text|New draft text/, 'agents do not receive drafts');
+  const state = reloaded.serialize();
+  assert.equal(reloaded.hydrate(state), true);
+  delete require.cache[require.resolve('../frontend/app/qterminal.js')];
+  const persisted = require('../frontend/app/qterminal.js');
+  assert.equal(persisted.drafts().prime.text, 'Draft text');
+  assert.equal(persisted.drafts()[created.key].text, 'New draft text');
+  assert.equal(persisted.directive(), activeText);
+  const setItem = global.localStorage.setItem, consoleError = console.error;
+  global.localStorage.setItem = () => { throw new Error('disk unavailable'); };
+  console.error = () => {};
+  try {
+    assert.equal(persisted.saveDraft('prime', 'P-01 Updated', 'Unsaved replacement', event).ok, false);
+    assert.equal(persisted.drafts().prime.text, 'Draft text', 'failed persistence preserves the previous draft');
+  } finally {
+    global.localStorage.setItem = setItem;
+    console.error = consoleError;
+  }
+  const consoleWarn = console.warn;
+  global.App = { persist: () => false };
+  console.warn = () => {};
+  try {
+    assert.equal(persisted.saveDraft('prime', 'P-01 Updated', 'Station save failed', event).ok, false);
+    assert.equal(JSON.parse(saved.get('starnet.q-terminal.v1')).drafts.prime.text, 'Draft text',
+      'failed station persistence does not leave a newer local draft that will be overwritten at startup');
+  } finally {
+    delete global.App;
+    console.warn = consoleWarn;
+  }
+  const collisionState = persisted.serialize();
+  collisionState.nextId = 1;
+  collisionState.drafts['custom:q1'] = { title: 'C-01 Existing', text: 'Keep me', savedAt: 1 };
+  assert.equal(persisted.hydrate(collisionState), true);
+  const another = persisted.saveDraft('new', 'C-02 Another', 'Do not overwrite', event);
+  assert.equal(another.ok, true);
+  assert.notEqual(another.key, 'custom:q1');
+  assert.equal(persisted.drafts()['custom:q1'].text, 'Keep me');
+  global.Event = priorEvent; global.Element = priorElement;
+}
 
 console.log('Q terminal: exact command matching, local persistence, marker capture, deduplication, and replies passed.');

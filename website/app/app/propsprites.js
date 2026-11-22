@@ -10774,6 +10774,28 @@ const PropSprites = (() => {
     }
   }
 
+  let transporterImage = null;
+  if (typeof Image !== 'undefined') {
+    transporterImage = new Image();
+    transporterImage.onerror = () => console.error('[transporter] Could not load transporter pad artwork');
+    transporterImage.onload = () => {
+      if (typeof Hulls !== 'undefined' && typeof Hulls.redraw === 'function') Hulls.redraw();
+    };
+    transporterImage.src = 'assets/furniture/transporter-pad.png';
+  }
+  F.transporter_pad = (x, y, w, h) => {
+    if (transporterImage && transporterImage.complete && transporterImage.naturalWidth) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(transporterImage, x, y, w, h);
+      ctx.restore();
+    } else {
+      px(x, y, w, h, '#252f4c');
+      px(x + w * .2, y + h * .2, w * .6, h * .6, '#1768be');
+      px(x + w * .35, y + h * .35, w * .3, h * .3, '#77eaff');
+    }
+  };
+
   F.laptop = F.deskterminal;
   F.furniture_desk = F.longtable;
   F['furniture_desk:e'] = F['longtable:e'];
@@ -10850,6 +10872,7 @@ const PropSprites = (() => {
     // capability objects get their own category, never mixed into cosmetics).
     { id: "missionboard", label: "MISSION BOARD", cat: "command", tier: "functional", w: 3, h: 1, animated: true, blocks: false, desc: "MISSION BOARD — the quest log made physical. Every pinned card is a real open quest; click the board to read them. It suggests, never gates." },
     { id: "trophycase", label: "TROPHY CASE", cat: "command", tier: "functional", w: 2, h: 2, animated: true, blocks: true, desc: "TROPHY CASE — the station's real achievements made permanent. Earned milestones, completed quests, and your living tools stand behind glass; click to open the case. It grants nothing — it remembers." },
+    { id: "transporter_pad", label: "TRANSPORTER PAD", cat: "command", tier: "functional", w: 3, h: 3, animated: false, blocks: false, flat: true, desc: "TRANSPORTER PAD — connects this hull to transporter pads on other configured hulls." },
 
     /* ===================== COSMETIC ===================== */
     { id: "equipment_atm", label: "ATM", cat: "decor", tier: "cosmetic", pendingEquipment: true, w: 2, h: 1, animated: false, blocks: true, desc: "Pending equipment. Function not yet assigned; grants no tools." },
@@ -12021,6 +12044,7 @@ const PropSprites = (() => {
     setSurfaceLayout, hitTest, selectionBounds,
     surfacePlacement,
     setCtx(c) { ctx = c; },
+    getCtx() { return ctx; },
     setNow(t) { now = t; },
     // v13 LOCAL COLOUR knob (see CHROMA above) — live-tunable like the CRT LAB's own dials, so the
     // value is DIALLED on a real deck and copied back into the constant, never guessed.

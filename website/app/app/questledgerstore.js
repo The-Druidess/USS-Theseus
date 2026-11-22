@@ -49,6 +49,7 @@ const QuestLedgerStore = (() => {
       ledgerKind: (r && r.kind) || 'user',             // the backend kind — for the "completes when" copy only
       title: String((r && r.title) || r.id),
       desc: String((r && r.desc) || ''),
+      notes: String((r && r.notes) || ''),
       reward: String((r && r.reward) || 'a real outcome'),
       status: (r && r.status === 'done') ? 'done' : 'open',
       contract: { type: String(c.type || 'attest'), key: String(c.key == null ? '' : c.key) },

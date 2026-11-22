@@ -71,8 +71,12 @@ The Room tool can also draw a room on existing deck without deleting wall panels
 identities and contents are retained; a boundary cannot cut through a furniture footprint.
 `extendRoomFloor(id, rects)` adds connected, unoccupied floor to an existing room as one undoable edit.
 `rezoneRooms(changes, additions)` redistributes existing floor without moving furniture or losing deck.
+Stations can opt into `setHullSizeLock(true)` to keep configured non-Jefferies hulls at 58×58 tiles.
+Room editing within those hulls remains available; changes crossing or shrinking their bounds are refused.
+The lock is saved with the station, applies to newly configured hulls, and excludes Jefferies.
+`setHullSizeLock(false)` explicitly unlocks it.
 
-Validation error codes: `OVERLAP`, `TOO_SMALL`, `TOO_SHORT`, `TOO_FAR`, `BAD_STYLE`, `BAD_MAT`, `SPAWN_ROOM`, `NOT_FOUND`, `NO_RECT`, `NOTHING` (undo/redo).
+Validation error codes: `OVERLAP`, `TOO_SMALL`, `TOO_SHORT`, `TOO_FAR`, `BAD_STYLE`, `BAD_MAT`, `SPAWN_ROOM`, `NOT_FOUND`, `NO_RECT`, `HULL_SIZE_LOCKED`, `NOTHING` (undo/redo).
 
 ## Extending
 

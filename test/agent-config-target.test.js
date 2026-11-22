@@ -109,6 +109,13 @@ function station(focusId) {
   A.eq([s.scout.docs.identity, s.scout.docs.purpose, s.scout.docs.manual, s.scout.docs.context], ['I', 'P', 'M', 'C'], 'identity/purpose/operating-manual/context all land on the named agent');
   A.eq([s.hero.docs.identity, s.hero.docs.purpose, s.hero.docs.manual, s.hero.docs.context], ['ID-agent', '', '', ''], 'the focused agent keeps all four of its own docs');
 }
+{
+  const s = station('agent');
+  s.apply({ directive: 'SCOUT DIRECTIVE', directiveDraft: 'PENDING' }, 'scout');
+  A.eq(s.scout.docs.directive, 'SCOUT DIRECTIVE', 'the directive lands on the selected agent');
+  A.eq(s.scout.docs.directiveDraft, 'PENDING', 'the pending draft stays separate');
+  A.eq(s.hero.docs.directive, undefined, 'the focused agent is not changed');
+}
 
 /* ---------- E. non-doc fields are targeted too (they ride the same patch) ---------- */
 {

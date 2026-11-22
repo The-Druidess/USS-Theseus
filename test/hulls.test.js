@@ -2,6 +2,8 @@
 const fs = require('fs'), path = require('path'), vm = require('vm');
 const A = require('./_assert');
 const WorldModel = require('../frontend/app/worldmodel');
+const PropSprites = require('../frontend/app/propsprites');
+const EquipmentHelp = require('../frontend/app/equipmenthelp');
 const source = fs.readFileSync(path.join(__dirname, '../frontend/app/hulls.js'), 'utf8');
 const ids = ['bridge', 'promenade', 'engineering', 'jefferies'];
 const context = {
@@ -35,9 +37,13 @@ const sandbox = {
 };
 vm.runInNewContext(source, sandbox);
 const hulls = sandbox.module.exports;
+const padSpec = PropSprites.spec('transporter_pad');
+A.ok(padSpec && PropSprites.has('transporter_pad'), 'transporter pad has catalog and artwork entries');
+A.eq(EquipmentHelp.kind(padSpec, WorldModel.capForProp(padSpec.id)), 'equipment', 'transporter is listed as equipment');
+A.ok(padSpec.flat && !padSpec.blocks, 'transporter is walkable floor equipment');
 for (const id of ids.slice(1)) {
   const doc = hulls.shellDoc(id), model = WorldModel.deserialize(doc), geo = model.projectGeometry();
-  A.eq(doc.props, [], id + ' starts without furniture or crew assignments');
+  A.eq(doc.props.map(prop => prop.t), id === 'jefferies' ? ['transporter_pad'] : [], id + ' preview has only its intended equipment');
   A.eq(doc.belts, {}, id + ' starts without workflows');
   A.eq(model.rooms().length, 1, id + ' has one blank hull');
   let count = 0;
@@ -82,6 +88,24 @@ factory.meta.hulls = {
   promenade: { x1: -2, y1: -2, x2: 22, y2: 17, roomIds: ['etsy', 'fiverr', 'review'] }
 };
 station = WorldModel.deserialize(factory);
+const transportDoc = JSON.parse(JSON.stringify(factory));
+transportDoc.props.push(
+  { id: 'pad-promenade', t: 'transporter_pad', x: 5, y: 3, w: 3, h: 3, block: false },
+  { id: 'pad-bridge', t: 'transporter_pad', x: 35, y: 3, w: 3, h: 3, block: false }
+);
+const transportStation = WorldModel.deserialize(transportDoc);
+const transportGeo = transportStation.projectGeometry();
+const local = (x, y) => ({ x: x - transportGeo.origin.tx, y: y - transportGeo.origin.ty });
+const from = local(2, 2), to = local(33, 7);
+const route = hulls.transportRoute(transportStation, transportGeo, from, to, new Set());
+A.ok(route && route.some(point => point.transportFrom === 'pad-promenade' && point.transportTo === 'pad-bridge'), 'disconnected hulls route through both transporter pads');
+A.eq(route[route.length - 1], to, 'transport route continues to the requested destination');
+A.eq(hulls.transportRoute(transportStation, transportGeo, from, local(4, 2), new Set()), null, 'same-hull movement does not use a transporter');
+const occupiedArrival = local(36, 4);
+A.eq(hulls.transportRoute(transportStation, transportGeo, from, to, new Set([occupiedArrival.x + ',' + occupiedArrival.y])), null, 'occupied arrival pad cannot be used');
+transportStation.removeProp('pad-bridge');
+const missingPadGeo = transportStation.projectGeometry();
+A.eq(hulls.transportRoute(transportStation, missingPadGeo, from, to, new Set()), null, 'a removed destination pad cannot be used');
 const promenade = hulls.layoutDoc('promenade', station);
 A.eq(promenade.order, ['etsy', 'fiverr', 'review'], 'Promenade layout contains all three factory rooms');
 A.eq(promenade.props.map(prop => prop.id), ['p-etsy'], 'Promenade layout keeps its room equipment only');

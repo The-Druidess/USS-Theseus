@@ -15,7 +15,7 @@
    Quest record (plan §A):
      { id:'q:<seq>', title, desc, reward, kind:'generated'|'work'|'user', createdBy, agentId (nullable=station),
        contract:{type:'prop'|'run'|'fact'|'artifact'|'attest', key}, steps:[{key,label,done,note?}],
-       status:'open'|'done'|'dismissed', attest: null|{agentId,runId,evidence,at,confirmed:null},
+       notes, status:'open'|'done'|'dismissed', attest: null|{agentId,runId,evidence,at,confirmed:null},
        declineNote: null|{at,note}, groundedIn: null|string, domain, goalId, milestoneId, completedBy,
        runId (bound run), stalledAt, stalledReason,
        createdAt, completedAt, dismissedAt }
@@ -120,6 +120,7 @@ function normQuest(r) {
     id: id,
     title: clip(r.title, 80),
     desc: clip(r.desc, 2000),
+    notes: clip(r.notes, 6000),
     reward: clip(r.reward, 200),
     kind: clipKind(r.kind),
     createdBy: r.createdBy == null ? 'system' : clip(r.createdBy, 60),
@@ -236,6 +237,7 @@ function makeQuestStore(deps) {
         id: id,
         title: clip(title, 80),
         desc: clip(d.desc, 2000),
+        notes: '',
         reward: clip(d.reward, 200),
         kind: kind,
         createdBy: createdBy,
@@ -264,6 +266,24 @@ function makeQuestStore(deps) {
       rec.quests.push(q);
       capQuests(rec);
       out = { ok: true, id: id };
+      return rec;
+    }).then(() => out);
+  }
+
+  // Compare under the durable-store lock so a stale editor cannot overwrite newer notes.
+  function setNotes(id, notes, expectedNotes) {
+    if (typeof id !== 'string' || !id || typeof notes !== 'string' || notes.length > 6000 ||
+        typeof expectedNotes !== 'string' || expectedNotes.length > 6000) {
+      return Promise.resolve({ ok: false, error: 'invalid quest notes' });
+    }
+    let out = { ok: false, error: 'quest not found or not open' };
+    return durable.update(STORE_KEY, cur => {
+      const rec = normalize(cur);
+      const q = rec.quests.find(x => x.id === id && x.status === 'open');
+      if (!q) return undefined;
+      if (q.notes !== expectedNotes) { out = { ok: false, error: 'quest notes changed; reload before saving', conflict: true }; return undefined; }
+      q.notes = notes;
+      out = { ok: true };
       return rec;
     }).then(() => out);
   }
@@ -462,7 +482,7 @@ function makeQuestStore(deps) {
 
   return {
     read, list, get, openForAgent,
-    mint, setDisposition, reportCompletion, tickStep, bindRun, completeByContract, stallRun, attest, confirmAttest, dismiss,
+    mint, setNotes, setDisposition, reportCompletion, tickStep, bindRun, completeByContract, stallRun, attest, confirmAttest, dismiss,
     _durable: durable
   };
 }

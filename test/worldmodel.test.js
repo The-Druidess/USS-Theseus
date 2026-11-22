@@ -30,6 +30,41 @@ const rolledBackHull = hullStation.transact(() => {
   return { ok: false };
 });
 A.ok(!rolledBackHull.ok && !hullStation.serialize().meta.hulls.promenade, 'failed transaction rolls back hull metadata');
+A.eq(hullStation.setHullSizeLock(true).error, 'HULL_SIZE_LOCKED', 'lock rejects an existing hull with the wrong dimensions');
+
+/* ---- optional station-wide hull size lock ---- */
+const locked = WM.create();
+const lockRoom = locked.rooms()[0], lockRect = { x1: 0, y1: 0, x2: 57, y2: 57 };
+A.ok(!locked.setHullSizeLock(true).error, 'lock can be enabled before a hull is configured');
+A.ok(locked.resizeRoom(lockRoom.id, lockRect).ok, 'unconfigured deck can be prepared for a new hull');
+A.ok(locked.setHullLayout('bridge', Object.assign({}, lockRect, { roomIds: [lockRoom.id] })).ok, '58×58 hull accepted');
+const lockedBefore = locked.serialize();
+A.eq(locked.resizeRoom(lockRoom.id, Object.assign({}, lockRect, { x2: 58 })).error, 'HULL_SIZE_LOCKED', 'locked hull rejects expanding its deck');
+A.eq(locked.resizeRoom(lockRoom.id, Object.assign({}, lockRect, { x2: 56 })).error, 'HULL_SIZE_LOCKED', 'locked hull rejects shrinking its deck');
+A.eq(locked.moveRoom(lockRoom.id, 1, 0).error, 'HULL_SIZE_LOCKED', 'locked hull rejects moving a room outside its boundary');
+A.eq(locked.serialize(), lockedBefore, 'rejected hull edits are atomic');
+const nextHullRoom = locked.addRoom({ kind: 'lab', rect: { x1: 80, y1: 0, x2: 137, y2: 57 } });
+A.ok(nextHullRoom.ok, 'a future hull deck can be prepared');
+A.eq(locked.setHullLayout('engineering', { x1: 80, y1: 0, x2: 138, y2: 57, roomIds: [nextHullRoom.id] }).error,
+  'HULL_SIZE_LOCKED', 'new non-Jefferies hulls must be 58×58');
+A.ok(locked.setHullLayout('engineering', { x1: 80, y1: 0, x2: 137, y2: 57, roomIds: [nextHullRoom.id] }).ok,
+  'new 58×58 hull accepted');
+const serviceRoom = locked.addRoom({ kind: 'lab', rect: { x1: 160, y1: 0, x2: 164, y2: 4 } });
+A.ok(serviceRoom.ok && locked.setHullLayout('jefferies', { x1: 160, y1: 0, x2: 164, y2: 4, roomIds: [serviceRoom.id] }).ok,
+  'Jefferies is exempt from the lock');
+A.ok(locked.resizeRoom(serviceRoom.id, { x1: 160, y1: 0, x2: 165, y2: 4 }).ok, 'Jefferies remains resizable');
+A.ok(locked.undo().ok && locked.redo().ok, 'ordinary edits still undo and redo under the lock');
+const interior = locked.drawRoomOnDeck({ kind: 'lab', rect: { x1: 10, y1: 10, x2: 15, y2: 15 } }, [lockRoom.id]);
+A.ok(interior.ok, 'rooms can still be drawn within a locked hull');
+const restoredLock = WM.deserialize(locked.serialize());
+const expandedNextHull = { x1: 80, y1: 0, x2: 137, y2: 58 };
+A.eq(restoredLock.resizeRoom(nextHullRoom.id, expandedNextHull).error,
+  'HULL_SIZE_LOCKED', 'size lock survives serialization');
+const replacement = restoredLock.serialize();
+delete replacement.meta.lockHullSize58;
+A.eq(restoredLock.replaceLayout(replacement).error, 'HULL_SIZE_LOCKED', 'layout replacement cannot silently discard the lock');
+A.ok(restoredLock.setHullSizeLock(false).ok && restoredLock.resizeRoom(nextHullRoom.id, expandedNextHull).ok,
+  'explicit unlock permits resizing');
 
 /* ---- addRoom: valid, overlap, too-small ---- */
 const ok1 = s.addRoom({ kind: 'lab', rect: { x1: 20, y1: 0, x2: 26, y2: 8 } });

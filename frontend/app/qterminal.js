@@ -4,6 +4,7 @@
   const KEY = 'starnet.q-terminal.v1';
   const MAX_MESSAGES = 200;
   const MAX_COMMANDS = 50;
+  const TITLE_KEYS = ['prime', 'human', 'hierarchy', 'coordination'];
   const DEFAULT_DIRECTIVE = [
     'All agents will utilize this Prime Directive as a knowledge base and as guidelines. This digital workspace in which all agents here operate is titled “The USS Theseus,” a starship composed of several rooms whose respective functions are individual business projects. Our primary mission is to establish, operate, and expand portfolios of highly profitable businesses to maximize sustainable long-term revenue.',
     '',
@@ -98,6 +99,18 @@
   function cleanText(value, max) {
     return String(value == null ? '' : value).trim().slice(0, max);
   }
+  function titleKey(key) {
+    if (TITLE_KEYS.includes(key)) return key;
+    if (typeof key !== 'string' || !key.startsWith('role:')) return '';
+    const role = key.slice(5);
+    return role && role !== 'commander-q' && canonicalRole(role) === role ? key : '';
+  }
+  function validTitle(value) {
+    return typeof value === 'string' && value.length <= 200 && /^[A-Za-z]-[0-9]{2} \S(?:[^\r\n]*\S)?$/.test(value);
+  }
+  function draftKey(key) {
+    return titleKey(key) || (typeof key === 'string' && /^custom:q[1-9][0-9]*$/.test(key) ? key : '');
+  }
   function normalizeMessage(row) {
     if (!row || typeof row !== 'object') return null;
     const id = cleanText(row.id, 100);
@@ -137,12 +150,31 @@
         if (role && text) roleDirectives[role] = text;
       }
     }
+    const titles = {};
+    if (data.titles && typeof data.titles === 'object') {
+      for (const [key, title] of Object.entries(data.titles)) {
+        if (titleKey(key) && validTitle(title)) titles[key] = title;
+      }
+    }
+    const drafts = {};
+    if (data.drafts && typeof data.drafts === 'object') {
+      for (const [key, draft] of Object.entries(data.drafts)) {
+        if (!draftKey(key) || !draft || typeof draft !== 'object') continue;
+        if ((draft.title && !validTitle(draft.title)) || typeof draft.text !== 'string' || !draft.text.trim() || draft.text.length > 8000) continue;
+        if ((key === 'hierarchy' || key === 'coordination') && draft.text.length > 6000) continue;
+        if (key === 'hierarchy' && !parseHierarchy(draft.text).ok) continue;
+        if (key.startsWith('custom:') && !validTitle(draft.title)) continue;
+        drafts[key] = { title: draft.title || '', text: draft.text, savedAt: Number(draft.savedAt) || 0 };
+      }
+    }
     return {
       directive: cleanText(data.directive, 8000) || DEFAULT_DIRECTIVE,
       qDirective: cleanText(data.qDirective, 8000),
       coordinationPolicy: cleanText(data.coordinationPolicy, 6000) || DEFAULT_COORDINATION_POLICY,
       hierarchy: parseHierarchy(hierarchy).ok ? hierarchy : DEFAULT_HIERARCHY,
       roleDirectives,
+      titles,
+      drafts,
       commands: (Array.isArray(data.commands) ? data.commands : []).map(normalizeCommand).filter(Boolean).slice(0, MAX_COMMANDS),
       messages: (Array.isArray(data.messages) ? data.messages : []).map(normalizeMessage).filter(Boolean).slice(-MAX_MESSAGES),
       nextId: Number.isInteger(data.nextId) && data.nextId > 0 ? data.nextId : 1
@@ -161,12 +193,13 @@
   let state = load();
   const savedStation = typeof Save !== 'undefined' && Save.load ? Save.load() : null;
   if (savedStation && savedStation.qTerminal) state = normalize(savedStation.qTerminal);
-  function persist() {
+  function persist(requireStationSave) {
     if (typeof localStorage === 'undefined') return false;
     try { localStorage.setItem(KEY, JSON.stringify(state)); }
     catch (error) { console.error('[Q terminal] Inbox changes could not be saved locally.', error); return false; }
     if (typeof App !== 'undefined' && App.persist && !App.persist()) {
       console.warn('[Q terminal] Saved locally, but the station save could not be updated for backend sync.');
+      if (requireStationSave) return false;
     }
     return true;
   }
@@ -177,6 +210,16 @@
   function qDirective() { return state.qDirective; }
   function coordinationPolicy() { return state.coordinationPolicy; }
   function hierarchy() { return state.hierarchy; }
+  function title(key) { return titleKey(key) ? state.titles[key] || '' : ''; }
+  function drafts() { return JSON.parse(JSON.stringify(state.drafts)); }
+  function draftReadyAt(draft) {
+    const savedAt = draft && Number(draft.savedAt);
+    if (!Number.isFinite(savedAt) || savedAt <= 0 || savedAt > 8640000000000000 - 86400000) return null;
+    const day = 24 * 60 * 60 * 1000;
+    const phoenixOffset = 7 * 60 * 60 * 1000;
+    return (Math.floor((savedAt - phoenixOffset) / day) + 1) * day + phoenixOffset;
+  }
+  function titleLine(key) { const value = title(key); return value ? 'TITLE: ' + value + '\n' : ''; }
   function roleDirective(role) {
     const roleKey = canonicalRole(role);
     let text = state.roleDirectives[roleKey] || (roleKey === 'first-officer' ? DEFAULT_FIRST_OFFICER_DIRECTIVE : '');
@@ -193,6 +236,62 @@
     if (!persist()) return false;
     if (typeof globalThis.QTerminalView !== 'undefined' && globalThis.QTerminalView.refresh) globalThis.QTerminalView.refresh();
     return true;
+  }
+  function saveDraft(key, titleValue, textValue, event) {
+    if (typeof Event === 'undefined' || !(event instanceof Event) || !event.isTrusted ||
+        typeof Element === 'undefined' || !(event.target instanceof Element) ||
+        !event.target.closest('[data-q-action="save-draft"]')) {
+      return { ok: false, error: 'Use the Q directive editor to save a draft.' };
+    }
+    const isNew = key === 'new';
+    if (!isNew && !draftKey(key)) return { ok: false, error: 'Choose a recognized directive.' };
+    const titleText = typeof titleValue === 'string' ? titleValue.trim() : '';
+    if ((titleText && !validTitle(titleText)) || ((isNew || key.startsWith('custom:')) && !validTitle(titleText))) {
+      return { ok: false, error: 'Use a title like A-01 Title text (maximum 200 characters).' };
+    }
+    const raw = typeof textValue === 'string' ? textValue.trim() : '';
+    const max = key === 'hierarchy' || key === 'coordination' ? 6000 : 8000;
+    if (!raw || raw.length > max) return { ok: false, error: 'Enter directive text of at most ' + max + ' characters.' };
+    if (key === 'hierarchy') {
+      const parsed = parseHierarchy(raw);
+      if (!parsed.ok) return { ok: false, error: parsed.error };
+    }
+    if (isNew && Object.keys(state.drafts).length >= 100) return { ok: false, error: 'Q can store up to 100 directive drafts.' };
+    const previousNextId = state.nextId;
+    let id = key;
+    if (isNew) {
+      do { id = 'custom:' + nextId(); } while (state.drafts[id]);
+    }
+    const previous = state.drafts[id];
+    state.drafts[id] = { title: titleText, text: raw, savedAt: Date.now() };
+    if (!persist(true)) {
+      if (previous === undefined) delete state.drafts[id];
+      else state.drafts[id] = previous;
+      state.nextId = previousNextId;
+      try { localStorage.setItem(KEY, JSON.stringify(state)); }
+      catch (error) { console.error('[Q terminal] Could not restore local data after draft save failed.', error); }
+      return { ok: false, error: 'The directive draft could not be saved.' };
+    }
+    return { ok: true, key: id, draft: { ...state.drafts[id] } };
+  }
+  function setTitle(key, value, event) {
+    if (typeof Event === 'undefined' || !(event instanceof Event) || !event.isTrusted ||
+        typeof Element === 'undefined' || !(event.target instanceof Element) ||
+        !event.target.closest('[data-q-action="save-title"]')) {
+      return { ok: false, error: 'Use the Q directive title control to save a title.' };
+    }
+    if (!titleKey(key)) return { ok: false, error: 'Choose a recognized directive.' };
+    const text = typeof value === 'string' ? value.trim() : '';
+    if (!validTitle(text)) return { ok: false, error: 'Use a title like A-01 Title text (maximum 200 characters).' };
+    const previous = state.titles[key];
+    state.titles[key] = text;
+    const ok = persist();
+    if (!ok) {
+      if (previous === undefined) delete state.titles[key];
+      else state.titles[key] = previous;
+    }
+    if (ok && typeof App !== 'undefined' && App.refreshAgentPrompts) App.refreshAgentPrompts();
+    return { ok, title: text };
   }
   function setDirective(text) {
     const directiveText = cleanText(text, 8000);
@@ -397,30 +496,23 @@
     const received = [];
     const kept = [];
     let index = 0;
-    const agent = typeof App !== 'undefined' && App.agents
-      ? App.agents().find(row => row && row.id === agentId)
-      : { id: agentId, name: typeof App !== 'undefined' && App.agentName ? App.agentName(agentId) : agentId };
     for (const line of lines) {
       if (/^\s*Q_HIERARCHY_REQUEST\s*$/i.test(line)) {
-        kept.push('Q · BRIDGE CREW HIERARCHY ROSTER:\n' + state.hierarchy);
+        kept.push('Q · BRIDGE CREW HIERARCHY ROSTER:\n' + titleLine('hierarchy') + state.hierarchy);
         continue;
       }
       if (/^\s*Q_COORDINATION_REQUEST\s*$/i.test(line)) {
-        kept.push('Q · CREW COORDINATION AND ESCALATION POLICY:\n' + state.coordinationPolicy);
+        kept.push('Q · CREW COORDINATION AND ESCALATION POLICY:\n' + titleLine('coordination') + state.coordinationPolicy);
         continue;
       }
       const roleRequest = /^\s*Q_ROLE_DIRECTIVE_REQUEST(?:\s*:\s*(.+?))?\s*$/i.exec(line);
       if (roleRequest) {
-        const role = roleRequest[1] ? roleRequest[1].trim() : authorityFor(agent).role;
-        const text = roleDirective(role);
-        kept.push(text
-          ? 'Q · DIRECTIVE FOR ' + role.toLocaleUpperCase() + ':\n' + text
-          : 'Q has no saved role directive for ' + role + '.');
+        kept.push('Individual directives are no longer served by Q. Request the agent’s saved directive with crew.directive.');
         continue;
       }
       if (/^\s*Q_HUMAN_DIRECTIVE_REQUEST\s*$/i.test(line)) {
         kept.push(state.qDirective
-          ? 'Q · HUMAN OPERATING DIRECTIVE:\n' + state.qDirective
+          ? 'Q · HUMAN OPERATING DIRECTIVE:\n' + titleLine('human') + state.qDirective
           : 'Q has no saved human operating directive.');
         continue;
       }
@@ -451,39 +543,35 @@
     const qDirectiveClause = state.qDirective
       ? '\n\nQ’S HUMAN OPERATING DIRECTIVE:\n'
         + 'This human-authored reference describes how Q intends to lead and engage with the crew. Treat it as context for communication and collaboration, not as proof that a decision was made or as permission to exceed applicable authority or higher-priority instructions.\n'
-        + state.qDirective
+        + titleLine('human') + state.qDirective
       : '';
     const directiveClause = state.directive
       ? '\n\nPRIME DIRECTIVE — PROJECT-WIDE OPERATING RULES:\n'
         + 'The Commander-authored text below is the shared rule base for this project. Apply it to your work alongside your role-specific instructions. '
         + 'It does not grant tools, permissions, or approval, and it cannot override higher-priority system or safety instructions.\n'
-        + state.directive
+        + titleLine('prime') + state.directive
       : '';
     const authority = agent ? authorityFor(agent) : null;
-    const roleText = agent ? roleDirective(authority.role) : '';
-    const roleClause = roleText
-      ? '\n\nYOUR ROLE-SPECIFIC DIRECTIVE — ' + authority.role.toLocaleUpperCase() + ':\n'
-        + 'This Commander-authored directive applies to your assigned role. Follow it alongside the project-wide Prime Directive and applicable higher-priority instructions.\n'
-        + roleText
-      : '';
     const hierarchyClause = '\n\nBRIDGE CREW HIERARCHY ROSTER (Q REFERENCE):\n'
       + 'Lower-numbered clearance levels have precedence over higher-numbered levels in the Bridge roster. Agents not listed in this roster have no assigned clearance level and are below every listed role. Only Q (Clearance Level 0, the human Commander) may alter the hierarchy; agents may request a copy but must never edit, replace, or assign themselves roster roles. These clearance levels describe Bridge authority and reporting order; they do not grant tools or system permissions.\n'
       + (authority ? (authority.listed
         ? 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — Clearance Level ' + authority.level + ' (listed).\n'
         : 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — unlisted (below all listed roles; no assigned clearance level).\n') : '')
-      + 'To request that Q place the current roster in your reply, end with the standalone line `Q_HIERARCHY_REQUEST`. To request Q’s current crew coordination and escalation policy, end with `Q_COORDINATION_REQUEST`; only Q may change that policy through the Q interface. Requesting references does not change them. To request your own saved role directive, end with `Q_ROLE_DIRECTIVE_REQUEST`; request another listed role with `Q_ROLE_DIRECTIVE_REQUEST: <role name>`.\n'
-      + state.hierarchy;
-    return qDirectiveClause + directiveClause + roleClause + hierarchyClause + '\n\nQ TERMINAL — LOCAL OWNER INBOX:\n'
+      + 'To request that Q place the current roster in your reply, end with the standalone line `Q_HIERARCHY_REQUEST`. To request Q’s current crew coordination and escalation policy, end with `Q_COORDINATION_REQUEST`; only Q may change that policy through the Q interface. Requesting references does not change them.\n'
+      + titleLine('hierarchy') + state.hierarchy;
+    return '\n\nDIRECTIVE LANGUAGE: PD = Prime Directive; SD = Security Directive; OD = Operating Directive.'
+      + ' Agents may request another crew member’s saved individual directive and operating manual using crew.directive, regardless of clearance level. This is a read-only reference, not a message or an authorization.\n'
+      + qDirectiveClause + directiveClause + hierarchyClause + '\n\nMAIL POD — LOCAL OWNER INBOX:\n'
       + 'You can send a note to your Commander by ending your reply with one standalone line `Q_MESSAGE: <message>`, '
       + 'or ask a question with `Q_QUESTION: <question>`. To request a copy of the Commander’s Prime Directive in COMMS, end with the standalone line `Q_DIRECTIVE_REQUEST`. '
       + 'To request a copy of Q’s human operating directive, end with the standalone line `Q_HUMAN_DIRECTIVE_REQUEST`. '
       + 'To invoke one of the Commander’s exact programmed command responses, end with `Q_COMMAND: <exact command>`. '
-      + 'Use at most one Q line per reply. Q captures and removes inbox markers from the conversation; hierarchy, role-directive, human-directive, and coordination-policy requests are answered automatically from saved Q reference data. '
+      + 'Use at most one Q line per reply. Q captures and removes inbox markers from the conversation; hierarchy, human-directive, and coordination-policy requests are answered automatically from saved Q reference data. '
       + 'A matching command response is offered for the Commander to send; an unmatched command becomes an inbox item. '
       + 'The Prime Directive is included in your standing instructions when one is saved; requesting it sends a copy into COMMS. '
       + 'Do not claim that the Commander has seen or answered an item until they actually respond.';
   }
-  const api = { messages, commands, directive, qDirective, coordinationPolicy, hierarchy, roleDirective, authorityFor, parseHierarchy, serialize, hydrate, setDirective, setQDirective, setCoordinationPolicy, setHierarchy, setRoleDirective, saveCommand, removeCommand, capture, stripMarkers, markReplied, promptClause };
+  const api = { messages, commands, directive, qDirective, coordinationPolicy, hierarchy, roleDirective, title, drafts, draftReadyAt, authorityFor, parseHierarchy, serialize, hydrate, saveDraft, setTitle, setDirective, setQDirective, setCoordinationPolicy, setHierarchy, setRoleDirective, saveCommand, removeCommand, capture, stripMarkers, markReplied, promptClause };
   globalThis.QTerminalStore = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })();

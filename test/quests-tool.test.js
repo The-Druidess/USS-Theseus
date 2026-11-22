@@ -43,6 +43,36 @@ const ctxOf = (agentId, runId) => ({ agentId, runId });
     A.eq(onNotebook.length, 0, 'quest.update is NO LONGER granted by the notebook object');
   }
 
+  // ---- op:read — reference notes are available only to the assigned agent or the station ----
+  {
+    const store = fresh();
+    const tool = toolFor(store);
+    const owned = await store.mint({ title: 'Investigate the issue', desc: 'Original request',
+      contract: { type: 'attest', key: '' }, agentId: 'hero', urgency: 'yellow' }, 1);
+    const shared = await store.mint({ title: 'Shared issue', desc: 'Shared briefing',
+      contract: { type: 'attest', key: '' } }, 2);
+    await store.setNotes(owned.id, 'Detailed reference material', '');
+    const result = await tool.run({ op: 'read', id: owned.id }, ctxOf('hero'));
+    const detail = JSON.parse(result.content);
+    A.eq(detail.description, 'Original request', 'read returns the complete briefing');
+    A.eq(detail.notes, 'Detailed reference material', 'read returns the complete reference notes');
+    A.eq(detail.urgency, 'yellow', 'read retains mission urgency');
+    A.ok(/not available/.test((await tool.run({ op: 'read', id: owned.id }, ctxOf('intruder'))).content),
+      'another agent cannot read an assigned quest');
+    A.eq(JSON.parse((await tool.run({ op: 'read', id: shared.id }, ctxOf('intruder'))).content).description,
+      'Shared briefing', 'any agent may read a station-wide quest');
+    A.ok(/Pass the quest id/.test((await tool.run({ op: 'read' }, ctxOf('hero'))).content), 'read requires an id');
+    A.ok(/not available/.test((await tool.run({ op: 'read', id: 'q:999' }, ctxOf('hero'))).content), 'missing quests are refused');
+    const blocked = await store.setDisposition(owned.id, { disposition: 'blocked', reason: 'Awaiting approval' }, 3);
+    A.ok(blocked.ok, 'mission was paused');
+    A.eq(JSON.parse((await tool.run({ op: 'read', id: owned.id }, ctxOf('hero'))).content).notes,
+      'Detailed reference material', 'paused missions remain readable');
+    A.ok((await store.setDisposition(owned.id, { disposition: 'resume' }, 4)).ok, 'mission was resumed');
+    A.ok((await store.reportCompletion(owned.id, 'Completed and verified the issue', 5)).ok, 'mission was completed');
+    A.eq(JSON.parse((await tool.run({ op: 'read', id: owned.id }, ctxOf('hero'))).content).notes,
+      'Detailed reference material', 'completed mission references remain readable');
+  }
+
   // ---- op:progress — agent scoping + step ticking ----
   {
     const store = fresh();
