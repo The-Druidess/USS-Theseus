@@ -1,6 +1,6 @@
 'use strict';
 
-const DIRECTIVE_LANGUAGE = 'DIRECTIVE LANGUAGE: PD = Prime Directive; SD = Security Directive; OD = Operating Directive.';
+const DIRECTIVE_LANGUAGE = 'DIRECTIVE LANGUAGE: PD = Prime Directive; SD = Security Directive; OD = Operating Directive; F = Finance.';
 
 function makeCrewDirectiveTool({ roster }) {
   if (!roster || typeof roster.get !== 'function') throw new Error('crew.directive requires a roster');

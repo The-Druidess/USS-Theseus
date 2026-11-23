@@ -61,8 +61,8 @@ const AutonomyStore = (() => {
     const current = normalize((await request()).summary);
     return request({ posture: transform(current), resumeHalt: resumeHalt === true });
   }); }
-  function applyPreset(id) { return write(p => ready() ? Autonomy.applyPreset(p, id) : p, true); }
-  function setInitiative(level) { return write(p => ready() ? Autonomy.setInitiative(p, level) : p, true); }
+  function applyPreset(id) { return write(p => ready() ? Autonomy.applyPreset(p, id) : p, id !== 'wait'); }
+  function setInitiative(level) { return write(p => ready() ? Autonomy.setInitiative(p, level) : p, level !== 'wait'); }
   function setReach(level) { return write(p => ready() ? Autonomy.setReach(p, level) : p, true); }
   function setLeash(n) { return write(p => ready() ? Autonomy.setLeash(p, n) : p, true); }
   async function reset() {

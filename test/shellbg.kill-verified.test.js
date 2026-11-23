@@ -76,8 +76,11 @@ const fast = { attempts: 3, pollMs: 0, sleep: async () => {} };
   {
     const w = makeWorld(); w.nextPid = 1000;
     const ledger = mkLedger();
-    const bg = makeShellBg({ spawn: w.spawn, isWin: true, clock: { now: () => 9000 }, ledger, processTable: w.table, killVerify: fast });
+    let blocked = false;
+    const spawn = (...args) => { if (blocked) throw new Error('ordinary subprocess blocked'); return w.spawn(...args); };
+    const bg = makeShellBg({ spawn, stopSpawn: w.spawn, isWin: true, clock: { now: () => 9000 }, ledger, processTable: w.table, killVerify: fast });
     bg.start({ agentId: 'a', cmd: 'npm run dev' });
+    blocked = true;
     w.rows = [
       { pid: 1000, ppid: 1, created: 5000 },   // cmd.exe wrapper (ours)
       { pid: 2000, ppid: 1000, created: 5001 },  // npm (ours)

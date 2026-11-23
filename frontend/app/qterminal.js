@@ -559,7 +559,7 @@
         : 'YOUR ROSTER ASSIGNMENT: ' + authority.role + ' — unlisted (below all listed roles; no assigned clearance level).\n') : '')
       + 'To request that Q place the current roster in your reply, end with the standalone line `Q_HIERARCHY_REQUEST`. To request Q’s current crew coordination and escalation policy, end with `Q_COORDINATION_REQUEST`; only Q may change that policy through the Q interface. Requesting references does not change them.\n'
       + titleLine('hierarchy') + state.hierarchy;
-    return '\n\nDIRECTIVE LANGUAGE: PD = Prime Directive; SD = Security Directive; OD = Operating Directive.'
+    return '\n\nDIRECTIVE LANGUAGE: PD = Prime Directive; SD = Security Directive; OD = Operating Directive; F = Finance.'
       + ' Agents may request another crew member’s saved individual directive and operating manual using crew.directive, regardless of clearance level. This is a read-only reference, not a message or an authorization.\n'
       + qDirectiveClause + directiveClause + hierarchyClause + '\n\nMAIL POD — LOCAL OWNER INBOX:\n'
       + 'You can send a note to your Commander by ending your reply with one standalone line `Q_MESSAGE: <message>`, '

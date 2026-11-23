@@ -30,11 +30,16 @@
     titleControl(Q, key, draft) +
     '<textarea class="q-textarea" data-q-editor maxlength="8000">' + esc(draft.text) + '</textarea>' +
     '<button type="button" class="bb sm" data-q-action="save-draft" data-q-key="' + esc(key) + '">SAVE DIRECTIVE</button>' +
-    '<p class="q-help" data-q-draft-status>' + draftStatus(Q, draft) + '</p></section>';
+    '<p class="q-help" data-q-draft-status>' + draftStatus(Q, draft) + '</p>' +
+    (draft.title === 'F-00 Financial Authority Directive'
+      ? '<button type="button" class="bb sm" data-q-action="activate-finance" data-q-key="' + esc(key) + '">ACTIVATE F-00 NOW</button>' +
+        '<p class="q-help" data-q-active-status>Activation applies the saved text to new agent runs; the existing finance guard remains in force. No automatic dispatch occurs.</p>'
+      : '') + '</section>';
   let selectedId = '';
 
   function buildQ(body, mode) {
     const mail = mode === 'mail';
+    let activationRevision = 0;
     if (mail) globalThis.QTerminalView = { refresh: () => { if (body.isConnected) { selectedId = ''; buildQ(body, mode); } } };
     const Q = store();
     if (!Q) { body.innerHTML = '<p class="dim">Q terminal storage is unavailable.</p>'; return; }
@@ -108,7 +113,36 @@
           '<button type="button" class="bb sm" data-q-action="save-draft" data-q-key="coordination">SAVE DIRECTIVE</button><p class="q-help" data-q-draft-status>' + draftStatus(Q, savedDrafts.coordination) + '</p>' +
         '</section>') +
       '</div>';
-    body.onclick = event => {
+    if (!mail && typeof fetch === 'function') {
+      const buttons = Array.from(body.querySelectorAll('[data-q-action="activate-finance"]'));
+      if (buttons.length) {
+        const revision = activationRevision;
+        fetch('/api/finance/directive', { cache: 'no-store' }).then(async response => {
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || 'Could not read the active finance directive.');
+          if (revision !== activationRevision) return;
+          for (const button of buttons) {
+            const status = button.closest('.q-settings').querySelector('[data-q-active-status]');
+            const draft = savedDrafts[button.dataset.qKey];
+            if (!body.isConnected || !status.isConnected) continue;
+            if (result.active && result.active.title === draft.title && result.active.text === draft.text) {
+              status.textContent = 'F-00 is active for new agent runs. The finance guard remains in force; automatic dispatch is unavailable.';
+            } else if (result.active) {
+              status.textContent = 'A different F-00 version is active; this draft is not active. The finance guard remains in force.';
+            } else {
+              status.textContent = 'F-00 is not active. The finance guard remains in force.';
+            }
+          }
+        }).catch(error => {
+          if (revision !== activationRevision) return;
+          for (const button of buttons) {
+            const status = button.closest('.q-settings').querySelector('[data-q-active-status]');
+            if (body.isConnected && status.isConnected) status.textContent = 'F-00 status unavailable: ' + (error.message || String(error));
+          }
+        });
+      }
+    }
+    body.onclick = async event => {
       const select = event.target.closest('[data-q-select]');
       if (select) { selectedId = select.dataset.qSelect; buildQ(body, mode); return; }
       const button = event.target.closest('[data-q-action]');
@@ -129,6 +163,30 @@
             input.value = ''; text.value = '';
           } else if (result.draft.title) section.querySelector('h4').textContent = result.draft.title;
           H.notify('Draft saved locally; automatic handoff is not available yet.', 'warn');
+        } else if (action === 'activate-finance') {
+          if (!event.isTrusted) throw new Error('Use the F-00 activation control.');
+          const section = button.closest('.q-settings');
+          const draft = Q.drafts()[button.dataset.qKey];
+          if (!draft || section.querySelector('[data-q-title]').value !== draft.title ||
+              section.querySelector('[data-q-editor]').value !== draft.text) {
+            throw new Error('Save the current F-00 text before activation.');
+          }
+          activationRevision++;
+          button.disabled = true;
+          try {
+            const response = await fetch('/api/finance/directive', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ confirm: true, title: draft.title, text: draft.text })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.ok || !result.active ||
+                result.active.title !== draft.title || result.active.text !== draft.text) {
+              throw new Error(result.error || 'F-00 activation could not be verified.');
+            }
+            section.querySelector('[data-q-active-status]').textContent =
+              'F-00 is active for new agent runs. The finance guard remains in force; automatic dispatch is unavailable.';
+            H.notify('F-00 activated for new agent runs; no dispatch was sent.', 'gold');
+          } finally { button.disabled = false; }
         } else if (action === 'open-dispatch') {
           StationUI.openTerm('bridge-dispatch');
         } else if (action === 'add-command') {

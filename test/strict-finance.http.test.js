@@ -37,6 +37,60 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     assert.equal(status.body.enforcement.audit.durable, true);
     assert.equal((await f.json('GET', '/api/spotify/status')).status, 200);
     assert.equal((await f.json('POST', '/api/activity', {})).status, 200);
+    const currentPosture = (await f.json('GET', '/api/autonomy/posture')).body.summary;
+    const wait = { posture: { v: 1, initiative: 'wait', reach: currentPosture.reach,
+      leashPerDay: currentPosture.leashPerDay }, resumeHalt: false };
+    assert.equal((await f.json('POST', '/api/autonomy/posture', {
+      posture: { ...wait.posture, initiative: 'free' }, resumeHalt: false
+    })).status, 423, 'the finance guard rejects widening autonomy');
+    const halt = await f.json('POST', '/api/halt', {});
+    assert.equal(halt.status, 200);
+    assert.equal((await f.json('POST', '/api/loops/control', { action: 'stop', id: 'missing' })).status, 404,
+      'finance admits a loop stop without bypassing normal loop checks');
+    assert.equal((await f.json('POST', '/api/loops/control', { action: 'unhalt' })).status, 423,
+      'finance does not admit loop resumption');
+    const disarm = await f.json('POST', '/api/cron/arm', { enabled: false });
+    assert.equal(disarm.status, 200);
+    assert.equal(disarm.body.halted, true, 'scheduler disarm leaves the E-STOP engaged');
+    assert.equal((await f.json('POST', '/api/cron/arm', { enabled: true })).status, 423);
+    assert.equal((await f.json('POST', '/api/cron/update', { id: 'missing', patch: { enabled: false } })).status, 404);
+    assert.equal((await f.json('POST', '/api/cron/update', { id: 'missing', patch: { enabled: true } })).status, 423);
+    assert.equal((await f.json('POST', '/api/cron/update', { id: 'missing', patch: { enabled: false, prompt: 'changed' } })).status, 423);
+    assert.equal((await f.json('POST', '/api/remote/enable', { on: false })).status, 200);
+    assert.equal((await f.json('POST', '/api/remote/enable', { on: true })).status, 423);
+    assert.equal((await f.json('POST', '/api/connectors/oauth/cancel', {})).status, 200);
+    for (const channel of ['telegram', 'discord', 'slack', 'matrix', 'signal']) {
+      assert.equal((await f.json('POST', '/api/channels/' + channel + '/disconnect', {})).status, 200);
+      if (channel !== 'discord') {
+        assert.equal((await f.json('POST', '/api/channels/' + channel + '/disconnect', { purge: true })).status, 423);
+      }
+      assert.equal((await f.json('POST', '/api/channels/' + channel + '/connect', {})).status, 423);
+    }
+    assert.equal((await f.json('POST', '/api/autonomy/posture', { ...wait, resumeHalt: true })).status, 423,
+      'standing down must not lift E-STOP');
+    {
+      const originalFetch = global.fetch;
+      const previousAutonomy = global.Autonomy, previousStorage = global.localStorage;
+      global.Autonomy = require('../frontend/app/autonomy.js');
+      global.localStorage = { getItem: () => null, setItem() {}, removeItem() {} };
+      global.fetch = (url, options) => {
+        if (typeof url !== 'string' || !url.startsWith('/')) return originalFetch(url, options);
+        const headers = { ...options?.headers, Origin: f.baseUrl, 'X-StarNet-Token': f.token };
+        return originalFetch(f.baseUrl + url, { ...options, headers });
+      };
+      try {
+        const { AutonomyStore } = require('../frontend/app/autonomystore.js');
+        assert.equal((await AutonomyStore.setInitiative('wait')).ok, true, 'the UI WAIT control works under finance and E-STOP');
+        assert.equal((await AutonomyStore.applyPreset('wait')).ok, true, 'the UI WAIT preset works under finance and E-STOP');
+      } finally {
+        global.fetch = originalFetch;
+        global.Autonomy = previousAutonomy;
+        global.localStorage = previousStorage;
+      }
+    }
+    assert.equal((await f.json('GET', '/api/autonomy/posture')).body.summary.initiative, 'wait');
+    assert.equal((await f.json('GET', '/api/halt')).body.halted, true, 'WAIT leaves E-STOP engaged');
+    assert.equal((await f.json('POST', '/api/halt/resume', { confirm: true })).status, 200);
     const mission = await f.json('POST', '/api/quests/mint', {
       title: 'Security follow-up', desc: 'Review Q authentication.', agentId: 'security',
       kind: 'user', createdBy: 'Q', urgency: 'yellow', contract: { type: 'attest', key: '' }
@@ -55,6 +109,14 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     assert.equal(calls().length, 0, 'creating a mission does not start inference');
     assert.throws(() => enable(f.workspace, ['other:latest']), /ownership is busy/, 'cannot activate/change policy under a live sidecar');
     assert.match((await run({})).text, /Local finance check complete/);
+    assert.equal((await f.json('GET', '/api/finance/directive')).body.active, null);
+    const directive = { title: 'F-00 Financial Authority Directive', text: 'Refer financial decisions to Q.' };
+    assert.equal((await f.json('POST', '/api/finance/directive', directive)).status, 400, 'activation requires confirmation');
+    const activation = await f.json('POST', '/api/finance/directive', { ...directive, confirm: true });
+    assert.equal(activation.status, 200);
+    assert.equal(activation.body.active.text, directive.text);
+    assert.match((await run({})).text, /Local finance check complete/);
+    assert(calls().some(call => call.system.includes(directive.text)), 'active F-00 is included in actual inference context');
     const before = calls().length;
     assert(before > 0, 'approved local inference actually reached its adapter');
     for (const body of [
@@ -80,6 +142,19 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     assert(recorded.counts.allowed > 0 && recorded.counts.blocked > 0, 'actual admissions and refusals reach the durable audit');
     await f.restart();
     const restarted = (await f.json('GET', '/api/finance/strict')).body;
+    assert.equal((await f.json('GET', '/api/finance/directive')).body.active.text, directive.text, 'F-00 survives restart');
+    assert.match((await run({})).text, /Local finance check complete/);
+    assert(calls().at(-1).system.includes(directive.text), 'headless activation survives restart');
+    const directiveFile = path.join(f.workspace, 'finance-directive.json');
+    const directiveRecord = fs.readFileSync(directiveFile, 'utf8');
+    fs.writeFileSync(directiveFile, '{broken');
+    assert.equal((await f.json('GET', '/api/finance/directive')).status, 503, 'corrupt F-00 is reported');
+    const beforeCorruptRun = calls().length;
+    const failedRun = await run({});
+    assert.equal(failedRun.status, 503);
+    assert.match(failedRun.text, /finance directive is unavailable/i);
+    assert.equal(calls().length, beforeCorruptRun, 'corrupt active F-00 must not be silently omitted from an agent run');
+    fs.writeFileSync(directiveFile, directiveRecord);
     quests = (await f.json('GET', '/api/quests')).body.quests;
     assert.equal(quests.find(q => q.id === mission.body.id).urgency, 'yellow', 'mission and urgency survive restart');
     assert.equal(quests.find(q => q.id === treasury.body.id).urgency, 'red', 'red urgency survives restart');
@@ -99,6 +174,9 @@ const { enable } = require('../scripts/enable-strict-finance.cjs');
     fs.writeFileSync(policyFile, 'null');
     await f.start();
     assert.equal((await f.json('GET', '/api/finance/strict')).body.enabled, true, 'JSON null is invalid, not an absent policy');
+    const quit = await f.json('POST', '/api/lifecycle/quit', {});
+    assert.equal(quit.status, 202, 'finance policy failure must not block graceful shutdown');
+    assert.equal(quit.body.shuttingDown, true);
     console.log('strict-finance HTTP: durable activation, local COMMS, cloud/custom model refusal, API locks, legacy-cap independence and fail-closed restart PASS');
   } finally {
     await f.dispose();

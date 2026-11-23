@@ -57,6 +57,33 @@ network requests, connector transports, plugins/shell hooks, arbitrary
 subprocesses and unverified tool actions are blocked. Only an explicit set of
 local station reads and existing consent-gated safety stops remain callable.
 ASK, Full Power, legacy caps and RESUME cannot override the gate.
+Q can activate the saved F-00 finance directive immediately from the directive
+editor. Its text is durable reference context for new agent runs, not an
+authorization to bypass this guard. The editor and local API do not authenticate
+Q against other processes running as the same operating-system user. Connector
+exceptions, temporary financial overrides and paid admission are not yet implemented.
+The station quit route, subagent interrupt, loop pause/stop, routine pause, scheduler disarm,
+channel disconnect without credential deletion, and host terminal stop/interrupt
+remain available even if finance policy or audit storage is unavailable; their
+existing authentication and capability checks still apply. Scheduler disarm
+does not lift an E-STOP under Strict Finance. Remote access can be turned off
+and in-progress connector or CLI sign-ins can be cancelled. Spotify disconnect
+removes the stored Spotify tokens; browser close and step-test stop are also
+available. These exceptions do not admit starting work or outbound playback.
+An explicit stop, E-STOP or station quit may use the configured SSH client and
+target solely to request termination of previously recorded remote jobs, even
+when finance policy or audit storage is unavailable. SSH uses its existing
+host-key and authentication checks; a sent request is not proof that remote
+processes have exited. Under Strict Finance, shutdown uses the system OpenSSH
+client without SSH configuration files, so aliases and custom SSH settings may
+not work; a failed request is logged. Ordinary SSH work and other outbound access stay blocked.
+Finance suspends new plugin jobs and connector work rather than shutting down
+an already-running plugin or connection.
+The autonomy posture route also accepts an audited best-effort safety stand-down
+to WAIT without widening reach or the daily leash. It refuses to lift a halted
+E-STOP as part of that change; safety stand-down remains available if policy or
+audit storage is unavailable. Selecting WAIT in the autonomy control or its
+WAIT preset does not request an E-STOP resume.
 
 No positive-cost adapter currently has a guaranteed maximum-charge contract.
 **All paid work is blocked**, not reserved or permitted up to the policy caps.

@@ -336,6 +336,14 @@
   }
   // the args an action actually runs with — the generic reading, then the action's own shape (look.set) — for the card AND the run
   function argsFor(spec, raw) { const a = normArgs(raw); return spec && spec.shape ? spec.shape(a) : a; }
+  function isSafetyStop(input) {
+    const call = readCall(input);
+    if (call.action === 'estop.engage' || call.action === 'spotify.disconnect') return true;
+    const args = argsFor(A[call.action], call.args);
+    if (call.action === 'channel.disconnect') return !onOff(args.forget);
+    if (call.action === 'scheduler.set') return !onOff(args.on);
+    return false;
+  }
   // the standing grants (null = unreadable); a listing check that returns a refusal when nothing matches, or null to go on
   async function heldGrants(env) { const r = await env.route('GET', '/api/permissions'); return r && r.status < 400 && r.json && Array.isArray(r.json.grants) ? r.json.grants : null; }
   async function listed(env, url, field, match) {
@@ -514,5 +522,5 @@
     };
   }
 
-  return { makeStationControlTools, cardFor, ACTIONS: A };
+  return { makeStationControlTools, cardFor, isSafetyStop, ACTIONS: A };
 });

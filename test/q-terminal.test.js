@@ -440,4 +440,36 @@ assert.strictEqual(reloaded.messages().length, 0);
   global.Event = priorEvent; global.Element = priorElement;
 }
 
-console.log('Q terminal: exact command matching, local persistence, marker capture, deduplication, and replies passed.');
+(async () => {
+  const windows = {}, notices = [], calls = [];
+  const draft = { title: 'F-00 Financial Authority Directive', text: 'Refer financial decisions to Q.', savedAt: 1 };
+  const fakeStore = Object.assign({}, Q, { drafts: () => ({ 'custom:q1': draft }), messages: () => [], commands: () => [] });
+  const context = {
+    StationUI: { h: { esc: String, present: [], notify: (message, kind) => notices.push({ message, kind }) },
+      registerWindow: (id, title, build) => { windows[id] = build; } },
+    QTerminalStore: fakeStore,
+    fetch: async (url, opts) => { calls.push({ url, opts }); return { ok: true, json: async () => ({ ok: true, active: draft }) }; }
+  };
+  vm.runInNewContext(qWindowSource, context);
+  const body = { isConnected: true, querySelectorAll: () => [] };
+  windows.q(body);
+  assert.match(body.innerHTML, /ACTIVATE F-00 NOW/);
+  const status = { textContent: '' }, title = { value: draft.title }, text = { value: draft.text };
+  const section = { querySelector: selector => selector === '[data-q-title]' ? title
+    : selector === '[data-q-editor]' ? text : status };
+  const button = { dataset: { qAction: 'activate-finance', qKey: 'custom:q1' }, closest: () => section, disabled: false };
+  const event = { isTrusted: true, target: { closest: selector => selector === '[data-q-action]' ? button : null } };
+  text.value = 'Unsaved change';
+  await body.onclick(event);
+  assert.equal(calls.length, 0, 'unsaved text cannot be activated');
+  text.value = draft.text;
+  await body.onclick({ ...event, isTrusted: false });
+  assert.equal(calls.length, 0, 'synthetic activation cannot publish');
+  await body.onclick(event);
+  assert.equal(calls.length, 1);
+  assert.equal(JSON.parse(calls[0].opts.body).text, draft.text);
+  assert.match(status.textContent, /active for new agent runs/);
+  assert.equal(button.disabled, false);
+  assert(notices.some(row => /no dispatch/i.test(row.message)));
+  console.log('Q terminal: draft persistence and explicit F-00 activation passed.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

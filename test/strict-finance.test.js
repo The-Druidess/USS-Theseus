@@ -52,19 +52,104 @@ denied(() => guard.assertTool({ name: 'mcp.pixellab.create_character', args: {} 
 for (const url of ['/api/run', '/api/cancel', '/api/station/ack', '/api/save', '/api/budget/caps', '/api/halt']) {
   assert.equal(guard.routeRefusal('POST', url), null);
 }
+for (const url of ['/api/lifecycle/quit', '/api/subagents/interrupt']) {
+  assert.equal(guard.routeRefusal('POST', url), null);
+  assert.equal(corrupt.routeRefusal('POST', url), null, 'shutdown remains available with a corrupt finance policy');
+}
+for (const name of ['team.interrupt', 'terminal.interrupt', 'terminal.stop', 'shell.bg.kill']) {
+  guard.assertTool({ name }, { provenance: 'host' });
+  corrupt.assertTool({ name }, { provenance: 'host' });
+  denied(() => guard.assertTool({ name }, { provenance: 'connector' }));
+}
+for (const args of [
+  { action: 'channel.disconnect', args: { channel: 'slack' } },
+  { setting: 'channel.disconnect', channel: 'slack', forget: false },
+  { action: 'scheduler.set', args: '{"on":false}' },
+  { action: 'estop.engage' },
+  { action: 'spotify.disconnect' },
+]) {
+  guard.assertTool({ name: 'station.control', args }, { provenance: 'host' });
+  corrupt.assertTool({ name: 'station.control', args }, { provenance: 'host' });
+}
+for (const args of [
+  { action: 'channel.disconnect', args: { channel: 'slack', forget: true } },
+  { action: 'channel.disconnect', channel: 'slack', forget: 'on' },
+  { action: 'scheduler.set', args: { on: true } },
+]) denied(() => guard.assertTool({ name: 'station.control', args }, { provenance: 'host' }));
+for (const [name, action] of [['loop.manage', 'pause'], ['loop.manage', 'stop'], ['routine.manage', 'pause']]) {
+  guard.assertTool({ name, args: { action } }, { provenance: 'host' });
+  corrupt.assertTool({ name, args: { action } }, { provenance: 'host' });
+  denied(() => guard.assertTool({ name, args: { action: 'resume' } }, { provenance: 'host' }));
+}
+assert.equal(guard.routeRefusal('POST', '/api/loops/control'), null);
+for (const action of ['pause', 'stop']) {
+  guard.assertLoopStop({ action });
+  corrupt.assertLoopStop({ action });
+}
+for (const action of ['resume', 'unhalt', '', null]) denied(() => guard.assertLoopStop({ action }));
+for (const g of [guard, corrupt]) {
+  g.assertCronDisarm({ enabled: false });
+  g.assertRoutinePause({ id: 'one', patch: { enabled: false } });
+  g.assertChannelDisconnect({});
+  g.assertRemoteStop({ on: false });
+  denied(() => g.assertCronDisarm({ enabled: true }));
+  denied(() => g.assertRoutinePause({ id: 'one', patch: { enabled: true } }));
+  denied(() => g.assertRoutinePause({ id: 'one', patch: { enabled: false, prompt: 'change' } }));
+  denied(() => g.assertChannelDisconnect({ purge: true }));
+  denied(() => g.assertRemoteStop({ on: true }));
+  assert.equal(g.routeRefusal('POST', '/api/connectors/oauth/cancel'), null);
+  assert.equal(g.routeRefusal('POST', '/api/auth/claude-cli/cancel'), null);
+  for (const url of ['/api/spotify/disconnect', '/api/browser/view/close', '/api/routing/steptest/test-id/stop']) {
+    assert.equal(g.routeRefusal('POST', url), null);
+  }
+  assert.match(g.routeRefusal('POST', '/api/routing/steptest/test-id/continue'), /Strict finance/);
+  for (const channel of ['telegram', 'discord', 'slack', 'matrix', 'signal']) {
+    assert.equal(g.routeRefusal('POST', '/api/channels/' + channel + '/disconnect'), null);
+    assert.match(g.routeRefusal('POST', '/api/channels/' + channel + '/connect'), /Strict finance/);
+  }
+  assert.equal(g.routeRefusal('POST', '/api/channels/telegram/bots/123/disconnect'), null);
+}
 assert.equal(guard.routeRefusal('GET', '/api/budget/status'), null);
 assert.equal(guard.routeRefusal('GET', '/api/spotify/status'), null, 'local token-presence status does not refresh or contact Spotify');
 assert.equal(guard.routeRefusal('POST', '/api/activity'), null, 'watching the station must still count as human presence');
+assert.equal(guard.routeRefusal('POST', '/api/autonomy/posture'), null, 'the handler checks the stand-down body');
+const posture = { v: 1, initiative: 'leash', reach: 'sandbox', leashPerDay: 3 };
+const wait = { posture: { ...posture, initiative: 'wait' }, resumeHalt: false };
+guard.assertAutonomyStandDown(wait, posture, true);
+guard.assertAutonomyStandDown({ posture: { ...wait.posture, reach: 'observe', leashPerDay: 2 } }, posture, true);
+guard.assertAutonomyStandDown({ ...wait, resumeHalt: true }, posture, false);
+for (const body of [
+  { ...wait, resumeHalt: true },
+  { posture: { ...posture, initiative: 'free' } },
+  { posture: { ...wait.posture, reach: 'reach' } },
+  { posture: { ...wait.posture, leashPerDay: 4 } },
+  { posture: { ...wait.posture, reach: 'bogus' } },
+  { ...wait, beliefs: {} }, { posture: { initiative: 'wait' } }, { ...wait, resumeHalt: 'false' }
+]) denied(() => guard.assertAutonomyStandDown(body, posture, true));
+corrupt.assertAutonomyStandDown(wait, posture, true);
+off.assertAutonomyStandDown({}, posture, true);
 assert.equal(guard.routeRefusal('POST', '/api/quests/mint'), null, 'local quest creation is admitted');
 assert.equal(guard.routeRefusal('POST', '/api/quests/notes'), null, 'local quest notes are admitted');
+assert.equal(guard.routeRefusal('POST', '/api/finance/directive'), null, 'explicit local finance directive activation is admitted');
 assert.match(guard.routeRefusal('PUT', '/api/quests/notes'), /Strict finance/);
 assert.match(corrupt.routeRefusal('POST', '/api/quests/notes'), /policy storage/);
 assert.match(guard.routeRefusal('PUT', '/api/quests/mint'), /Strict finance/);
 assert.match(guard.routeRefusal('POST', '/api/quests/update'), /Strict finance/);
 assert.match(corrupt.routeRefusal('POST', '/api/quests/mint'), /policy storage/);
+assert.match(corrupt.routeRefusal('POST', '/api/finance/directive'), /policy storage/);
 const noAudit = makeStrictFinance({ read: () => config, onError() {}, audit: { record: () => false } });
+for (const url of ['/api/lifecycle/quit', '/api/subagents/interrupt', '/api/loops/control', '/api/cron/arm']) {
+  assert.equal(noAudit.routeRefusal('POST', url), null);
+}
+noAudit.assertLoopStop({ action: 'stop' });
+noAudit.assertCronDisarm({ enabled: false });
+noAudit.assertRoutinePause({ patch: { enabled: false } });
+noAudit.assertChannelDisconnect({});
+noAudit.assertRemoteStop({ on: false });
+noAudit.assertTool({ name: 'terminal.stop' }, { provenance: 'host' });
 assert.match(noAudit.routeRefusal('POST', '/api/quests/mint'), /audit storage/);
 assert.match(noAudit.routeRefusal('POST', '/api/quests/notes'), /audit storage/);
+assert.match(noAudit.routeRefusal('POST', '/api/finance/directive'), /audit storage/);
 denied(() => guard.assertTool({ name: 'quest.update', args: {} }, { provenance: 'host' }));
 assert.doesNotThrow(() => guard.assertTool({ name: 'quest.update', args: { op: 'read', id: 'q:1' } }, { provenance: 'host' }));
 for (const op of ['mint', 'start', 'progress', 'attest_complete']) {

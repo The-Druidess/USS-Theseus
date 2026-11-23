@@ -186,6 +186,7 @@
 
   function runProcess(opts) {
     const spawn = opts.spawn, file = opts.file, args = opts.args;
+    const stopSpawn = opts.stopSpawn || spawn;
     const timeoutMs = clamp(opts.timeoutMs, 1000, opts.maxTimeoutMs || 600000);
     const maxBytes = opts.maxBytes || 64000;
     const now = (opts.clock && typeof opts.clock.now === 'function') ? opts.clock.now : function () { return 0; };
@@ -217,7 +218,7 @@
           if (typeof child.stdin.write === 'function') child.stdin.write(String(opts.input));
           if (typeof child.stdin.end === 'function') child.stdin.end();
         } catch (e) {
-          try { killTree(spawn, child, isWin, group); } catch (_) {}
+          try { killTree(stopSpawn, child, isWin, group); } catch (_) {}
           // the child is being torn down: keep its receipt until it has really closed
           if (child && typeof child.on === 'function') child.on('close', function () { receipt.done(); });
           return reject(new Error('could not write environment process input: ' + ((e && e.message) || e)));
@@ -246,8 +247,8 @@
       if (child.stdout && child.stdout.on) child.stdout.on('data', mkDecoded());
       if (child.stderr && child.stderr.on) child.stderr.on('data', mkDecoded());
 
-      const timer = setTimeout(function () { timedOut = true; killTree(spawn, child, isWin, group); }, timeoutMs);
-      const onAbort = function () { aborted = true; killTree(spawn, child, isWin, group); };
+      const timer = setTimeout(function () { timedOut = true; killTree(stopSpawn, child, isWin, group); }, timeoutMs);
+      const onAbort = function () { aborted = true; killTree(stopSpawn, child, isWin, group); };
       if (sig) {
         if (sig.aborted) onAbort();
         else { try { sig.addEventListener('abort', onAbort, { once: true }); } catch (_) {} }
@@ -365,7 +366,7 @@
         opts = opts || {};
         const aid = safeAgentId(opts.agentId || 'agent');
         return runProcess({
-          spawn: spawn,
+          spawn: spawn, stopSpawn: deps.stopSpawn,
           file: String(opts.cmd || ''),
           args: null,
           spawnOptions: { cwd: opts.cwd || getCwd(aid), shell: true, windowsHide: true, env: spawnEnv(opts.surface) },
@@ -613,7 +614,7 @@
     function dockerRun(args, opts) {
       opts = opts || {};
       return runProcess({
-        spawn: spawn,
+        spawn: spawn, stopSpawn: deps.stopSpawn,
         file: cfg.dockerBin || 'docker',
         args: args,
         spawnOptions: opts.env ? { windowsHide: true, env: opts.env } : { windowsHide: true },
@@ -886,21 +887,26 @@
       return ['-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=' + String(cfg.sshConnectTimeoutSeconds || 10)];
     }
     function childEnv() { return sanitizeChildEnv(deps.env || (typeof process !== 'undefined' ? process.env : {})); }
-    function runSsh(row, script, opts) {
+    function runSshTransport(row, script, opts, transportSpawn) {
       opts = opts || {};
-      const args = commonOptions(row).concat(['-p', String(row.port), destination(row), 'sh', '-s']);
+      const restrictedShutdown = opts.shutdown && deps.shutdownSshSpawn;
+      if (restrictedShutdown && !deps.shutdownSshBin) throw new Error('shutdown SSH client is not configured');
+      const args = (restrictedShutdown ? ['-F', 'none'] : []).concat(commonOptions(row), ['-p', String(row.port), destination(row), 'sh', '-s']);
       return runProcess({
-        spawn, file: cfg.sshBin || 'ssh', args,
+        spawn: transportSpawn, stopSpawn: deps.stopSpawn, file: restrictedShutdown ? deps.shutdownSshBin : (cfg.sshBin || 'ssh'), args,
         spawnOptions: { windowsHide: true, shell: false, env: childEnv(), stdio: ['pipe', 'pipe', 'pipe'] },
         input: String(script || ''), timeoutMs: opts.timeoutMs || 30000, maxTimeoutMs: opts.maxTimeoutMs || 600000,
         maxBytes: opts.maxBytes || 64000, signal: opts.signal, clock: opts.clock || clock, isWin: WIN
       });
     }
+    function runSsh(row, script, opts) {
+      return runSshTransport(row, script, opts, spawn);
+    }
     function runScp(row, source, destinationPath, opts) {
       opts = opts || {};
       const args = ['-q', '-r', '-p'].concat(commonOptions(row), ['-P', String(row.port), source, destinationPath]);
       return runProcess({
-        spawn, file: cfg.scpBin || 'scp', args,
+        spawn, stopSpawn: deps.stopSpawn, file: cfg.scpBin || 'scp', args,
         spawnOptions: { windowsHide: true, shell: false, env: childEnv(), cwd: ROOT },
         timeoutMs: opts.timeoutMs || 120000, maxTimeoutMs: opts.maxTimeoutMs || 600000,
         maxBytes: opts.maxBytes || 64000, signal: opts.signal, clock: opts.clock || clock, isWin: WIN
@@ -1185,7 +1191,7 @@
       return enqueue(aid, async function () {
         const row = target(aid), dir = remoteJobDir(row, bgId);
         const script = 'test -d ' + quote(dir) + ' || exit 44\npid=$(cat ' + quote(dir + '/pid') + ' 2>/dev/null || true)\nwant=$(cat ' + quote(dir + '/identity') + ' 2>/dev/null || true)\ngot=$(ps -o lstart= -p "$pid" 2>/dev/null | sha256sum | cut -d" " -f1)\nif test -n "$pid" && test -n "$want" && test "$want" = "$got" && kill -0 "$pid" 2>/dev/null; then kill "$pid" 2>/dev/null || exit 45; elif test ! -f ' + quote(dir + '/exit') + '; then exit 46; fi\nprintf killed > ' + quote(dir + '/exit') + '\nprintf starnet-killed\n';
-        const result = await runSsh(row, script, { timeoutMs: 30000, maxBytes: 4096 });
+        const result = await runSshTransport(row, script, { timeoutMs: 30000, maxBytes: 4096, shutdown: true }, deps.shutdownSshSpawn || spawn);
         return result.exitCode === 0 ? { ok: true, bgId: String(bgId), killed: true } : { ok: false, error: result.exitCode === 44 ? 'no such background process' : 'remote kill could not be verified' };
       });
     }
@@ -1197,8 +1203,10 @@
       return enqueue(aid, async function () {
         const root = row.remoteRoot + '/.starnet/jobs';
         const script = 'n=0\nfor d in ' + quote(root) + '/sshbg_*; do test -d "$d" || continue; pid=$(cat "$d/pid" 2>/dev/null || true); want=$(cat "$d/identity" 2>/dev/null || true); got=$(ps -o lstart= -p "$pid" 2>/dev/null | sha256sum | cut -d" " -f1); if test -n "$pid" && test -n "$want" && test "$want" = "$got" && kill -0 "$pid" 2>/dev/null; then kill "$pid" 2>/dev/null && n=$((n+1)); printf killed > "$d/exit"; fi; done\nprintf "STARNET_KILLED\\t%s\\n" "$n"\n';
-        const result = await runSsh(row, script, { timeoutMs: 30000, maxBytes: 4096 });
-        const m = /STARNET_KILLED\t(\d+)/.exec(String(result.out || '')); return m ? Number(m[1]) : 0;
+        const result = await runSshTransport(row, script, { timeoutMs: 30000, maxBytes: 4096, shutdown: true }, deps.shutdownSshSpawn || spawn);
+        const m = /STARNET_KILLED\t(\d+)/.exec(String(result.out || ''));
+        if (result.exitCode !== 0 || !m) throw new Error('remote shutdown request could not be verified');
+        return Number(m[1]);
       });
     }
     // Station-wide (no agentId: E-STOP / Quit / shutdown): remote jobs are per agent (per-agent target +

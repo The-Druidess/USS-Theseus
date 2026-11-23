@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { EventEmitter } = require('events');
-const { makeEnvironmentManager } = require('../sidecar/environment.js');
+const { makeEnvironmentManager, runProcess } = require('../sidecar/environment.js');
 const { makeShellTool } = require('../sidecar/tools/builtin/shell.js');
 
 function makeFakeSpawn() {
@@ -48,6 +48,23 @@ function makeFakeSpawn() {
   const clock = { now: () => now };
 
   try {
+    {
+      const spawn = makeFakeSpawn();
+      const controller = new AbortController();
+      const stopCalls = [];
+      const stopSpawn = (file, args) => {
+        stopCalls.push({ file, args });
+        const child = new EventEmitter();
+        child.unref = () => {};
+        setImmediate(() => child.emit('close', 0));
+        return child;
+      };
+      const result = runProcess({ spawn, stopSpawn, file: 'work', isWin: true, signal: controller.signal, timeoutMs: 1000 });
+      controller.abort();
+      A.eq((await result).aborted, true, 'abort is reported');
+      A.eq(stopCalls, [{ file: 'taskkill', args: ['/pid', '4242', '/T', '/F'] }],
+        'abort uses the dedicated stop helper rather than the ordinary process launcher');
+    }
     // ---- local backend: old host-shell behavior remains behind the new seam ----
     {
       const spawn = makeFakeSpawn();
@@ -360,6 +377,35 @@ function makeFakeSpawn() {
       A.eq(flakyErr, null, 'a transport failure on one host never rejects the station-wide reap');
       A.eq(flakyN, 3, 'the reachable host is still reaped and counted; the failed one counts 0');
       A.eq(calls, 2, 'both configured hosts were attempted');
+    }
+
+    // Strict finance may block ordinary SSH execution without blocking an explicitly requested stop.
+    {
+      const shutdownSpawn = makeFakeSpawn();
+      const target = { configured: true, host: 'buildbox', user: 'owner', port: 22, remoteRoot: '/srv/starnet/a4' };
+      const env = makeEnvironmentManager({ fs, pathMod: path, root, clock,
+        spawn: () => { throw new Error('ordinary transport blocked'); }, shutdownSshSpawn: shutdownSpawn, shutdownSshBin: 'trusted-ssh',
+        sshConfig: () => target, sshAgentIds: () => ['a4'],
+        config: { backend: 'ssh', sshBin: 'sshx' } });
+      let blocked = false;
+      try { await env.ensureReady('a4'); } catch (e) { blocked = /ordinary transport blocked/.test(e.message); }
+      A.ok(blocked, 'ordinary SSH execution remains blocked');
+      shutdownSpawn.setNext('starnet-killed\n', 0);
+      A.ok((await env.killBackground('a4', 'sshbg_aaaaaaaa')).ok, 'a stop uses the dedicated SSH transport');
+      const one = shutdownSpawn.calls[0];
+      A.ok(one.args.includes('StrictHostKeyChecking=yes') && one.opts.shell === false, 'shutdown retains the SSH authentication and shell boundary');
+      A.eq(one.file, 'trusted-ssh', 'shutdown cannot use the configurable SSH executable');
+      A.eq(one.args.slice(0, 2), ['-F', 'none'], 'shutdown does not run SSH configuration helpers');
+      A.ok(/\/sshbg_aaaaaaaa\/identity/.test(one.child.stdin.writes.join('')), 'single stop checks the saved process identity');
+      let invalid = false;
+      try { await env.killBackground('a4', 'sshbg_invalid;command'); } catch (e) { invalid = /bad SSH background id/.test(e.message); }
+      A.ok(invalid && shutdownSpawn.calls.length === 1, 'invalid job IDs cannot reach the shutdown transport');
+      shutdownSpawn.setNext('STARNET_KILLED\t1\n', 0);
+      A.eq(await env.killAllBackground('a4'), 1, 'station stop uses the same dedicated shutdown transport');
+      shutdownSpawn.setNext('unexpected response', 1);
+      let failed = false;
+      try { await env.killAllBackground('a4'); } catch (e) { failed = /could not be verified/.test(e.message); }
+      A.ok(failed, 'a failed shutdown transport does not report a successful zero count');
     }
 
     // ---- unavailable Docker is reported as checked failure, never as a ready Safe Cell ----

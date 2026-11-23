@@ -36,7 +36,7 @@ assert.equal(edited.docs.purpose, 'Keep Old commander directive.', 'migration mu
 const firstOfficer = { id: 'chief', name: 'FIRST OFFICER', docs: {} };
 migrate(firstOfficer);
 assert.match(firstOfficer.docs.directive, /FIRST OFFICER \(NUMBER TWO\)/);
-assert.match(Q.promptClause(commander), /PD = Prime Directive; SD = Security Directive; OD = Operating Directive/);
+assert.match(Q.promptClause(commander), /PD = Prime Directive; SD = Security Directive; OD = Operating Directive; F = Finance/);
 assert.ok(Q.promptClause(commander).includes(DIRECTIVE_LANGUAGE));
 assert.doesNotMatch(Q.promptClause(commander), /Old commander directive/);
 

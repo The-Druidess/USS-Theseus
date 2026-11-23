@@ -1,17 +1,22 @@
 'use strict';
 const assert = require('node:assert/strict');
 const {AutonomyStore: S} = require('../frontend/app/autonomystore.js');
+const {makeStrictFinance, POLICY} = require('../sidecar/strict-finance.js');
 global.Autonomy = require('../frontend/app/autonomy.js');
 const mem = {};
 global.localStorage = {getItem:k=>mem[k]||null,setItem:(k,v)=>{mem[k]=v;},removeItem:k=>{delete mem[k];}};
 const key='starnet.autonomy.v1';
-let server=Autonomy.fresh(), fail=false, malformed=false, hold=null;
+let server=Autonomy.fresh(), fail=false, malformed=false, hold=null, financeGuard=null;
 const calls=[];
 global.fetch=async(url,opts)=>{
   const body=opts.body?JSON.parse(opts.body):null;calls.push(body);
   if(body&&hold)await hold;
   if(body&&fail)return {ok:false,json:async()=>({ok:false,error:'disk full'})};
   if(body&&malformed)return {ok:true,json:async()=>({})};
+  if(body&&financeGuard) {
+    try { financeGuard.assertAutonomyStandDown(body, server, true); }
+    catch(e) { return {ok:false,json:async()=>({ok:false,error:e.message})}; }
+  }
   if(body)server=Autonomy.normalize(body.posture);
   return {ok:true,json:async()=>({ok:true,summary:Autonomy.summary(server)})};
 };
@@ -20,6 +25,11 @@ global.fetch=async(url,opts)=>{
   await S.init();assert.equal(S.get().initiative,'propose','a new station reads the server default: propose, never act');assert.ok(calls.every(x=>x===null),'boot is read-only');
   assert.equal((await S.applyPreset('build')).ok,true);assert.equal(S.get().initiative,'leash');assert.equal(calls.at(-1).resumeHalt,true);
   assert.equal(JSON.parse(mem[key]).initiative,'leash');
+  financeGuard=makeStrictFinance({read:()=>({...POLICY,version:1,enabled:true,mode:'local-only',localModels:['qwen3.5:4b']}),onError(){}});
+  assert.equal((await S.setInitiative('wait')).ok,true);assert.equal(calls.at(-1).resumeHalt,false,'WAIT does not request E-STOP resume');
+  assert.equal((await S.applyPreset('wait')).ok,true);assert.equal(calls.at(-1).resumeHalt,false,'WAIT preset does not request E-STOP resume');
+  financeGuard=null;
+  await S.applyPreset('build');
   fail=true;assert.equal((await S.setInitiative('wait')).ok,false);assert.equal(S.get().initiative,'leash');assert.match(S.status().error,/disk full/);
   fail=false;malformed=true;assert.equal((await S.setReach('reach')).ok,false);assert.equal(S.get().reach,'sandbox');malformed=false;
   let release;hold=new Promise(r=>release=r);

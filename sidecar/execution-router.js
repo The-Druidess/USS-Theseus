@@ -185,6 +185,15 @@ function makeExecutionRouter(deps) {
     }
     return count;
   }
+  async function killAllBackgroundAndWait() {
+    const seen = new Set(), pending = [];
+    for (const [id, env] of Object.entries(environments)) {
+      if (!env || seen.has(env) || typeof env.killAllBackground !== 'function') continue;
+      seen.add(env);
+      pending.push(Promise.resolve().then(() => env.killAllBackground()).catch(swallow('execution.killAll.' + id)));
+    }
+    return Promise.all(pending);
+  }
 
   const api = {
     id: 'router',
@@ -223,6 +232,7 @@ function makeExecutionRouter(deps) {
     },
     spawnStdio: opts => fromOpts(opts).spawnStdio(opts),
     killAllBackground,
+    killAllBackgroundAndWait,
     _environments: environments
   };
   Object.defineProperty(api, 'backendId', { enumerable: true, get: () => defaultBackendId });

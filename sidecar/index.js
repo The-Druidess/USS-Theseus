@@ -414,6 +414,21 @@ const cronGuard = require('./cron-guard.js');                        // routine 
 // git in user repos, shell hooks, loop checks, the folder picker, fs.search's rg. An explicit `env` (the agent
 // shell's sanitizeChildEnv) is passed through untouched.
 const stationChildProcess = require('./child-env.js').guardChildProcess(require('node:child_process'));
+const safetyExecFile = stationChildProcess.execFile;
+const safetySpawn = stationChildProcess.spawn;
+function spawnStopHelper(file, args, options) {
+  if (file !== 'taskkill' || !Array.isArray(args) || args.length < 4) throw new Error('Invalid shutdown helper.');
+  let pids = 0;
+  for (let i = 0; i < args.length; i++) {
+    const arg = String(args[i]).toLowerCase();
+    if (arg === '/f' || arg === '/t') continue;
+    if (arg !== '/pid' || !/^[1-9]\d*$/.test(String(args[++i] || ''))) throw new Error('Invalid shutdown helper arguments.');
+    pids++;
+  }
+  if (!pids) throw new Error('Shutdown helper requires a process ID.');
+  const exe = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe');
+  return safetySpawn(exe, args, options);
+}
 for (const name of ['spawn', 'spawnSync', 'execFile', 'execFileSync', 'exec', 'execSync', 'fork']) {
   const original = stationChildProcess[name];
   stationChildProcess[name] = (...args) => {
@@ -674,6 +689,8 @@ strictFinance = strictFinanceMod.makeStrictFinance({
   onError: error => console.error('[strict-finance] FAIL CLOSED: ' + error.message)
 });
 require('./tools/registry.js').attachFinancialGuard((call, tool) => strictFinance.assertTool(call, tool));
+const { makeFinanceDirectiveStore, financeDirectiveContext } = require('./finance-directive.js');
+const financeDirectiveStore = makeFinanceDirectiveStore({ fs, path, workspace: WORKSPACES, now: () => Date.now() });
 
 // Capture lineage before this process stamps schema/cache/runtime files. It is bounded metadata only: names and
 // counts, never file contents. In packaged mode we also inspect known legacy roots and verified update snapshots;
@@ -3940,8 +3957,7 @@ let extReloadChain = Promise.resolve();
 function reloadExtensions() {
   const run = extReloadChain.then(async () => {
     if (strictFinance.enabled()) {
-      hookSpine.clear();
-      await pluginRuntime.stopAll();
+      pluginRuntime.setJobsPaused(true);
       console.warn('[strict-finance] plugins and shell hooks are suspended: unbounded execution cost');
       return;
     }
@@ -4855,7 +4871,7 @@ const browserViewRoutes = makeViewRoutes({ views: browserViews, readBody, respon
 // boot, and a cursor confinement a dead child left stuck on the user's desktop is released.
 // h2 process supervision: ONE bounded (15s), fail-safe process-table snapshot shared by the boot sweep's orphan walk
 // and shell.bg.kill's confirmation (Windows; POSIX kills whole process groups and confirms with signal 0).
-const osProcessTable = process.platform === 'win32' ? makeWin32ProcessTable(execFile, { timeoutMs: 15000 }) : null;
+const osProcessTable = process.platform === 'win32' ? makeWin32ProcessTable(safetyExecFile, { timeoutMs: 15000 }) : null;
 const procLedger = makeProcLedger({ fs: fs, pathMod: path, file: path.join(WORKSPACES, 'proc-ledger.json'), clock: { now: () => Date.now() }, log: (m) => console.log(m), processTable: osProcessTable });
 // Lazy: this starts no process at boot. A supported edit with an already-installed server is the first spawn;
 // every child is ledgered so the next boot can reap it after an uncatchable desktop TerminateProcess.
@@ -4881,7 +4897,7 @@ const appendDurableProcessOutput = entry => outputArtifacts.append(entry);
    ended — an honest 409), or a full one: the COMMS line stays the only signal, exactly as before. The most recently
    started live run of that agent is the one told, so a note is never duplicated across runs (shellbg.js). */
 const wakeOwnerOnBgExit = makeBgExitWaker({ steer: steerBufs, runs: runs, runsMeta: runsMeta, log: (m) => console.log(m) });
-const shellBg = makeShellBg({ spawn: childSpawn, redact: redact, clock: { now: () => Date.now() }, newId: () => crypto.randomUUID(), onExit: (e) => chanEmit('shell.bg.exit', e), onExitNotice: wakeOwnerOnBgExit, maxPerAgent: 5, ledger: procLedger, spill: appendDurableProcessOutput, processTable: osProcessTable });
+const shellBg = makeShellBg({ spawn: childSpawn, stopSpawn: spawnStopHelper, redact: redact, clock: { now: () => Date.now() }, newId: () => crypto.randomUUID(), onExit: (e) => chanEmit('shell.bg.exit', e), onExitNotice: wakeOwnerOnBgExit, maxPerAgent: 5, ledger: procLedger, spill: appendDurableProcessOutput, processTable: osProcessTable });
 if (require.main === module) {
   // vouch every minute for bg children whose handle is still open, so a crash's orphan window covers children
   // they start late (procledger.touch). One small ledger write per minute, only while bg processes run.
@@ -4905,7 +4921,10 @@ function saveExecutionSettings(next) {
 // `surface` is the RUN's surface, forwarded by the backend from the shell/verify call: an unattended run only
 // receives the keys whose unattended grant is flipped ON, the SAME rule resolveForRequest enforces on
 // web_request. Host authority — it comes from the run, never from tool args.
-const executionEnvironmentDeps = { spawn: childSpawn, fs: fs, pathMod: path, root: WORKSPACES, bg: shellBg, redact: redact, clock: { now: () => Date.now() }, env: process.env,
+const executionEnvironmentDeps = { spawn: childSpawn, stopSpawn: spawnStopHelper,
+  shutdownSshSpawn: strictFinance.enabled() ? safetySpawn : null,
+  shutdownSshBin: process.platform === 'win32' ? path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'OpenSSH', 'ssh.exe') : '/usr/bin/ssh',
+  fs: fs, pathMod: path, root: WORKSPACES, bg: shellBg, redact: redact, clock: { now: () => Date.now() }, env: process.env,
   ledger: procLedger,   // h2 F2: the LOCAL backend receipts foreground shell children for the boot orphan sweep
   serviceEnv: (surface) => serviceKeysMod.runEnv(serviceKeys, process.env, { reservedEnv: SERVICEKEYS_RESERVED_ENV, surface: surface }),
   idleCleanupMs: () => Number(executionSettings.idleCleanupMinutes || 0) * 60000,
@@ -4955,7 +4974,8 @@ function stopTerminalTree(pid, handle) {
   pid = Number(pid);
   if (process.platform === 'win32' && pid > 0) {
     try {
-      const killer = execFile('taskkill', ['/pid', String(pid), '/T', '/F'], { windowsHide: true, timeout: 15000 }, (err) => {
+      const taskkill = path.join(process.env.SystemRoot || 'C:\\Windows', 'System32', 'taskkill.exe');
+      const killer = safetyExecFile(taskkill, ['/pid', String(pid), '/T', '/F'], { windowsHide: true, timeout: 15000 }, (err) => {
         if (err) { try { if (handle && handle.kill) handle.kill(); } catch (_) {} }
       });
       try { if (killer && killer.unref) killer.unref(); } catch (_) {}
@@ -5723,8 +5743,12 @@ async function ensureConnectorOauthToken(id, force) {
 // configure a connector, injecting a fresh OAuth bearer for oauth connectors (kept out of the persisted config).
 async function configureConnectorCfg(cfg, options) {
   if (strictFinance.enabled()) {
-    await connectors.configure(cfg.id, Object.assign({}, cfg, { enabled: false, token: '', tokenProvider: null }), options);
-    return { ok: false, state: 'down', toolCount: 0, error: 'Strict finance: connector suspended; no trusted maximum charge.' };
+    if (!connectors.has(cfg.id)) {
+      await connectors.configure(cfg.id, Object.assign({}, cfg, { enabled: false, token: '', tokenProvider: null }), options);
+    }
+    const current = connectors.status(cfg.id);
+    return { ok: false, state: current ? current.state : 'down', toolCount: current ? current.toolCount : 0,
+      error: 'Strict finance: connector work is suspended; existing connections were not shut down.' };
   }
   if (connectorStorageError) {
     await connectors.configure(cfg.id, Object.assign({}, cfg, { enabled: false, token: '', tokenProvider: null }), options);
@@ -5956,7 +5980,7 @@ function saveCronHalted(halted) {
 }
 let cronHalted = loadCronHalted();
 // a station booted while E-STOPped starts its plugins with background jobs paused (their hooks still guard)
-pluginRuntime.setJobsPaused(cronHalted);
+pluginRuntime.setJobsPaused(cronHalted || strictFinance.enabled());
 // The ONE resume seam: clear the durable halt and re-arm the live timer when the user's arm intent says so.
 // Called from every explicit resume path so halt-lift semantics can't drift between them.
 function liftCronHalt() {
@@ -5964,7 +5988,7 @@ function liftCronHalt() {
   // Persist FIRST: a failed write must leave this process halted instead of creating a restart-only reversal.
   saveCronHalted(false);
   cronHalted = false;
-  pluginRuntime.setJobsPaused(false);
+  pluginRuntime.setJobsPaused(strictFinance.enabled());
   if (cronArmed) armCron();
   return true;
 }
@@ -8860,7 +8884,7 @@ async function modelControlLoop(id, action, reason) {
   else if (action === 'stop') candidate = loopjobStore.stopLoop(loopJobs, id, reason, { now });
   else throw new Error('unknown loop control');
   commitLoops(candidate);
-  armLoops(true);
+  if (!strictFinance.enabled() || action === 'resume') armLoops(true);
   return modelLoopRow(id);
 }
 
@@ -9042,6 +9066,11 @@ function handleLoopsControl(req, res) {
   const json = loopJson(res);
   readBody(req, 1 << 16).then(raw => {
     let body; try { body = JSON.parse(raw) || {}; } catch (e) { return json(400, { error: 'bad json' }); }
+    try { strictFinance.assertLoopStop(body); }
+    catch (e) {
+      if (e.code !== strictFinanceMod.CODE) throw e;
+      return json(423, { ok: false, code: e.code, error: e.message });
+    }
     const action = String(body.action || '');
     if (action === 'unhalt') {
       if (loopsHalted) {
@@ -9073,7 +9102,7 @@ function handleLoopsControl(req, res) {
       else return json(400, { error: 'action must be pause, resume, stop or unhalt' });
       commitLoops(candidate);
     } catch (e) { return json(500, { error: 'could not save: ' + ((e && e.message) || e) }); }
-    armLoops(true);
+    if (!strictFinance.enabled() || action === 'resume') armLoops(true);
     json(200, { ok: true, loop: loopjob.summarize(loopjobStore.getLoop(loopJobs, id), { now: now }) });
   }).catch(() => { try { json(400, { error: 'bad request' }); } catch (_) {} });
 }
@@ -9825,7 +9854,7 @@ function publishCommandMenu(adapter, label) {
 }
 function stopTelegram() {
   // Say we are going BEFORE the transport is torn down — after disconnect there is nothing left to say it with.
-  if (telegram && telegram.adapter) telegramStatusLine(telegram.adapter, false);
+  if (!strictFinance.enabled() && telegram && telegram.adapter) telegramStatusLine(telegram.adapter, false);
   if (telegram && telegram.hub && typeof telegram.hub.close === 'function') { try { telegram.hub.close(); } catch (_) {} }
   if (telegram && telegram.adapter) { try { telegram.adapter.disconnect(); } catch (_) {} }
   telegram = null;
@@ -10996,6 +11025,11 @@ async function handleRemoteViewCrew(req, res) {
 // POST /api/remote/enable { on } — the switch. Persisted; the LAN door opens or closes with it.
 async function handleRemoteEnable(req, res) {
   let b; try { b = JSON.parse(await readBody(req, 1024)) || {}; } catch (_) { return respondJson(res, 400, { ok: false, error: 'bad request' }); }
+  try { strictFinance.assertRemoteStop(b); }
+  catch (e) {
+    if (e.code !== strictFinanceMod.CODE) throw e;
+    return respondJson(res, 423, { ok: false, code: e.code, error: e.message });
+  }
   const on = b.on === true;
   const saved = remoteDevices.setEnabled(on);
   if (!saved.ok) return respondJson(res, 500, { ok: false, error: 'could not save the Remote switch (' + saved.error + ')' });
@@ -11198,6 +11232,8 @@ const ROUTES = [
   { m: ['GET', 'POST'], rx: LINE_JOB_RX, h: handleLineJobId },
   { m: 'GET', exact: '/api/budget/status', h: handleBudgetStatus },
   { m: 'GET', exact: '/api/finance/strict', h: (req, res) => respondJson(res, 200, strictFinance.status(ledger, Date.now())) },
+  { m: 'GET', exact: '/api/finance/directive', h: handleFinanceDirectiveGet },
+  { m: 'POST', exact: '/api/finance/directive', h: handleFinanceDirectiveActivation },
   { m: 'GET', qsplit: '/api/credits', h: handleCredits },   // 404s (no surface) unless managed credits are configured
   { m: 'GET', qsplit: '/api/credits/linkable', h: handleCreditsLinkable },   // {available} — is device linking offered (STARNET_CLOUD_URL set + not already configured)?
   { m: 'POST', exact: '/api/credits/link/start', h: handleCreditsLinkStart },   // begin a pairing: returns a STAR-XXXX code + verifyUrl
@@ -11829,8 +11865,13 @@ function gracefulShutdown(signal) {
   if (_shuttingDown) return;
   _shuttingDown = true;
   console.log('\n  · shutdown (' + signal + ') — reaping children and releasing locks…');
+  let backgroundClosing = Promise.resolve(), backgroundClosed = false;
   // HARD deadline: no matter what hangs, exit within 3s. unref so this timer itself never keeps us alive.
-  const deadline = setTimeout(() => { try { console.warn('  · shutdown deadline hit — forcing exit'); } catch (_) {} process.exit(0); }, 3000);
+  const deadline = setTimeout(() => {
+    if (!backgroundClosed) failNote('shutdown.execution-background', new Error('Remote shutdown requests did not finish before the shutdown deadline.'));
+    console.warn('  · shutdown deadline hit — forcing exit');
+    process.exit(0);
+  }, 3000);
   if (deadline.unref) deadline.unref();
   try { flushVerdictPackets(); } catch (e) { failNote('verdict.packets.shutdown', e); }   // a rating after the restart must still find its packet
   try { if (typeof cronTimer !== 'undefined' && cronTimer) { clearInterval(cronTimer); } } catch (_) {}
@@ -11842,7 +11883,13 @@ function gracefulShutdown(signal) {
   // release any cursor confinement a reaped child leaves stuck (the PS one-shot outlives our exit; best-effort —
   // the boot-time ensureFree is the reliable cover for the force-kill path this handler can't see at all)
   try { if (typeof inputGuard !== 'undefined' && inputGuard) inputGuard.observe('shutdown').catch(() => {}); } catch (_) {}
-  try { if (typeof executionEnvironment !== 'undefined' && executionEnvironment && executionEnvironment.killAllBackground) executionEnvironment.killAllBackground(); } catch (_) {}
+  try {
+    if (typeof executionEnvironment !== 'undefined' && executionEnvironment && executionEnvironment.killAllBackgroundAndWait) {
+      backgroundClosing = executionEnvironment.killAllBackgroundAndWait();
+    }
+  } catch (e) { failNote('shutdown.execution-background', e); }
+  backgroundClosing = Promise.resolve(backgroundClosing).catch(e => failNote('shutdown.execution-background', e))
+    .finally(() => { backgroundClosed = true; });
   try { if (typeof lspManager !== 'undefined' && lspManager && lspManager.closeAll) Promise.resolve(lspManager.closeAll()).catch(() => {}); } catch (_) {}   // reap detected language-server children
   try { if (typeof subagents !== 'undefined' && subagents && subagents.interruptAll) subagents.interruptAll(); } catch (_) {}   // stop watchable background workers
   try { if (typeof connectors !== 'undefined' && connectors && connectors.close) Promise.resolve(connectors.close()).catch(() => {}); } catch (_) {}   // close MCP connectors (stdio children get taskkill/SIGTERM)
@@ -11873,14 +11920,17 @@ function gracefulShutdown(signal) {
     };
     poll();
   });
-  const afterBrowser = fn => Promise.race([Promise.all([browserClosing, runsBooked]), new Promise(r => { const t = setTimeout(r, 2500); if (t.unref) t.unref(); })]).then(fn, fn);
+  const afterBrowser = fn => Promise.race([Promise.all([browserClosing, runsBooked, backgroundClosing]), new Promise(r => { const t = setTimeout(r, 2500); if (t.unref) t.unref(); })]).then(() => {
+    if (!backgroundClosed) failNote('shutdown.execution-background', new Error('Remote shutdown requests did not finish before the shutdown deadline.'));
+    fn();
+  }, fn);
   try {
     if (typeof server !== 'undefined' && server && server.close) {
       server.close(() => afterBrowser(() => { clearTimeout(deadline); process.exit(0); }));   // stop accepting; exit once connections drain + the browser closed
       // don't wait on lingering keep-alive sockets — force them closed so close()'s callback fires promptly.
       if (typeof server.closeAllConnections === 'function') { try { server.closeAllConnections(); } catch (_) {} }
-    } else { clearTimeout(deadline); process.exit(0); }
-  } catch (_) { clearTimeout(deadline); process.exit(0); }
+    } else { afterBrowser(() => { clearTimeout(deadline); process.exit(0); }); }
+  } catch (e) { failNote('shutdown.server', e); afterBrowser(() => { clearTimeout(deadline); process.exit(0); }); }
 }
 // Only install signal handlers for a real host process (not when index.js is require()'d by a unit test, which
 // would leak handlers across tests). The e2e harnesses spawn a REAL node process and stop it with child.kill()
@@ -14960,16 +15010,21 @@ function handleCronArm(req, res) {
   readBody(req, 4096).then(raw => {
     let body; try { body = JSON.parse(raw) || {}; } catch (e) { return json(400, { error: 'bad json' }); }
     if (typeof body.enabled !== 'boolean') return json(400, { error: 'enabled (boolean) is required' });
+    try { strictFinance.assertCronDisarm(body); }
+    catch (e) {
+      if (e.code !== strictFinanceMod.CODE) throw e;
+      return json(423, { ok: false, code: e.code, error: e.message });
+    }
     const want = body.enabled;
     try { saveCronArmed(want); }                       // durable persist FIRST so a crash can't drop the user's intent
     catch (e) { return json(500, { error: 'could not persist the arm flag: ' + ((e && e.message) || e) }); }
-    // Lane 4D: a deliberate arm write IS the resume signal — it lifts a durable E-STOP halt in EITHER direction
-    // (arming resumes; an explicit disarm supersedes the halt, leaving a plain disarmed scheduler).
-    if (cronHalted) {
+    // Outside strict finance, either arm write explicitly supersedes the scheduler halt.
+    // A strict-finance disarm is a safety-only action and must leave the E-STOP in force.
+    if (cronHalted && (!strictFinance.enabled() || want)) {
       try { saveCronHalted(false); }
       catch (e) { return json(500, { error: 'could not persist the cron unhalt: ' + ((e && e.message) || e) }); }
       cronHalted = false;
-      pluginRuntime.setJobsPaused(false);
+      pluginRuntime.setJobsPaused(strictFinance.enabled());
     }
     cronArmed = want;                                  // live in-memory state (GET /api/cron reflects this)
     if (want) armCron(); else disarmCron();            // start/stop the live tick NOW — a due job fires within one tick
@@ -15156,6 +15211,11 @@ function handleCronUpdate(req, res) {
   const json = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
   readBody(req, 1 << 16).then(async raw => {
     let body; try { body = JSON.parse(raw) || {}; } catch (e) { return json(400, { error: 'bad json' }); }
+    try { strictFinance.assertRoutinePause(body); }
+    catch (e) {
+      if (e.code !== strictFinanceMod.CODE) throw e;
+      return json(423, { ok: false, code: e.code, error: e.message });
+    }
     const id = String(body.id || '');
     if (!cronStore.getJob(cronJobs, id)) return json(404, { error: 'no such routine' });
     const patch = Object.assign({}, body.patch || {});
@@ -18148,6 +18208,13 @@ async function handleRun(req, res) {
   try { body = JSON.parse(await readBody(req, 2 << 20, res)); }
   catch (e) { if (res.headersSent) return; res.writeHead(400); return res.end('bad json'); }   // over-limit already answered 413
   const { model, system, messages = [], agentId = 'agent', isTask = false, provider, fallbackModels, fallbackProviders } = body || {};
+  if (!(body && body.internal)) {
+    try { financeDirectiveStore.read(); }
+    catch (error) {
+      console.error('[finance-directive] Cannot start run:', error.message);
+      return respondJson(res, 503, { ok: false, error: 'Active finance directive is unavailable; repair its storage before starting a run.' });
+    }
+  }
   const recurring = !!(body && body.recurring);   // the browser's mint detector saw this task SHAPE before → salience boost for reflection
   // REASON-ONLY SELF-TALK (retitle / goal-judge / pitch / autopilot): the caller composed a complete strict-format
   // prompt and parses the raw reply. runOnce keeps that system prompt VERBATIM (no manual/capability/skill/memory
@@ -18660,6 +18727,7 @@ async function runOnceCore(o) {
   if (o.streamId) runStartExtra.streamId = String(o.streamId);
   const runStartedAt = Date.now();
   let system = rawSystem;
+  if (!o.internal && !o.outputOnly) system = String(system || '') + financeDirectiveContext(financeDirectiveStore.read());
   if (!o.internal && !o.outputOnly && !String(system || '').includes(DIRECTIVE_LANGUAGE)) {
     system = String(system || '') + '\n\n' + DIRECTIVE_LANGUAGE;
   }
@@ -22376,6 +22444,31 @@ async function handleAutonomyWrite(req, res) {
   }
 }
 
+function handleFinanceDirectiveGet(req, res) {
+  try { return respondJson(res, 200, { active: financeDirectiveStore.read() }); }
+  catch (error) {
+    console.error('[finance-directive] Cannot read active directive:', error.message);
+    return respondJson(res, 503, { ok: false, error: 'Active finance directive storage is unavailable or invalid.' });
+  }
+}
+
+async function handleFinanceDirectiveActivation(req, res) {
+  let body;
+  try { body = JSON.parse(await readBody(req, 1 << 16, res)); }
+  catch (_) { if (!res.headersSent) respondJson(res, 400, { ok: false, error: 'Invalid directive request.' }); return; }
+  if (!body || body.confirm !== true || body.title !== 'F-00 Financial Authority Directive'
+      || typeof body.text !== 'string' || !body.text.trim() || body.text.length > 8000) {
+    return respondJson(res, 400, { ok: false, error: 'Confirm the saved F-00 title and text before activation.' });
+  }
+  try {
+    const active = financeDirectiveStore.activate(body.title, body.text);
+    return respondJson(res, 200, { ok: true, active, enforcement: 'existing finance guard remains in force' });
+  } catch (error) {
+    console.error('[finance-directive] Activation failed:', error.message);
+    return respondJson(res, 503, { ok: false, error: 'F-00 activation could not be saved and verified; check its current status.' });
+  }
+}
+
 // POST /api/autonomy/posture { posture:{ initiative, reach, leashPerDay }, beliefs?:{ known, beliefs } } — the
 // frontend MIRRORS the dial here on every change (and the awakening cadence beat sets the opening posture), so the
 // SERVER-side night-shift driver reads a truth it owns, not a webview it can't see. The optional beliefs snapshot
@@ -22384,6 +22477,13 @@ async function handleAutonomyWrite(req, res) {
 async function handleAutonomyPosture(req, res) {
   const json = (code, obj) => { if (res.headersSent) return; res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
   let body; try { body = JSON.parse(await readBody(req, 1 << 18, res)) || {}; } catch (e) { if (res.headersSent) return; res.writeHead(400); return res.end('bad json'); }
+  if (strictFinance.enabled()) {
+    try { strictFinance.assertAutonomyStandDown(body, commanderPosture.posture(), haltStatus().halted); }
+    catch (e) {
+      if (e.code !== strictFinanceMod.CODE) throw e;
+      return json(423, { ok: false, code: e.code, error: e.message });
+    }
+  }
   const posture = (body.posture && typeof body.posture === 'object') ? body.posture
     : ((body.initiative || body.reach || body.leashPerDay != null) ? body : null);   // tolerate a flat posture too
   const postureWritten = !!posture;
@@ -23173,7 +23273,7 @@ async function handleHaltResume(req, res) {
     armLoops(true);
   });
   attempt('overseer', () => { overseer.resumeReviews(); });
-  attempt('plugins', () => { pluginRuntime.setJobsPaused(false); reloadExtensions().catch((e) => failNote('plugins.resume', e)); });   // E-STOP paused their jobs
+  attempt('plugins', () => { pluginRuntime.setJobsPaused(strictFinance.enabled()); reloadExtensions().catch((e) => failNote('plugins.resume', e)); });   // E-STOP paused their jobs
   const state = haltStatus();
   const ok = !state.halted && Object.keys(errors).length === 0;
   haltJson(res, ok ? 200 : 503, { ok, ...state, errors });
@@ -23353,6 +23453,11 @@ async function handleChannelSync(req, res) {
 async function handleChannelDisconnect(req, res) {
   const body = await readJsonBody(req, readBody, 4096, res);
   if (body === null) return respondJson(res, 400, { error: 'bad json' });
+  try { strictFinance.assertChannelDisconnect(body); }
+  catch (e) {
+    if (e.code !== strictFinanceMod.CODE) throw e;
+    return respondJson(res, 423, { ok: false, code: e.code, error: e.message });
+  }
   const purge = !!body.purge;
   stopTelegram();
   let persisted = true;
@@ -23527,6 +23632,11 @@ async function handleTelegramBotAction(req, res, botId, verb) {
   }
   const body = await readJsonBody(req, readBody, 4096, res);
   if (body === null) return json(400, { error: 'bad json' });
+  try { strictFinance.assertChannelDisconnect(body); }
+  catch (e) {
+    if (e.code !== strictFinanceMod.CODE) throw e;
+    return json(423, { ok: false, code: e.code, error: e.message });
+  }
   const purge = !!body.purge;
   let persisted = purge ? saveTelegramBotRecord(botId, null) : saveTelegramBotRecord(botId, { enabled: false });
   if (!persisted) return json(500, { error: purge ? 'could not prove the bot token was removed; the bot remains connected' : 'could not prove disconnect was saved; the bot remains connected' });
@@ -23806,6 +23916,11 @@ async function handleGenericChannelSync(req, res, id) {
 async function handleGenericChannelDisconnect(req, res, id) {
   const body = await readJsonBody(req, readBody, 4096, res);
   if (body === null) return respondJson(res, 400, { error: 'bad json' });
+  try { strictFinance.assertChannelDisconnect(body); }
+  catch (e) {
+    if (e.code !== strictFinanceMod.CODE) throw e;
+    return respondJson(res, 423, { ok: false, code: e.code, error: e.message });
+  }
   const purge = !!body.purge;
   stopGenericChannel(id);
   let persisted = true;

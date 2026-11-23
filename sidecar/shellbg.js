@@ -116,6 +116,7 @@
     deps = deps || {};
     const spawn = deps.spawn;
     if (typeof spawn !== 'function') throw new Error('shellbg requires an injected spawn');
+    const stopSpawn = deps.stopSpawn || spawn;
     const now = (deps.clock && typeof deps.clock.now === 'function') ? deps.clock.now : () => 0;
     const redact = typeof deps.redact === 'function' ? deps.redact : (s) => s;
     const onExit = typeof deps.onExit === 'function' ? deps.onExit : () => {};
@@ -467,7 +468,7 @@
          lands here), so it is never named to taskkill again: its orphans are reached only through the second pass,
          by the (pid, creation) identity the table re-proves. */
       const tk = r.exitSeen ? { ok: true, skipped: true }
-        : await runTaskkill(spawn, ['/pid', String(pid), '/T', '/F'], TASKKILL_MS);
+        : await runTaskkill(stopSpawn, ['/pid', String(pid), '/T', '/F'], TASKKILL_MS);
       if (!tk.ok) {
         // taskkill could not take the tree: at least stop the root we hold, then let the table say what survived
         try { if (r.child && typeof r.child.kill === 'function') r.child.kill(); } catch (e) { bgFailNote('shellbg.kill.fallback', e); }
@@ -496,7 +497,7 @@
         // taskkill's /T tree, and a taskkill that failed outright reached none of them
         const args = ['/F', '/T'];
         for (const s of res.survivors) args.push('/pid', String(s.pid));
-        await runTaskkill(spawn, args, TASKKILL_MS);
+        await runTaskkill(stopSpawn, args, TASKKILL_MS);
         res = await confirmGone({ snapshot: processTable, targets: res.survivors, attempts: VERIFY_ATTEMPTS, pollMs: VERIFY_POLL_MS, sleep });
       }
       if (res.unknown) {

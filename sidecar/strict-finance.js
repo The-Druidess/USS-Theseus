@@ -2,6 +2,7 @@
    No positive-cost adapter is admitted until it supplies a guaranteed charge bound. */
 'use strict';
 
+const { isSafetyStop } = require('./tools/builtin/station-control.js');
 const POLICY = Object.freeze({ day: 50, week: 500, month: 1000, timezone: 'America/Phoenix' });
 const CODE = 'strict_finance_blocked';
 const READ_TOOLS = new Set([
@@ -16,7 +17,9 @@ const LOCAL_POST_ROUTES = new Set([
   '/api/run', '/api/cancel', '/api/run/steer', '/api/station/ack', '/api/session',
   '/api/consent', '/api/consent/ack', '/api/consent/answer', '/api/save', '/api/save/recovery-ack',
   '/api/roster', '/api/routing', '/api/routing/sample/stop', '/api/budget/caps', '/api/budget/settle',
-  '/api/halt', '/api/halt/resume', '/api/activity',
+  '/api/halt', '/api/halt/resume', '/api/activity', '/api/autonomy/posture',
+  '/api/lifecycle/quit', '/api/subagents/interrupt', '/api/loops/control', '/api/cron/arm', '/api/cron/update', '/api/remote/enable',
+  '/api/auth/claude-cli/cancel',
   '/api/memory/turnin', '/api/memory/pin', '/api/memory/edit', '/api/memory/forget',
   '/api/memory/declined/restore', '/api/memory/reset',
 ]);
@@ -105,23 +108,80 @@ function makeStrictFinance(opts) {
       if (call.name !== 'treasury.status') allow('tool', call.name);
       return;
     }
-    if (tool.provenance === 'host' && call.name === 'station.control' && call.args?.action === 'estop.engage') return;
-    if (tool.provenance === 'host' && call.name === 'team.interrupt') return;
+    if (tool.provenance === 'host' && call.name === 'station.control' && isSafetyStop(call.args)) return;
+    if (tool.provenance === 'host' && ['team.interrupt', 'terminal.interrupt', 'terminal.stop', 'shell.bg.kill'].includes(call.name)) return;
+    if (tool.provenance === 'host' && call.name === 'loop.manage' && ['pause', 'stop'].includes(call.args?.action)) return;
+    if (tool.provenance === 'host' && call.name === 'routine.manage' && typeof call.args?.action === 'string'
+        && call.args.action.trim().toLowerCase() === 'pause') return;
     deny('tool "' + call.name + '" has no verified zero-cost execution path. ASK/Full Power cannot override this gate.', 'tool', call.name);
   }
   function assertProcess() {
     if (enabled()) deny('subprocess execution is blocked because its possible charges are unbounded.', 'process', 'subprocess');
   }
+  function assertAutonomyStandDown(body, current, halted) {
+    if (!enabled()) return;
+    const posture = body && body.posture;
+    const reachOrder = ['observe', 'sandbox', 'reach'];
+    const valid = body && typeof body === 'object' && !Array.isArray(body)
+      && Object.keys(body).every(key => ['posture', 'resumeHalt'].includes(key))
+      && (body.resumeHalt === undefined || typeof body.resumeHalt === 'boolean')
+      && !(body.resumeHalt && halted)
+      && posture && typeof posture === 'object' && !Array.isArray(posture)
+      && Object.keys(posture).every(key => ['v', 'initiative', 'reach', 'leashPerDay'].includes(key))
+      && (posture.v === undefined || posture.v === 1)
+      && posture.initiative === 'wait'
+      && current && reachOrder.includes(current.reach) && reachOrder.includes(posture.reach)
+      && reachOrder.indexOf(posture.reach) <= reachOrder.indexOf(current.reach)
+      && Number.isInteger(posture.leashPerDay) && Number.isInteger(current.leashPerDay)
+      && posture.leashPerDay >= 1 && posture.leashPerDay <= current.leashPerDay;
+    if (!valid) deny('only a non-widening WAIT posture without resuming an E-STOP is approved.', 'route', 'autonomy stand-down');
+    audit('allowed', 'route', 'autonomy stand-down');
+  }
+  function assertLoopStop(body) {
+    if (!enabled()) return;
+    if (!body || !['pause', 'stop'].includes(body.action)) {
+      deny('only pausing or stopping a loop is approved.', 'route', 'loop control');
+    }
+    audit('allowed', 'route', 'loop stop');
+  }
+  function assertCronDisarm(body) {
+    if (!enabled()) return;
+    if (!body || body.enabled !== false) deny('only disarming the scheduler is approved.', 'route', 'scheduler control');
+    audit('allowed', 'route', 'scheduler disarm');
+  }
+  function assertRoutinePause(body) {
+    if (!enabled()) return;
+    const patch = body && body.patch;
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch)
+        || Object.keys(patch).length !== 1 || patch.enabled !== false) {
+      deny('only pausing a routine is approved.', 'route', 'routine control');
+    }
+    audit('allowed', 'route', 'routine pause');
+  }
+  function assertChannelDisconnect(body) {
+    if (!enabled()) return;
+    if (body && body.purge) deny('disconnecting without deleting saved credentials is approved.', 'route', 'channel disconnect');
+    audit('allowed', 'route', 'channel disconnect');
+  }
+  function assertRemoteStop(body) {
+    if (!enabled()) return;
+    if (!body || body.on !== false) deny('only turning off remote access is approved.', 'route', 'remote control');
+    audit('allowed', 'route', 'remote stop');
+  }
   function routeRefusal(method, address) {
     if (!enabled()) return null;
     const url = new URL(address, 'http://localhost');
     if (method === 'GET' && url.pathname === '/api/spotify/status') return null;
+    if (method === 'POST' && ['/api/connectors/oauth/cancel', '/api/spotify/disconnect', '/api/browser/view/close'].includes(url.pathname)) return null;
+    if (method === 'POST' && /^\/api\/routing\/steptest\/[A-Za-z0-9_-]{1,80}\/stop$/.test(url.pathname)) return null;
+    if (method === 'POST' && /^\/api\/channels\/(?:telegram|discord|slack|matrix|signal)\/disconnect$/.test(url.pathname)) return null;
+    if (method === 'POST' && /^\/api\/channels\/telegram\/bots\/\d+\/disconnect$/.test(url.pathname)) return null;
     const blockedPrefix = /^\/(?:api\/(?:browser|computer|desktop|cua|plugins?|local-voice|tts|stt|realtime|credits|spotify|connectors\/oauth)|plugins|workshop-run)(?:\/|$)/;
     if (blockedPrefix.test(url.pathname)) {
       audit('blocked', 'route', method + ' ' + url.pathname.match(blockedPrefix)[0]);
       return refusal('this service is suspended in local-only mode.').message;
     }
-    if (method === 'POST' && ['/api/quests/mint', '/api/quests/notes'].includes(url.pathname)) {
+    if (method === 'POST' && ['/api/quests/mint', '/api/quests/notes', '/api/finance/directive'].includes(url.pathname)) {
       if (issue) return refusal('policy storage is unavailable or invalid.').message;
       try { allow('route', method + ' ' + url.pathname); }
       catch (error) { return error.message; }
@@ -185,6 +245,6 @@ function makeStrictFinance(opts) {
     }
     return result;
   }
-  return { enabled, assertProvider, assertTool, assertProcess, routeRefusal, fetch: fetchGuard, status };
+  return { enabled, assertProvider, assertTool, assertProcess, assertAutonomyStandDown, assertLoopStop, assertCronDisarm, assertRoutinePause, assertChannelDisconnect, assertRemoteStop, routeRefusal, fetch: fetchGuard, status };
 }
 module.exports = { POLICY, CODE, validateConfig, periodKeys, calendarTotals, makeStrictFinance };

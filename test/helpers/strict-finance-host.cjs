@@ -6,7 +6,8 @@ globalThis.fetch = async (input, init) => {
   const url = String(input);
   if (url.startsWith('http://127.0.0.1:11434/')) {
     const body = init?.body ? JSON.parse(init.body) : {};
-    fs.appendFileSync(path.join(process.env.STARNET_WORKSPACES, 'inference-calls.jsonl'), JSON.stringify({ url, model: body.model }) + '\n');
+    const system = Array.isArray(body.messages) ? body.messages.filter(m => m.role === 'system').map(m => m.content).join('\n') : '';
+    fs.appendFileSync(path.join(process.env.STARNET_WORKSPACES, 'inference-calls.jsonl'), JSON.stringify({ url, model: body.model, system }) + '\n');
     if (url.endsWith('/api/chat')) return new Response(JSON.stringify({
       model: body.model, message: { role: 'assistant', content: 'Local finance check complete.' },
       done: true, done_reason: 'stop', prompt_eval_count: 5, eval_count: 4,

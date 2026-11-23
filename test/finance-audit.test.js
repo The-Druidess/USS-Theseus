@@ -40,6 +40,7 @@ const { makeTreasuryTool, treasuryContext } = require('../sidecar/tools/builtin/
     const context = treasuryContext(make(reloaded).status(ledger, 123456));
     assert.equal((context.match(/"sequence"/g) || []).length, 10, 'automatic context is bounded to ten recent events');
     assert.match(context, /not purchases/);
+    assert.match(context, /refer financial approval and denial decisions to Q/);
     let tool;
     makeTreasuryTool({ status: () => guard.status(ledger, 123456) }).register({ register: value => { tool = value; } });
     assert.equal(tool.name, 'treasury.status');
@@ -52,6 +53,8 @@ const { makeTreasuryTool, treasuryContext } = require('../sidecar/tools/builtin/
     assert.equal(blocked.status(ledger, 123456).enforcement.state, 'DEGRADED');
     blocked.assertTool({ name: 'treasury.status' }, { provenance: 'host' });
     blocked.assertTool({ name: 'station.control', args: { action: 'estop.engage' } }, { provenance: 'host' });
+    blocked.assertAutonomyStandDown({ posture: { initiative: 'wait', reach: 'observe', leashPerDay: 1 } },
+      { initiative: 'leash', reach: 'sandbox', leashPerDay: 3 }, true);
     fs.writeFileSync(path.join(workspace, 'finance-audit.json'), '{broken');
     const corrupt = makeFinanceAudit(deps);
     assert.equal(corrupt.snapshot().durable, false);

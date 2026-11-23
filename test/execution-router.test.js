@@ -64,6 +64,18 @@ router.execute({ agentId: 'safe', cmd: 'x' }).then(async result => {
   A.eq(router.describeAgent('safe').effectiveBackend, 'docker', 'per-agent runtime truth names Docker');
   A.eq(router.describe().routing.perAgent, true, 'station execution status exposes dynamic routing');
   A.eq(router.killAllBackground(), 3, 'station halt reaches every distinct backend');
+  {
+    let finish;
+    const remote = Object.assign(fake('ssh'), { killAllBackground: () => new Promise(resolve => { finish = resolve; }) });
+    const waitRouter = makeExecutionRouter({ environments: { local, remote }, defaultBackendId: 'local' });
+    let done = false;
+    const wait = waitRouter.killAllBackgroundAndWait().then(() => { done = true; });
+    await new Promise(r => setImmediate(r));
+    A.eq(done, false, 'graceful shutdown waits for the remote stop request');
+    finish(1);
+    await wait;
+    A.eq(done, true, 'graceful shutdown continues after the remote request completes');
+  }
 
   // ---- an ASYNC backend reap (SSH) is dispatched, never an unhandledRejection (customer diagnostics 10-07) ----
   const unhandled = [];
