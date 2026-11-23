@@ -7,6 +7,9 @@ test/group-message-attachments.test.js
 test/bay-name-legibility.test.js
 test/treasurer-portal.test.js
 test/strict-finance.test.js
+test/crew-dispatch-prototype.test.js
+test/crew-dispatch-queue.test.js
+test/crew-message-tool.test.js
 test/finance-audit.test.js
 test/group-sessions.edge.test.js
 test/group-chat-picker.test.js

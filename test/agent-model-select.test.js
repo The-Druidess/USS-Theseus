@@ -98,7 +98,7 @@ A.ok(/function setAgentName[\s\S]{0,900}baseIdentity\(oldName, a\.role\)/.test(a
 
 // ---- review fix: the dossier picker re-fits the effort select on model change + effort is tied to the picked model ----
 A.ok(/ModelPicker\.onChange\(pickWrap/.test(ui), 'the dossier wires onChange so the effort select re-fits when the model changes');
-A.ok(/pick\.model \? \(pick\.effort/.test(ui), 'effort is only persisted for the PICKED model (never leaks onto a typed advanced model or a cleared pin)');
+A.ok(/usePicker \? \(pick\.effort/.test(ui), 'effort is only persisted for the PICKED model (never leaks onto a typed advanced model or a cleared pin)');
 
 // ---- COMMS AGENT SELECTOR: the top of the chat window picks which roster agent is on the line ----
 // The header markup exists (a native <select> + a truthful model readout), filled from the LIVE roster.
@@ -160,8 +160,16 @@ for (const file of ['frontend/app/stationui.js', 'website/app/app/stationui.js']
   A.eq(JSON.stringify(pin.saves[0]), JSON.stringify(['worker', 'fixture/byok', 'openrouter', 'medium']), file + ': explicit BYOK pin still saves');
   const advanced = dossier();
   advanced.pick({ model: '', provider: '', effort: '' });
-  advanced.nodes['#ag-model-in'].value = 'custom-model'; advanced.nodes['#ag-prov-in'].value = 'custom'; advanced.save();
+  advanced.nodes['#ag-model-in'].value = 'custom-model'; advanced.nodes['#ag-model-in'].listeners.input();
+  advanced.nodes['#ag-prov-in'].value = 'custom'; advanced.nodes['#ag-prov-in'].listeners.input(); advanced.save();
   A.eq(JSON.stringify(advanced.saves[0]), JSON.stringify(['worker', 'custom-model', 'custom', '']), file + ': deliberately typed advanced model still saves');
+  const override = dossier();
+  override.nodes['#ag-model-in'].value = 'qwen3.5:14b'; override.nodes['#ag-model-in'].listeners.input(); override.save();
+  A.eq(JSON.stringify(override.saves[0]), JSON.stringify(['worker', 'qwen3.5:14b', 'starnet', '']), file + ': advanced edit overrides an existing picker selection without inheriting effort');
+  const repick = dossier();
+  repick.nodes['#ag-model-in'].value = 'custom'; repick.nodes['#ag-model-in'].listeners.input();
+  repick.pick({ model: 'fixture/byok', provider: 'openrouter', effort: 'medium' }); repick.save();
+  A.eq(JSON.stringify(repick.saves[0]), JSON.stringify(['worker', 'fixture/byok', 'openrouter', 'medium']), file + ': a later picker selection supersedes advanced edits');
   const button = dossier(); button.nodes['#ag-model-clear'].listeners.click();
   A.eq(JSON.stringify(button.saves[0]), JSON.stringify(['worker', '', '', '']), file + ': dedicated clear button clears the same identity');
 }
@@ -170,11 +178,11 @@ for (const file of ['frontend/app/app.js', 'website/app/app/app.js']) {
   const treasurer = source.match(/function isTreasurerAgent\(a\) \{[\s\S]*?\n  \}/)[0];
   const restore = source.match(/function rehydrateRoster\(savedAgents\) \{[\s\S]*?\n  \}/)[0];
   const agents = new Map();
-  new Function('agents', 'agent', 'DATA', 'executionProfileOf', 'agentDocs', 'composeSystemPrompt', 'registerAgent', 'QTerminalStore', treasurer + '\n' + restore + '; rehydrateRoster(' + JSON.stringify([
+  new Function('agents', 'agent', 'DATA', 'executionProfileOf', 'agentDocs', 'composeSystemPrompt', 'registerAgent', 'QTerminalStore', 'migrateAgentDirective', treasurer + '\n' + restore + '; rehydrateRoster(' + JSON.stringify([
     { id: 'inherited', model: null, provider: null, reasoningEffort: null },
     { id: 'legacy', model: '' },
     { id: 'pinned', model: 'fixture/byok', provider: 'openrouter', reasoningEffort: 'low' }
-  ]) + ');')(agents, { model: 'fixture/managed', provider: 'starnet', reasoningEffort: 'high' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {}, QTerminalStore);
+  ]) + ');')(agents, { model: 'fixture/managed', provider: 'starnet', reasoningEffort: 'high' }, { DEFAULT_SKIN: 'default' }, () => 'local', () => {}, () => '', () => {}, QTerminalStore, () => {});
   for (const id of ['inherited', 'legacy']) {
     A.eq(agents.get(id).model, null, file + ': ' + id + ' stays unpinned after reload');
     A.eq(agents.get(id).provider, null, file + ': ' + id + ' does not acquire the managed provider on reload');

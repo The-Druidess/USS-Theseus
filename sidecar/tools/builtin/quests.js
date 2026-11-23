@@ -100,7 +100,10 @@
       run: async (args, ctx) => {
         args = args || {};
         const op = str(args.op);
-        const agentId = (ctx && ctx.agentId) || 'agent';
+        const agentId = ctx && ctx.agentId;
+        if (typeof agentId !== 'string' || !/^[A-Za-z0-9_-]{1,40}$/.test(agentId)) {
+          throw new Error('Quest updates require a valid agent identity.');
+        }
         const runId = ctx && ctx.runId ? String(ctx.runId) : null;
 
         if (op === 'read') {

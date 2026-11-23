@@ -7,10 +7,13 @@
    (the 'quest' freebie capId), NOT the notebook — so a bare interactive office still grants it. */
 'use strict';
 const A = require('./_assert.js');
+const assert = require('node:assert/strict');
 const path = require('path');
 const { makeQuestStore } = require('../sidecar/quest-store.js');
 const { makeQuestTools } = require('../sidecar/tools/builtin/quests.js');
 const { CAP_REGISTRY } = require('../sidecar/capability/registry.js');
+const { makeRegistry, attachFinancialGuard } = require('../sidecar/tools/registry.js');
+const { makeStrictFinance, POLICY } = require('../sidecar/strict-finance.js');
 
 function memFs() {
   const files = new Map();
@@ -31,6 +34,30 @@ const ctxOf = (agentId, runId) => ({ agentId, runId });
 
 (async () => {
 
+  {
+    const store = fresh();
+    const owned = await store.mint({ title: 'Scoped dispatch', contract: { type: 'attest', key: '' },
+      steps: [{ key: 'work', label: 'Work' }], agentId: 'hero' }, 1);
+    const registry = makeRegistry();
+    registry.register(toolFor(store));
+    const finance = makeStrictFinance({ read: () => ({ ...POLICY, version: 1, enabled: true,
+      mode: 'local-only', localModels: ['qwen3.5:4b'] }), onError() {} });
+    attachFinancialGuard((call, def) => finance.assertTool(call, def));
+    const call = { id: 'quest-call', name: 'quest.update',
+      args: { op: 'progress', id: owned.id, stepKey: 'work', note: 'done' } };
+    try {
+      const missingIdentity = await registry.dispatch(call, {});
+      assert.equal(missingIdentity.isError, true);
+      assert.match(missingIdentity.content, /valid agent identity/);
+      const refused = await registry.dispatch(call, { agentId: 'intruder' });
+      assert.match(refused.content, /not one of your open quests/);
+      assert.equal(store.get(owned.id).steps[0].done, false);
+      const permitted = await registry.dispatch(call, { agentId: 'hero', runId: 'run1' });
+      assert.equal(permitted.isError, false);
+      assert.equal(store.get(owned.id).steps[0].done, true);
+    } finally { attachFinancialGuard(null); }
+  }
+
   // ---- CAP_REGISTRY: quest.update is granted under the universally-present `computer` object (the compute freebie) ----
   // It MOVED off the notebook: the interactive baseline office is compute-only with no placed notebook, so a
   // notebook-scoped quest.update was ABSENT while the STATION QUESTS prompt commanded it (truthful-telemetry break).
@@ -47,6 +74,7 @@ const ctxOf = (agentId, runId) => ({ agentId, runId });
   {
     const store = fresh();
     const tool = toolFor(store);
+    await assert.rejects(tool.run({ op: 'mint', title: 'Unattributed' }, {}), /valid agent identity/);
     const owned = await store.mint({ title: 'Investigate the issue', desc: 'Original request',
       contract: { type: 'attest', key: '' }, agentId: 'hero', urgency: 'yellow' }, 1);
     const shared = await store.mint({ title: 'Shared issue', desc: 'Shared briefing',

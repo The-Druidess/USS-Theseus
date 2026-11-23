@@ -2998,7 +2998,7 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const pinned = !!model;
     // PRIMARY control: the shared ModelPicker (grouped catalog + effort), preselected + populated in wireConfig.
     // FALLBACK (when the component is unavailable): the original free-text model/provider inputs, always present in
-    // an <details> as an escape hatch for a model id that isn't in the catalog. SAVE reads the picker first.
+    // a <details> as an escape hatch for a model id that isn't in the catalog.
     const hasPicker = (typeof ModelPicker !== 'undefined');
     const picker = hasPicker
       ? '<div class="set-row mc-pick-row"><label for="ag-model-pick-model">MODEL</label>' +
@@ -3073,6 +3073,12 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
     const mSave = body.querySelector('#ag-model-save');
     const mMsg = body.querySelector('#ag-model-msg');
     const setMMsg = (t, ok) => { if (mMsg) { mMsg.textContent = t || ''; mMsg.className = 'msg' + (ok ? ' ok' : ''); } };
+    const modelInput = body.querySelector('#ag-model-in');
+    const providerInput = body.querySelector('#ag-prov-in');
+    let advancedEdited = false;
+    [modelInput, providerInput].forEach(input => {
+      if (input) input.addEventListener('input', () => { advancedEdited = true; });
+    });
     // fill + preselect the picker from the agent's current pin (async — the catalog is fetched on open)
     const pickWrap = body.querySelector('#ag-model-pick');
     if (pickWrap && typeof ModelPicker !== 'undefined') {
@@ -3082,10 +3088,9 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       ModelPicker.onChange(pickWrap, pick => {
         // Keep the advanced fallback aligned with a deliberate picker change. In particular,
         // an empty selection must clear the old pin, not resurrect its model/provider on SAVE.
-        const modelInput = body.querySelector('#ag-model-in');
-        const providerInput = body.querySelector('#ag-prov-in');
         if (modelInput) modelInput.value = pick.model || '';
         if (providerInput) providerInput.value = pick.provider || '';
+        advancedEdited = false;
       });
     }
     const applyModel = (model, provider, effort) => {
@@ -3095,15 +3100,15 @@ const StationUI = typeof document === 'undefined' ? {} : (() => {
       sfx('click'); rerender('agents');
     };
     if (mSave) mSave.addEventListener('click', () => {
-      // picker is primary; the advanced free-text is the escape hatch for a model id not in the catalog.
       const pick = (pickWrap && typeof ModelPicker !== 'undefined') ? ModelPicker.read(pickWrap) : { model: '', provider: '', effort: '' };
-      const advModel = ((body.querySelector('#ag-model-in') || {}).value || '').trim();
-      const advProv = ((body.querySelector('#ag-prov-in') || {}).value || '').trim();
-      const model = pick.model || advModel;
-      const provider = pick.model ? pick.provider : (advModel ? advProv : '');
+      const advModel = ((modelInput || {}).value || '').trim();
+      const advProv = ((providerInput || {}).value || '').trim();
+      const usePicker = !!pick.model && !advancedEdited;
+      const model = usePicker ? pick.model : advModel;
+      const provider = usePicker ? pick.provider : (advModel ? advProv : '');
       // effort belongs to the PICKED model only — never let an effort left in the select leak onto a typed
       // advanced model (or onto a cleared pin). onChange above already keeps pick.effort valid for pick.model.
-      applyModel(model, provider, pick.model ? (pick.effort || '') : '');
+      applyModel(model, provider, usePicker ? (pick.effort || '') : '');
     });
     const mClear = body.querySelector('#ag-model-clear');
     if (mClear) mClear.addEventListener('click', () => applyModel('', '', ''));

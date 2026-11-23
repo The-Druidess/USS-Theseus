@@ -68,8 +68,12 @@ assert.match(noAudit.routeRefusal('POST', '/api/quests/notes'), /audit storage/)
 denied(() => guard.assertTool({ name: 'quest.update', args: {} }, { provenance: 'host' }));
 assert.doesNotThrow(() => guard.assertTool({ name: 'quest.update', args: { op: 'read', id: 'q:1' } }, { provenance: 'host' }));
 for (const op of ['mint', 'start', 'progress', 'attest_complete']) {
-  denied(() => guard.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'host' }));
+  assert.doesNotThrow(() => guard.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'host' }));
+  denied(() => guard.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'connector' }));
+  denied(() => corrupt.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'host' }));
+  denied(() => noAudit.assertTool({ name: 'quest.update', args: { op } }, { provenance: 'host' }));
 }
+denied(() => guard.assertTool({ name: 'quest.update', args: { op: 'confirm' } }, { provenance: 'host' }));
 denied(() => guard.assertTool({ name: 'quest.update', args: { op: 'read' } }, { provenance: 'connector' }));
 denied(() => noAudit.assertTool({ name: 'quest.update', args: { op: 'read' } }, { provenance: 'host' }));
 assert.match(guard.routeRefusal('GET', '/plugins/example'), /Strict finance/);

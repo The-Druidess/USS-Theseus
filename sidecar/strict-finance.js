@@ -11,6 +11,7 @@ const READ_TOOLS = new Set([
   'treasury.status',
   'crew.directive',
 ]);
+const LOCAL_QUEST_OPS = new Set(['read', 'start', 'progress', 'attest_complete', 'mint']);
 const LOCAL_POST_ROUTES = new Set([
   '/api/run', '/api/cancel', '/api/run/steer', '/api/station/ack', '/api/session',
   '/api/consent', '/api/consent/ack', '/api/consent/answer', '/api/save', '/api/save/recovery-ack',
@@ -94,8 +95,9 @@ function makeStrictFinance(opts) {
   }
   function assertTool(call, tool) {
     if (!enabled()) return;
-    if (tool.provenance === 'host' && call.name === 'quest.update' && call.args?.op === 'read') {
-      allow('tool', 'quest.update:read');
+    if (tool.provenance === 'host' && call.name === 'quest.update' && LOCAL_QUEST_OPS.has(call.args?.op)) {
+      if (issue && call.args.op !== 'read') deny('policy storage is unavailable or invalid.', 'tool', call.name);
+      allow('tool', 'quest.update:' + call.args.op);
       return;
     }
     if (tool.provenance === 'host' && READ_TOOLS.has(call.name)) {
