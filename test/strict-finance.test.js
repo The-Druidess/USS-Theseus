@@ -26,6 +26,19 @@ denied(() => guard.assertProvider('ollama', '', { model: 'qwen3:cloud' }));
 denied(() => guard.assertProvider('ollama', '', { model: 'unapproved:latest' }));
 denied(() => guard.assertProcess());
 denied(() => guard.assertTool({ name: 'station.status', args: {} }, { provenance: 'connector' }));
+const slackSendGuard = makeStrictFinance({
+  read: () => config, onError() {},
+  slackAuthorized: () => true,
+  isSlackTarget: target => target === 'slack-chat'
+});
+slackSendGuard.assertTool({ name: 'channel.send', args: { target: 'slack-chat' } }, { provenance: 'host' });
+denied(() => slackSendGuard.assertTool({ name: 'channel.send', args: { target: 'discord-chat' } }, { provenance: 'host' }));
+denied(() => slackSendGuard.assertTool({ name: 'channel.send', args: { target: 'slack-chat' } }, { provenance: 'connector' }));
+denied(() => guard.assertTool({ name: 'channel.send', args: { target: 'slack-chat' } }, { provenance: 'host' }));
+const unapprovedSlack = makeStrictFinance({ read: () => config, onError() {}, isSlackTarget: () => true, slackAuthorized: () => false });
+denied(() => unapprovedSlack.assertTool({ name: 'channel.send', args: { target: 'slack-chat' } }, { provenance: 'host' }));
+const brokenSlackTarget = makeStrictFinance({ read: () => config, onError() {}, isSlackTarget: () => { throw new Error('unavailable'); }, slackAuthorized: () => true });
+denied(() => brokenSlackTarget.assertTool({ name: 'channel.send', args: { target: 'slack-chat' } }, { provenance: 'host' }));
 assert.throws(() => validateConfig({ ...config, localModels: ['qwen3:cloud'] }), /Invalid/);
 assert.throws(() => validateConfig({ ...config, day: 0 }), /Invalid/);
 assert.throws(() => validateConfig({ ...config, enabled: false }), /Invalid/);
@@ -138,6 +151,7 @@ assert.match(guard.routeRefusal('POST', '/api/quests/update'), /Strict finance/)
 assert.match(corrupt.routeRefusal('POST', '/api/quests/mint'), /policy storage/);
 assert.match(corrupt.routeRefusal('POST', '/api/finance/directive'), /policy storage/);
 const noAudit = makeStrictFinance({ read: () => config, onError() {}, audit: { record: () => false } });
+assert.throws(() => noAudit.assertSlackReviewAction('retry-reply'), /audit storage/, 'Slack review decisions fail closed when audit is unavailable');
 for (const url of ['/api/lifecycle/quit', '/api/subagents/interrupt', '/api/loops/control', '/api/cron/arm']) {
   assert.equal(noAudit.routeRefusal('POST', url), null);
 }
@@ -197,6 +211,30 @@ assert.throws(() => calendarTotals([{ ts: midnight, usd: -1 }], now), /Invalid/)
 assert.throws(() => calendarTotals([{ ts: now + 1, usd: 1 }], now), /Future/);
 
 async function main() {
+  let slackAllowed = false;
+  const slackGuard = makeStrictFinance({ read: () => config, onError() {}, slackAuthorized: () => slackAllowed });
+  const slackCalls = [];
+  const slackFetch = async (url, init) => { slackCalls.push({ url, init }); return { status: 200 }; };
+  await assert.rejects(slackGuard.slackFetch(slackFetch, 'https://slack.com/api/apps.connections.open', { method: 'POST' }), error => error.code === CODE);
+  slackAllowed = true;
+  await slackGuard.slackFetch(slackFetch, 'https://slack.com/api/apps.connections.open', { method: 'POST' });
+  await slackGuard.slackFetch(slackFetch, 'https://slack.com/api/chat.postMessage', { method: 'POST' });
+  assert.equal(slackCalls.length, 2);
+  assert.equal(slackCalls[0].init.redirect, 'manual');
+  for (const url of ['https://slack.com.evil.test/api/chat.postMessage', 'https://slack.com/api/files.upload',
+    'https://slack.com/api/chat.postMessage?other=1', 'http://slack.com/api/chat.postMessage']) {
+    await assert.rejects(slackGuard.slackFetch(slackFetch, url, { method: 'POST' }), error => error.code === CODE);
+  }
+  await assert.rejects(slackGuard.slackFetch(slackFetch, 'https://slack.com/api/chat.postMessage', { method: 'GET' }));
+  await assert.rejects(slackGuard.slackFetch(async () => ({ status: 302 }), 'https://slack.com/api/chat.postMessage', { method: 'POST' }));
+  slackGuard.assertSlackSocket('wss://wss-primary.slack.com/link/?ticket=fake');
+  for (const url of ['wss://slack.com.evil.test/', 'ws://wss-primary.slack.com/', 'wss://user@wss-primary.slack.com/']) {
+    denied(() => slackGuard.assertSlackSocket(url));
+  }
+  denied(() => noAudit.assertSlackAuthorizationChange());
+  slackAllowed = false;
+  denied(() => slackGuard.assertSlackSocket('wss://wss-primary.slack.com/link/'));
+  assert.equal(slackCalls.length, 2, 'invalid Slack requests never reach the network');
   guard.assertTool({ name: 'crew.directive' }, { provenance: 'host' });
   assert.throws(() => guard.assertTool({ name: 'crew.directive' }, { provenance: 'connector' }), /Strict finance/);
   let calls = 0;

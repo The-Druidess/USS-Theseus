@@ -10,13 +10,16 @@
        loadChatMap()                   -> { version, chats }
        getChatRecord(chatId)           -> record | undefined
        saveChatRecord(chatId, patch)   -> record                 // merge-and-persist one chat's mapping/config
-       loadOutbox(channel?)            -> [{id,channel,chatId,text,runId,agentId,reason,ts,tries}]
+       loadOutbox(channel?)            -> [{id,channel,chatId,text,runId,agentId,reason,ts,tries,paused}]
        pushOutbox(entry)               -> item                   // queue an UNDELIVERED reply (bounded, full refuses loss)
        removeOutbox(id)                -> bool                   // delivered (or given up) — drop it
        bumpOutboxTry(id)               -> item | undefined       // count one failed redelivery attempt
+       pauseOutbox(id, text)           -> item                   // preserve uncertain remainder without retry
+       resumeOutbox(id, text)          -> item                   // persist confirmed progress or known failure
        loadInbox(channel?)             -> [{id,channel,message,ts}] // admitted work not yet completed/queued
        pushInbox(entry)                -> item                   // idempotent durable intake receipt
        removeInbox(id)                 -> bool                   // completed (or durably queued)
+       completeSlackInbox(id)          -> item                   // retain compact deduplication receipt
      }
 
    Files live under WORKSPACES/channels/ — SIBLINGS of the notebook store, OUTSIDE the agent's fs jail
@@ -25,7 +28,8 @@
      • <root>/<agentId>.history.json  = { version:1, messages:[{role,content,ts}] }
      • <root>/chatmap.json            = { version:1, chats:{ "<chatId>": { agentId, model, persona, ... } } }
 
-   Save-safe: versioned; atomic temp+rename; a missing/corrupt file loads as empty and NEVER throws. History is
+   Save-safe: versioned; atomic temp+rename. Shared inbox/outbox journals that contain Slack data fail closed
+   instead of recovering a potentially stale backup. History is
    trimmed (lossy) on write to a bounded tail so the file and the replayed prompt stay within budget. Pure +
    deterministic: all I/O is the injected `fs` (sync), time is the injected `clock` — no Date.now/rng. */
 'use strict';
@@ -43,7 +47,7 @@
   // outbox bounds: a small, bounded queue of UNDELIVERED replies (durable send-retry, not a message archive).
   // Oldest drops first past maxOutbox; a single reply's stored text is capped so the file can't balloon.
   const OUTBOX_DEFAULTS = { maxOutbox: 50, maxOutboxChars: 16000 };
-  const INBOX_DEFAULTS = { maxInbox: 200 };
+  const INBOX_DEFAULTS = { maxInbox: 200, maxSlackReceipts: null };
 
   // A Set, not an object literal: `({user:1})['constructor']` is truthy, so an object-literal allowlist
   // silently admits every Object.prototype key. A hand-corrupted history claiming role:'constructor' or
@@ -51,6 +55,35 @@
   // role:'tool' was correctly dropped) and went to the provider as an invalid role — a 400 that wedges the
   // channel agent, which is exactly what this filter exists to prevent.
   const ROLES = new Set(['user', 'assistant', 'system']);
+
+  function validateSlackJournal(parsed, kind) {
+    if (kind !== 'inbox' && kind !== 'outbox') throw new Error('invalid channel journal kind');
+    if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.items))
+      throw new Error('Slack ' + kind + ' journal has an invalid format');
+    const ids = new Set(), operations = new Set();
+    for (const it of parsed.items) {
+      const valid = it && typeof it.id === 'string' && it.id && typeof it.channel === 'string'
+        && (it.recoveryHeld === undefined || typeof it.recoveryHeld === 'boolean')
+        && (kind === 'outbox'
+          ? typeof it.chatId === 'string' && typeof it.text === 'string' && (it.paused === undefined || typeof it.paused === 'boolean')
+            && (!it.recoveryHeld || it.paused === true)
+            && ((it.attemptText === undefined && it.afterAttemptText === undefined)
+              || (it.paused === true && typeof it.attemptText === 'string' && typeof it.afterAttemptText === 'string'
+                && it.text.endsWith(it.afterAttemptText)))
+            && ((it.operationKey === undefined && it.operationHash === undefined && it.operationState === undefined)
+              || (it.channel === 'slack' && /^[a-f0-9]{64}$/.test(it.operationKey)
+                && /^[a-f0-9]{64}$/.test(it.operationHash)
+                && ['pending', 'delivered', 'discarded'].includes(it.operationState)))
+          : it.message && typeof it.message === 'object' && typeof it.message.chatId === 'string' && (it.completed === undefined || typeof it.completed === 'boolean'));
+      if (!valid || ids.has(it.id)) throw new Error('Slack ' + kind + ' journal has invalid or duplicate entries');
+      if (kind === 'outbox' && it.operationKey) {
+        if (operations.has(it.operationKey)) throw new Error('Slack outbox journal has duplicate operation identities');
+        operations.add(it.operationKey);
+      }
+      ids.add(it.id);
+    }
+    return true;
+  }
 
   /* LEGACY HOP TURNS IN A PER-AGENT HISTORY (sec-taint2 09-25). Before hop history was keyed per chat lineage (hub.js
      hopHistoryKey, commit d37b81a57), a downstream work-line hop appended its handoff turn (the upstream stage's
@@ -119,6 +152,9 @@
     const inboxFile = () => pathMod.join(root, 'inbox.json');
     const outboxLimits = Object.assign({}, OUTBOX_DEFAULTS, d.outboxLimits || {});
     const inboxLimits = Object.assign({}, INBOX_DEFAULTS, d.inboxLimits || {});
+    if (inboxLimits.maxSlackReceipts !== null
+        && (!Number.isSafeInteger(inboxLimits.maxSlackReceipts) || inboxLimits.maxSlackReceipts < 1))
+      throw new Error('maxSlackReceipts must be a positive integer or null');
     let outboxSeq = 0;   // deterministic per-process id tail (clock.now() alone can collide within one ms)
 
     function readRaw(file) {   // parse-or-undefined for ONE file (missing / zero-length / corrupt -> undefined)
@@ -131,6 +167,37 @@
       const b = readRaw(file + '.bak');
       if (b !== undefined) { try { onRecover(file); } catch (_) {} return b; }   // a torn/corrupt main recovered from .bak
       return undefined;   // genuinely absent OR unrecoverable -> caller treats as empty (channels is fail-closed)
+    }
+    function slackMarker(file) {
+      try {
+        const raw = fs.readFileSync(file + '.slack-guard', 'utf8');
+        if (String(raw) !== JSON.stringify('slack-journal-v1')) throw new Error('invalid Slack journal guard');
+        return true;
+      } catch (e) {
+        if (e && e.code === 'ENOENT') return false;
+        throw new Error('cannot read Slack journal guard: ' + ((e && e.message) || e));
+      }
+    }
+    function assertSlackJournal(file, kind, requireMain) {
+      let raw;
+      try { raw = fs.readFileSync(file, 'utf8'); }
+      catch (e) {
+        if (!e || e.code !== 'ENOENT') throw new Error('cannot read Slack ' + kind + ' journal: ' + ((e && e.message) || e));
+        try { fs.readFileSync(file + '.bak', 'utf8'); }
+        catch (backupError) {
+          if (backupError && backupError.code === 'ENOENT') {
+            if (!requireMain) return false;
+            throw new Error('Slack ' + kind + ' journal is missing; reconciliation is required');
+          }
+          throw new Error('cannot check Slack ' + kind + ' journal backup: ' + ((backupError && backupError.message) || backupError));
+        }
+        throw new Error('Slack ' + kind + ' journal is missing; stale backup requires reconciliation');
+      }
+      let parsed;
+      try { parsed = JSON.parse(String(raw)); }
+      catch (_) { throw new Error('Slack ' + kind + ' journal is corrupt; stale backup requires reconciliation'); }
+      validateSlackJournal(parsed, kind);
+      return true;
     }
     function writeRaw(file, value) {
       ensureRoot();
@@ -149,8 +216,45 @@
       if (prev !== undefined) { try { writeRaw(file + '.bak', prev); } catch (e) { failNote('channels.store.bak', e); } }
       writeRaw(file, value);
     }
+    function readJournal(file, kind) {
+      const guarded = slackMarker(file);
+      if (guarded) {
+        assertSlackJournal(file, kind, true);
+      } else {
+        const main = readRaw(file), backup = readRaw(file + '.bak');
+        const containsSlack = value => value && Array.isArray(value.items) && value.items.some(it => it && it.channel === 'slack');
+        if (containsSlack(main) || containsSlack(backup)) {
+          assertSlackJournal(file, kind, true);
+          writeRaw(file + '.slack-guard', 'slack-journal-v1');
+        }
+      }
+      return readJson(file);
+    }
+    function prepareSlackJournal(file, kind) {
+      const guarded = slackMarker(file);
+      const hasMain = assertSlackJournal(file, kind, guarded);
+      if (!guarded) {
+        writeRaw(file + '.slack-guard', 'slack-journal-v1');
+        if (!hasMain) writeRaw(file, { version: 1, items: [] });
+      }
+      assertSlackJournal(file, kind, true);
+    }
 
     return {
+      assertSlackInboxSafe() { return assertSlackJournal(inboxFile(), 'inbox', slackMarker(inboxFile())); },
+      assertSlackOutboxSafe() { return assertSlackJournal(outboxFile(), 'outbox', slackMarker(outboxFile())); },
+      slackReviewStatus() {
+        this.assertSlackInboxSafe();
+        this.assertSlackOutboxSafe();
+        const inbox = this.loadInbox('slack');
+        const outbox = this.loadOutbox('slack');
+        return {
+          heldInbox: inbox.filter(it => !it.completed).length,
+          pausedReplies: outbox.filter(it => it.paused).length,
+          receipts: inbox.length,
+          receiptLimit: inboxLimits.maxSlackReceipts
+        };
+      },
       loadHistory(agentId) {
         const raw = readJson(historyFile(agentId));
         const msgs = raw && Array.isArray(raw.messages) ? raw.messages : [];
@@ -221,18 +325,33 @@
       // ---- durable outbox: replies that FAILED to send, kept for redelivery when the transport is back ----
       // Same save-safety as everything here (versioned, atomic, .bak-recovered, fail-closed on corrupt). One
       // file for ALL channels — each item carries its channel; hubs flush only their own.
-      loadOutbox(channel) {
-        const raw = readJson(outboxFile());
+      loadOutbox(channel, includeFinished) {
+        const raw = readJournal(outboxFile(), 'outbox');
         const items = raw && Array.isArray(raw.items) ? raw.items : [];
         const good = items.filter(it => it && typeof it.id === 'string' && typeof it.chatId === 'string' && typeof it.text === 'string');
-        return channel ? good.filter(it => it.channel === String(channel)) : good;
+        const active = includeFinished ? good : good.filter(it => it.operationState !== 'delivered' && it.operationState !== 'discarded');
+        return channel ? active.filter(it => it.channel === String(channel)) : active;
+      },
+
+      findSlackDirect(operationKey) {
+        return this.loadOutbox('slack', true).find(it => it.operationKey === operationKey);
       },
 
       pushOutbox(entry) {
         const e = entry || {};
         let text = String(e.text == null ? '' : e.text);
-        if (text.length > outboxLimits.maxOutboxChars) text = text.slice(0, outboxLimits.maxOutboxChars) + '\n… (reply truncated for redelivery)';
-        const items = this.loadOutbox();
+        if (text.length > outboxLimits.maxOutboxChars) {
+          if (e.requireComplete === true) throw new Error('reply exceeds the channel outbox limit; refusing to send without a complete delivery record');
+          text = text.slice(0, outboxLimits.maxOutboxChars) + '\n… (reply truncated for redelivery)';
+        }
+        if (String(e.channel) === 'slack') prepareSlackJournal(outboxFile(), 'outbox');
+        const items = this.loadOutbox(undefined, true);
+        if (e.operationKey !== undefined) {
+          if (e.channel !== 'slack' || !/^[a-f0-9]{64}$/.test(e.operationKey) || !/^[a-f0-9]{64}$/.test(e.operationHash))
+            throw new Error('invalid Slack direct operation identity');
+          if (items.some(it => it.operationKey === e.operationKey))
+            throw new Error('Slack direct operation already exists');
+        }
         let id;
         // The queue survives process restarts, but outboxSeq does not. A restart in the same clock tick (or
         // after a clock rollback) must not reuse a durable item's id: remove/bump operate by id and would
@@ -243,18 +362,30 @@
           id: id,
           channel: String(e.channel || ''), chatId: String(e.chatId || ''), text: text,
           runId: String(e.runId || ''), agentId: String(e.agentId || ''), reason: String(e.reason || ''),
-          ts: clock.now(), tries: 0
+          ts: clock.now(), tries: 0, paused: e.paused === true
         };
+        if (e.operationKey !== undefined) {
+          item.operationKey = e.operationKey;
+          item.operationHash = e.operationHash;
+          item.operationState = 'pending';
+        }
         // Never evict somebody else's undelivered answer to make room. The hub leaves the corresponding durable
         // inbox receipt pending when this throws, so intake backpressures and retries after the outbox drains.
-        if (items.length >= outboxLimits.maxOutbox) throw new Error('channel outbox is full; refusing to discard an undelivered reply');
+        if (items.filter(it => it.operationState !== 'delivered' && it.operationState !== 'discarded').length >= outboxLimits.maxOutbox)
+          throw new Error('channel outbox is full; refusing to discard an undelivered reply');
         items.push(item);
         writeJsonAtomic(outboxFile(), { version: 1, items: items });
         return item;
       },
 
       removeOutbox(id) {
-        const items = this.loadOutbox();
+        const items = this.loadOutbox(undefined, true);
+        const direct = items.find(it => it.id === String(id) && it.operationKey);
+        if (direct) {
+          if (direct.operationState !== 'pending') return false;
+          this.finishSlackDirect(id, 'discarded');
+          return true;
+        }
         const next = items.filter(it => it.id !== String(id));
         if (next.length === items.length) return false;
         writeJsonAtomic(outboxFile(), { version: 1, items: next });
@@ -262,7 +393,7 @@
       },
 
       bumpOutboxTry(id) {
-        const items = this.loadOutbox();
+        const items = this.loadOutbox(undefined, true);
         const it = items.find(x => x.id === String(id));
         if (!it) return undefined;
         it.tries = Math.min(1000000, Math.max(0, Number(it.tries) || 0) + 1);
@@ -273,7 +404,7 @@
       // Persist redelivery PROGRESS: after a partial flush (chunks 1..k delivered, k+1 failed) the item
       // keeps only the UNDELIVERED remainder, so the next pass never re-sends text the member already read.
       replaceOutboxText(id, text) {
-        const items = this.loadOutbox();
+        const items = this.loadOutbox(undefined, true);
         const it = items.find(x => x.id === String(id));
         if (!it) return undefined;
         it.text = String(text == null ? '' : text);
@@ -281,9 +412,54 @@
         return it;
       },
 
+      pauseOutbox(id, text, attemptText, afterAttemptText) {
+        const items = this.loadOutbox(undefined, true);
+        const it = items.find(x => x.id === String(id));
+        if (!it) throw new Error('cannot pause missing channel outbox item: ' + id);
+        it.text = String(text == null ? '' : text);
+        it.paused = true;
+        if (typeof attemptText === 'string' && typeof afterAttemptText === 'string') {
+          it.attemptText = attemptText;
+          it.afterAttemptText = afterAttemptText;
+        } else {
+          delete it.attemptText;
+          delete it.afterAttemptText;
+        }
+        writeJsonAtomic(outboxFile(), { version: 1, items: items });
+        return it;
+      },
+
+      resumeOutbox(id, text) {
+        const items = this.loadOutbox(undefined, true);
+        const it = items.find(x => x.id === String(id));
+        if (!it) throw new Error('cannot update missing channel outbox item: ' + id);
+        it.text = String(text == null ? '' : text);
+        it.paused = false;
+        delete it.recoveryHeld;
+        delete it.attemptText;
+        delete it.afterAttemptText;
+        writeJsonAtomic(outboxFile(), { version: 1, items: items });
+        return it;
+      },
+
+      finishSlackDirect(id, state) {
+        if (!['delivered', 'discarded'].includes(state)) throw new Error('invalid Slack direct outcome');
+        const items = this.loadOutbox(undefined, true);
+        const it = items.find(x => x.id === String(id) && x.channel === 'slack' && x.operationKey);
+        if (!it || it.operationState !== 'pending') throw new Error('missing pending Slack direct operation');
+        it.operationState = state;
+        it.text = '';
+        it.paused = false;
+        delete it.recoveryHeld;
+        delete it.attemptText;
+        delete it.afterAttemptText;
+        writeJsonAtomic(outboxFile(), { version: 1, items });
+        return it;
+      },
+
       // ---- durable inbox: admitted messages survive a crash between offset confirmation and reply ----
       loadInbox(channel) {
-        const raw = readJson(inboxFile());
+        const raw = readJournal(inboxFile(), 'inbox');
         const items = raw && Array.isArray(raw.items) ? raw.items : [];
         const good = items.filter(it => it && typeof it.id === 'string' && typeof it.channel === 'string'
           && it.message && typeof it.message === 'object' && typeof it.message.chatId === 'string');
@@ -294,14 +470,40 @@
         const e = entry || {};
         const id = String(e.id || '');
         if (!id || !e.message || typeof e.message !== 'object') throw new Error('bad channel inbox entry');
+        if (String(e.channel) === 'slack') prepareSlackJournal(inboxFile(), 'inbox');
         const items = this.loadInbox();
         const existing = items.find(it => it.id === id);
         if (existing) return existing;   // Telegram redelivery/recovery is idempotent at the durable intake edge
-        if (items.length >= inboxLimits.maxInbox) throw new Error('channel inbox is full; refusing to acknowledge more work');
+        if (items.filter(it => !(it.channel === 'slack' && it.completed === true)).length >= inboxLimits.maxInbox)
+          throw new Error('channel inbox is full; refusing to acknowledge more work');
+        if (String(e.channel) === 'slack' && inboxLimits.maxSlackReceipts !== null
+            && items.filter(it => it.channel === 'slack').length >= inboxLimits.maxSlackReceipts)
+          throw new Error('Slack receipt journal is full; refusing to acknowledge more work');
         const item = { id: id, channel: String(e.channel || ''), message: JSON.parse(JSON.stringify(e.message)), ts: clock.now() };
         items.push(item);
         writeJsonAtomic(inboxFile(), { version: 1, items: items });
         return item;
+      },
+
+      completeSlackInbox(id) {
+        const items = this.loadInbox();
+        const it = items.find(x => x.id === String(id) && x.channel === 'slack');
+        if (!it) throw new Error('cannot complete missing Slack inbox entry: ' + id);
+        it.message = { chatId: it.message.chatId };
+        it.completed = true;
+        delete it.recoveryHeld;
+        writeJsonAtomic(inboxFile(), { version: 1, items: items });
+        return it;
+      },
+
+      releaseRecoveredInbox(id) {
+        const items = this.loadInbox();
+        const it = items.find(x => x.id === String(id));
+        if (!it || it.channel === 'slack' || !it.recoveryHeld)
+          throw new Error('missing held non-Slack inbox entry');
+        delete it.recoveryHeld;
+        writeJsonAtomic(inboxFile(), { version: 1, items });
+        return it;
       },
 
       removeInbox(id) {
@@ -316,5 +518,5 @@
     };
   }
 
-  return { makeChannelStore, trimTail, _internals: { AID_RE, DEFAULTS, OUTBOX_DEFAULTS, INBOX_DEFAULTS } };
+  return { makeChannelStore, trimTail, _internals: { AID_RE, DEFAULTS, OUTBOX_DEFAULTS, INBOX_DEFAULTS, validateSlackJournal } };
 });

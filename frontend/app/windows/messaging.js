@@ -106,7 +106,12 @@
         },
         clear: (b) => { b.querySelector('#sl-bot-token').value = ''; b.querySelector('#sl-app-token').value = ''; },
         emptyMsg: 'paste BOTH Slack tokens first (xoxb-… and xapp-…)',
-        okMsg: '✓ connected — DM your Slack app' },
+        okMsg: '✓ connected — DM your Slack app',
+        extraHtml: '<div class="ch-bots"><div class="ch-bots-head">Slack delivery safety</div><p class="ch-note" id="sl-finance-status">Checking Slack authorization…</p>' +
+          '<button type="button" class="bb xs" id="sl-finance-authorize">AUTHORIZE SLACK</button> ' +
+          '<button type="button" class="bb xs" id="sl-finance-revoke">REVOKE SLACK</button><p class="ch-note">Authorization permits only the Slack connector, including reconnects; Slack charges are not verified. Revoking disconnects it.</p>' +
+          '<p class="ch-note" id="sl-review">Checking journal status…</p>' +
+          '<button type="button" class="bb xs" id="sl-review-load">REVIEW HELD ITEMS</button><div id="sl-review-items"></div></div>' },
 
       { id: 'matrix', title: 'MATRIX', pre: 'mx', accent: '#5bd18d',
         tagline: 'Reach your agent from any Matrix client (Element, …) on any homeserver.',
@@ -337,6 +342,20 @@
       // a standing backend warning (e.g. the owner binding failed to persist) rides EVERY state — real risk
       // the Commander must see, straight from channelStatusPayload (self-heals server-side once the disk agrees).
       if (st && st.warning) el.textContent += ' ⚠ ' + st.warning;
+      if (c.id === 'slack') {
+        const finance = body.querySelector('#sl-finance-status');
+        if (finance) finance.textContent = !st ? 'Slack authorization status unavailable.'
+          : st.financeAuthorizationError || (st.financeAuthorized ? 'Slack network exception authorized.' : 'Slack network exception not authorized.');
+        const review = body.querySelector('#sl-review');
+        if (review) {
+          const r = st && st.review;
+          review.textContent = !r ? 'Slack safety status unavailable.'
+            : r.error ? r.error
+            : 'Held inbox: ' + r.heldInbox + ' · Replies awaiting confirmation or review: ' + r.pausedReplies
+              + ' · Receipts: ' + r.receipts + (r.receiptLimit == null ? '' : '/' + r.receiptLimit)
+              + '. Disconnect Slack before reviewing held items.';
+        }
+      }
       // rail dot + overview summary row ride the SAME proven status (one truth, three projections)
       const dot = body.querySelector('#' + c.pre + '-dot');
       if (dot) dot.className = 'ch-rail-dot ' + (pairingBlocked ? 'st-wait' : stateClass(conn, inFlight, state, configured));
@@ -450,6 +469,83 @@
       armTimers[id] = setTimeout(() => { btn.dataset.armed = ''; disarm(id, btn, label); }, 2000);
     }
 
+    for (const [id, authorized, label] of [
+      ['sl-finance-authorize', true, 'AUTHORIZE SLACK'],
+      ['sl-finance-revoke', false, 'REVOKE SLACK']
+    ]) {
+      const b = body.querySelector('#' + id);
+      b.addEventListener('click', () => armed(id, b, label, 'CONFIRM ' + label, async () => {
+        b.disabled = true;
+        try {
+          const r = await Harness.api.post('/api/channels/slack/authorization', { authorized, confirm: true });
+          if (!r.ok || !r.j || !r.j.ok) throw new Error((r.j && r.j.error) || 'Slack authorization failed');
+          await refreshAll();
+        } catch (e) { notify((e && e.message) || 'Slack authorization failed', 'bad'); }
+        finally { b.disabled = false; }
+      }));
+    }
+
+    async function loadSlackReview() {
+      const container = body.querySelector('#sl-review-items');
+      container.replaceChildren();
+      try {
+        const response = await fetch('/api/channels/slack/review', { cache: 'no-store' });
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.error || 'Review unavailable');
+        const note = document.createElement('p');
+        note.className = 'ch-note';
+        note.textContent = 'Text may be redacted. Check Slack before deciding; retry can duplicate a message. Actions do not connect Slack.';
+        container.appendChild(note);
+        const items = result.inbox.map(item => ({ item, kind: 'inbox' }))
+          .concat(result.replies.map(item => ({ item, kind: 'reply' })));
+        if (!items.length) {
+          const empty = document.createElement('p'); empty.className = 'ch-note'; empty.textContent = 'No held items.'; container.appendChild(empty);
+        }
+        for (const { item, kind } of items) {
+          const section = document.createElement('section');
+          section.className = 'ch-bots';
+          const title = document.createElement('div'); title.className = 'ch-bots-head';
+          title.textContent = (kind === 'inbox' ? 'Held inbound work' : 'Uncertain reply') + ' · chat ' + item.chatId;
+          section.appendChild(title);
+          const text = document.createElement('pre');
+          text.style.whiteSpace = 'pre-wrap'; text.style.overflowWrap = 'anywhere';
+          text.textContent = kind === 'reply' && item.attemptText !== null
+            ? 'Attempted chunk:\n' + item.attemptText + '\n\nFull journaled remainder:\n' + item.text
+              + '\n\nCharacters after attempted chunk: ' + item.afterAttemptChars
+            : item.text;
+          section.appendChild(text);
+          const button = (label, action, detail) => {
+            const b = document.createElement('button'); b.type = 'button'; b.className = 'bb xs';
+            b.textContent = label; b.title = detail;
+            b.addEventListener('click', () => armed('sl-review-' + item.id + '-' + action, b, label, 'CONFIRM ' + label, async () => {
+              b.disabled = true;
+              try {
+                const r = await Harness.api.post('/api/channels/slack/review', { id: item.id, revision: item.revision, action, confirm: true });
+                if (!r.ok || !r.j || !r.j.ok) throw new Error((r.j && r.j.error) || 'Review action failed');
+                await loadSlackReview(); refreshAll();
+              } catch (e) { notify((e && e.message) || 'Review action failed', 'bad'); b.disabled = false; }
+            }));
+            section.appendChild(b);
+          };
+          if (kind === 'inbox') {
+            button('DISMISS WORK', 'dismiss-inbox', 'Do not replay this work. Keep its deduplication receipt.');
+          } else {
+            if (!item.ephemeral) {
+              button('RETRY REMAINDER', 'retry-reply', 'Queue this remainder for a future connection. This can duplicate the attempted chunk.');
+              if (item.attemptText !== null)
+                button('CHUNK DELIVERED', 'confirm-chunk', 'Confirm the displayed chunk arrived; queue only the subsequent remainder.');
+            }
+            button('DISCARD REMAINDER', 'discard-reply', 'Discard the entire remaining reply without sending it.');
+          }
+          container.appendChild(section);
+        }
+      } catch (e) {
+        const error = document.createElement('p'); error.className = 'ch-note';
+        error.textContent = (e && e.message) || 'Review unavailable'; container.appendChild(error);
+      }
+    }
+    body.querySelector('#sl-review-load').addEventListener('click', loadSlackReview);
+
     let zeroChannelHintShown = false;
     async function refreshAll() {
       try {
@@ -463,6 +559,8 @@
         if (notifyOn && !anyConnected) { setMsg(nMsg, 'no channel connected yet — connect one below so these pings have somewhere to go', 'info'); zeroChannelHintShown = true; }
         else if (zeroChannelHintShown) { setMsg(nMsg, '', 'info'); zeroChannelHintShown = false; }
       } catch (_) {
+        const slackReview = body.querySelector('#sl-review');
+        if (slackReview) slackReview.textContent = 'Slack safety status unavailable — sidecar offline.';
         for (const c of CHANNEL_CATALOG) {
           const el = body.querySelector('#' + c.pre + '-status');
           if (el) { el.className = 'ch-state st-off'; el.textContent = '○ sidecar offline'; }

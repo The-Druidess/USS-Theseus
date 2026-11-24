@@ -800,6 +800,8 @@ test/channels.telegram.stream.test.js
 test/channels.discord.test.js
 test/channels.discord-gateway.test.js
 test/channels.slack.test.js
+test/channels.slack-halt.test.js
+test/channels.slack-review.ui.test.js
 test/channels.matrix.test.js
 test/channels.signal.test.js
 test/channels.generic-wire.test.js
@@ -816,6 +818,7 @@ test/channels.workline-transcript.test.js
 test/line-hop-stop.test.js
 test/cross-surface-continuity.test.js
 test/channels.outbox.test.js
+test/channels.journal-recovery.test.js
 test/channels.commands.test.js
 test/channels.parity.test.js
 test/channels.buttons.test.js

@@ -12,8 +12,8 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture');
   const status = async value => {
     const r = await json('GET', '/api/halt');
     assert.equal(r.status, 200);
-    assert.deepEqual(Object.keys(r.body.subsystems).sort(), ['cron', 'loops', 'nightshift', 'overseer']);
-    assert.deepEqual(Object.values(r.body.subsystems).map(s => s.halted), [value, value, value, value]);
+    assert.deepEqual(Object.keys(r.body.subsystems).sort(), ['cron', 'loops', 'nightshift', 'overseer', 'slack']);
+    assert.deepEqual(Object.values(r.body.subsystems).map(s => s.halted), [value, value, value, value, value]);
     assert.equal((await json('GET', '/api/overseer')).body.paused, value, 'coordinator halt matches the existing control');
     for (const route of ['/api/cron', '/api/nightshift/status', '/api/loops']) assert.equal((await json('GET', route)).body.halted, value, route);
   };
@@ -25,10 +25,14 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture');
     await json('POST', '/api/cron/arm', { enabled: false });
     await json('POST', '/api/autonomy/posture', { posture: { initiative: 'wait', reach: 'sandbox', leashPerDay: 2 } });
     const before = permissions();
-    assert.equal((await json('POST', '/api/halt', {})).body.cronHaltPersisted, true);
+    const stopped = await json('POST', '/api/halt', {});
+    assert.equal(stopped.body.cronHaltPersisted, true);
+    assert.equal(stopped.body.slackHaltPersisted, true);
     await status(true);
+    assert.equal((await json('POST', '/api/channels/slack/connect', {})).status, 409, 'E-STOP blocks Slack connect');
     await host.restart();
     await status(true);
+    assert.equal((await json('POST', '/api/channels/slack/connect', {})).status, 409, 'restart cannot bypass Slack E-STOP');
     await json('POST', '/api/autonomy/posture', { posture: { initiative: 'wait', reach: 'sandbox', leashPerDay: 2 }, resumeHalt: false });
     await status(true);
     const beforeResume = permissions();
@@ -37,6 +41,7 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture');
     assert.equal(resumed.status, 200);
     assert.equal(resumed.body.ok, true);
     await status(false);
+    assert.equal((await json('POST', '/api/channels/slack/connect', {})).status, 400, 'explicit resume releases the halt gate, not credential validation');
     assert.deepEqual(permissions(), beforeResume, 'resume changes no permissions, posture, arm intent or job state');
     assert.equal((await json('GET', '/api/cron')).body.enabled, false);
     const nsAfter = JSON.parse(read('nightshift.state.json'));
@@ -45,7 +50,7 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture');
     await host.restart();
     await status(false);
     // Each failed durable write leaves ONLY that subsystem halted, exposes its failure, and is retryable.
-    for (const [name, file] of [['cron', 'cron.halt.json'], ['nightshift', 'nightshift.state.json'], ['loops', 'loops.halt.json'], ['overseer', 'overseer.json']]) {
+    for (const [name, file] of [['cron', 'cron.halt.json'], ['nightshift', 'nightshift.state.json'], ['loops', 'loops.halt.json'], ['overseer', 'overseer.json'], ['slack', 'slack.halt.json']]) {
       await json('POST', '/api/halt', {});
       const target = path.join(host.workspace, file), bytes = fs.readFileSync(target);
       fs.unlinkSync(target); fs.mkdirSync(target);
@@ -56,6 +61,7 @@ const { SidecarFixture } = require('./helpers/sidecar-fixture');
         assert.ok(failed.body.errors[name]);
         assert.equal(failed.body.subsystems[name].halted, true);
         for (const other of ['cron', 'nightshift', 'loops', 'overseer'].filter(k => k !== name)) assert.equal(failed.body.subsystems[other].halted, false);
+        if (name !== 'slack') assert.equal(failed.body.subsystems.slack.halted, true, 'Slack stays halted while another resume fails');
       } finally { fs.rmdirSync(target); fs.writeFileSync(target, bytes); }
       assert.equal((await json('POST', '/api/halt/resume', { confirm: true })).body.ok, true);
       await status(false);

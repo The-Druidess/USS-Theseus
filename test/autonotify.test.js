@@ -28,6 +28,17 @@ function harness(jobs, chatsByAgent) {
 }
 const JOBS = { j1: { agent: 'agent', name: 'Weekly digest' }, j2: { agent: 'other', name: 'Other job' } };
 
+{
+  const calls = [];
+  const nf = makeAutoNotifier({
+    send: (_chatId, _text, _channel, runId, jobId) => { calls.push([runId, jobId]); return Promise.resolve(); },
+    chatsFor: () => [{ chatId: 'C1', channel: 'slack' }],
+    jobName: () => 'job', jobAgent: () => 'agent'
+  });
+  nf.onEvent('cron.result', { jobId: 'j1', runId: 'run-42', outcome: 'ok' });
+  eq(calls, [['run-42', 'j1']], 'the notification carries the originating run and job identities');
+}
+
 // --- ok → pings the agent's opted-in chat, routed by channel ---
 {
   const h = harness(JOBS, { agent: [{ chatId: '111', channel: 'telegram' }] });

@@ -59,7 +59,8 @@
     const tokens = (o.botToken || o.appToken) ? { botToken: o.botToken, appToken: o.appToken } : parseSlackTokens(o.token);
     const transport = o.transport || makeSlackTransport({
       fetch: o.fetch, botToken: tokens.botToken, appToken: tokens.appToken,
-      WebSocketImpl: o.WebSocketImpl, apiBase: o.apiBase, sleep: o.sleep, parkMs: o.parkMs
+      WebSocketImpl: o.WebSocketImpl, authorizeSocket: o.authorizeSocket,
+      apiBase: o.apiBase, sleep: o.sleep, parkMs: o.parkMs
     });
     return makeChannelAdapter({
       transport,

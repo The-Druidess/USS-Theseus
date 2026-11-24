@@ -304,6 +304,36 @@ async function run() {
 
   // ---- D. send sends ONE message; a retryable failure gets exactly one resend; non-retryable does not ----
   {
+    let resume;
+    const wait = new Promise(resolve => { resume = resolve; });
+    const t = fakeTransport([[]], [{ ok: false, retryable: true }, { ok: true }]);
+    const a = makeChannelAdapter({ transport: t, normalize, name: 'slack', clock: CLOCK, sleep: () => wait });
+    await a.connect();
+    const sending = a.send('D1', 'message');
+    await tick();
+    await a.disconnect();
+    resume();
+    const result = await sending;
+    A.eq(result.ok, false, 'Slack retry reports the disconnect');
+    A.eq(t.sends.length, 1, 'disconnect prevents a pending Slack retry');
+    A.eq((await a.send('D1', 'later')).ok, false, 'Slack refuses sends after disconnect');
+    A.eq(t.sends.length, 1, 'a post-disconnect send never reaches the transport');
+  }
+  {
+    const t = fakeTransport([[{ id: 21, chat: 'c', type: 'dm', user: 'u', text: 'work', mid: '21' }]]);
+    const errors = [], originalError = console.error;
+    console.error = (...args) => errors.push(args.join(' '));
+    try {
+      const a = makeChannelAdapter({ transport: t, normalize, name: 'slack',
+        onInbound: () => Promise.reject(new Error('processing failed after claim')), clock: CLOCK });
+      await a.connect();
+      for (let i = 0; i < 8 && !errors.length; i++) await tick();
+      A.ok(errors.some(e => e.includes('processing failed after claim')), 'asynchronous processing failure is reported rather than unhandled');
+      await a.disconnect();
+    } finally { console.error = originalError; }
+  }
+
+  {
     const t = fakeTransport([[]], [
       { ok: true, messageId: 'ok1' },
       { ok: false, retryable: true }, { ok: true, messageId: 'ok2' },   // resend succeeds
@@ -348,6 +378,16 @@ async function run() {
   }
 
   // ---- E. disconnect stops the loop; no further onInbound; the parked getUpdates aborts cleanly ----
+  {
+    const t = fakeTransport([[]]);
+    let closed = false;
+    t.disconnect = () => { closed = true; };
+    const a = makeChannelAdapter({ transport: t, normalize, name: 'slack', clock: CLOCK });
+    await a.connect();
+    const stopping = a.disconnect();
+    A.ok(closed, 'Slack transport closes immediately without waiting for the poll loop');
+    await stopping;
+  }
   {
     const inbox = [];
     const t = fakeTransport([[{ id: 1, chat: 'c', type: 'dm', user: 'u', text: 'x', mid: '1' }]]);

@@ -7,8 +7,9 @@
 'use strict';
 const A = require('./_assert.js');
 const { makeCommsTools, MAX_CHUNKS, TEXT_CHARS } = require('../sidecar/tools/builtin/comms.js');
-const { makeRegistry } = require('../sidecar/tools/registry.js');
+const { makeRegistry, attachFinancialGuard } = require('../sidecar/tools/registry.js');
 const { makeCapCtx } = require('../sidecar/capability/capGate.js');
+const { makeStrictFinance, POLICY } = require('../sidecar/strict-finance.js');
 
 const call = (name, args) => ({ id: 'c1', name, args: args || {}, argsRaw: JSON.stringify(args || {}), parseError: null });
 
@@ -64,6 +65,21 @@ const TARGETS = [
     const bare = makeCommsTools({ listTargets: () => TARGETS, sendTo: () => Promise.resolve({ ok: true }), emit: (n, p) => emitted.push([n, p]) });
     await bare.sendTool.run({ target: 'bot1|55501', text: 'x' });
     A.eq(emitted[emitted.length - 1][1].runId, '', 'a context-less dispatch reports an empty runId, never a fabricated one');
+  }
+
+  // The host needs one stable identity per tool call and text part for durable Slack delivery.
+  {
+    const operations = [];
+    const t = makeCommsTools({
+      listTargets: () => [{ target: 'C1', channel: 'slack', chatId: 'C1', connected: true }],
+      maxLenFor: () => 3,
+      sendTo: (_target, _text, operation) => { operations.push(operation); return Promise.resolve({ ok: true }); }
+    });
+    await t.sendTool.run({ target: 'C1', text: 'abcdef' }, { runId: 'run-1', callId: 'call-1' });
+    A.eq(operations, [
+      { runId: 'run-1', callId: 'call-1', part: '0' },
+      { runId: 'run-1', callId: 'call-1', part: '1' }
+    ], 'each part carries the originating run and call identity');
   }
 
   // ---- the redaction seam: this is the one tool that hands text to a third party ---------------------
@@ -241,6 +257,27 @@ const TARGETS = [
       makeCapCtx(grant, { emit: () => {}, consent: async () => ({ allow: true }) }));
     A.ok(!allowed.isError, 'an approved send goes out');
     A.eq(sends, 1, 'and reaches the transport exactly once');
+  }
+
+  {
+    let sends = 0;
+    const reg = makeRegistry();
+    const targets = [{ target: 'C1', channel: 'slack', chatId: 'C1', connected: true }];
+    makeCommsTools({ listTargets: () => targets, sendTo: () => { sends++; return Promise.resolve({ ok: true }); } }).register(reg);
+    const finance = makeStrictFinance({
+      read: () => ({ ...POLICY, version: 1, enabled: true, mode: 'local-only', localModels: ['qwen3.5:4b'] }),
+      onError() {}, slackAuthorized: () => true, isSlackTarget: target => target === 'C1'
+    });
+    attachFinancialGuard((c, tool) => finance.assertTool(c, tool));
+    const grant = { agentId: 'agent', room: 'office', hasCompute: true, tools: ['channel.send'], approvalRules: {} };
+    const denied = await reg.dispatch(call('channel.send', { target: 'C1', text: 'hi' }),
+      makeCapCtx(grant, { emit: () => {}, consent: async () => ({ allow: false }) }));
+    A.ok(denied.isError && /consent denied/.test(denied.content), 'Slack finance admission does not bypass consent');
+    A.eq(sends, 0, 'denied consent sends nothing under the Slack exception');
+    const allowed = await reg.dispatch(call('channel.send', { target: 'C1', text: 'hi' }),
+      makeCapCtx(grant, { emit: () => {}, consent: async () => ({ allow: true }) }));
+    A.ok(!allowed.isError && sends === 1, 'authorized and consented Slack send runs once');
+    attachFinancialGuard(null);
   }
 
   A.report('comms-tools');

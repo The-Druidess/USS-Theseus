@@ -11,7 +11,10 @@ const jres = (status, body, headers) => ({ ok: status >= 200 && status < 300, st
 
 // a fake Socket Mode WebSocket: records sends, lets the test push server frames via .emit(data).
 class FakeWS {
-  constructor(url) { this.url = url; this.sent = []; this.closed = false; FakeWS.last = this; }
+  constructor(url) {
+    this.url = url; this.sent = []; this.closed = false; FakeWS.last = this;
+    queueMicrotask(() => { if (!this.closed && this.onopen) this.onopen(); });
+  }
   send(s) { this.sent.push(s); }
   close() { this.closed = true; if (this.onclose) this.onclose({}); }
   emit(obj) { if (this.onmessage) this.onmessage({ data: JSON.stringify(obj) }); }
@@ -51,10 +54,13 @@ class FakeWS {
 
     FakeWS.last.emit({ type: 'hello' });
     FakeWS.last.emit({ envelope_id: 'env1', type: 'events_api', payload: { event: { type: 'message', channel: 'D1', channel_type: 'im', user: 'U1', text: 'yo', ts: '5.5' } } });
+    A.eq(FakeWS.last.sent, [], 'an event is not acknowledged while it only exists in the socket buffer');
     const ups = await t.getUpdates({});
     A.eq(ups.length, 1, 'the envelope\'s event was buffered and drained');
     A.eq(ups[0].text, 'yo', 'raw event passes through untouched');
-    A.eq(FakeWS.last.sent, [JSON.stringify({ envelope_id: 'env1' })], 'every envelope is ACKed by envelope_id');
+    A.eq(FakeWS.last.sent, [], 'draining alone does not acknowledge the event');
+    t.acknowledgeUpdate(ups[0]);
+    A.eq(FakeWS.last.sent, [JSON.stringify({ envelope_id: 'env1' })], 'accepted event is ACKed by envelope_id');
 
     const sock = FakeWS.last;
     sock.emit({ type: 'disconnect', reason: 'refresh_requested' });
@@ -68,6 +74,10 @@ class FakeWS {
     A.ok(/xoxb-1/.test(post.headers.Authorization), 'chat.postMessage uses the bot token');
     A.eq(JSON.parse(post.body), { channel: 'D1', text: 'hello' }, 'send body carries channel + text');
     t.disconnect();
+    const sentBefore = FakeWS.last.sent.length;
+    FakeWS.last.emit({ envelope_id: 'late', type: 'events_api', payload: { event: { type: 'message' } } });
+    A.eq(FakeWS.last.sent.length, sentBefore, 'a socket callback after disconnect cannot acknowledge new work');
+    A.eq(t._internals.buffer.length, 0, 'a socket callback after disconnect cannot buffer new work');
   }
 
   // ---- C. transport error classes: fatal auth on open, ratelimited send retryable ----
@@ -83,7 +93,94 @@ class FakeWS {
     const tNet = makeSlackTransport({ fetch: async (url) => { if (/postMessage/.test(url)) throw new Error('ECONNRESET'); return jres(200, { ok: true, url: 'wss://x' }); }, botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: FakeWS, parkMs: 1 });
     const rn = await tNet.send('D1', 'x', {});
     A.eq(rn.ok, false, 'network send failure is normalized (never throws)');
-    A.eq(rn.retryable, true, 'network send failure is retryable');
+    A.eq(rn.retryable, false, 'network send failure is not automatically retried');
+    A.eq(rn.deliveryUnknown, true, 'network failure leaves delivery uncertain');
+
+    for (const response of [
+      jres(500, { ok: false, error: 'internal_error' }),
+      jres(200, { ok: false, error: 'fatal_error' }),
+      jres(429, { ok: false, error: 'internal_error' }),
+      { ok: true, status: 200, json: async () => { throw new Error('invalid JSON'); }, headers: { get: () => null } }
+    ]) {
+      const t = makeSlackTransport({ fetch: async () => response, botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: FakeWS });
+      const result = await t.send('D1', 'x', {});
+      A.ok(result.deliveryUnknown && !result.retryable, 'ambiguous response cannot be automatically retried');
+    }
+
+    let attempts = 0;
+    const adapter = makeSlackAdapter({
+      transport: { getUpdates: async () => [], send: async () => { attempts++; return { ok: false, retryable: true, deliveryUnknown: true }; } },
+      clock: { now: () => 1 }, sleep: () => Promise.resolve()
+    });
+    await adapter.send('D1', 'x');
+    A.eq(attempts, 1, 'adapter refuses a resend even if an uncertain result is marked retryable');
+  }
+
+  // ---- C1. a stop while Slack is opening cannot create a socket after the request finishes ----
+  {
+    let socket;
+    class PendingWS {
+      constructor() { socket = this; }
+      close() {}
+      send() {}
+    }
+    const t = makeSlackTransport({
+      fetch: async () => jres(200, { ok: true, url: 'wss://slack.test/socket' }),
+      botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: PendingWS, sleep: async () => {}
+    });
+    let error;
+    try { await t.getUpdates({}); } catch (e) { error = e; }
+    A.ok(error, 'a socket that has not opened cannot report a successful poll');
+    socket.onopen();
+    A.eq(await t.getUpdates({}), [], 'a poll succeeds after the socket opens');
+    t.disconnect();
+  }
+
+  {
+    let resolveOpen;
+    const response = new Promise(resolve => { resolveOpen = resolve; });
+    let sockets = 0;
+    class CountingWS extends FakeWS { constructor(url) { super(url); sockets++; } }
+    const t = makeSlackTransport({ fetch: () => response, botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: CountingWS });
+    const opening = t.connect();
+    t.disconnect();
+    resolveOpen(jres(200, { ok: true, url: 'wss://slack.test/socket' }));
+    await opening;
+    A.eq(sockets, 0, 'disconnect prevents a late socket from opening');
+
+    let resolvePoll;
+    const pending = new Promise(resolve => { resolvePoll = resolve; });
+    const t2 = makeSlackTransport({ fetch: () => pending, botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: CountingWS });
+    const controller = new AbortController();
+    const poll = t2.getUpdates({ signal: controller.signal });
+    controller.abort();
+    resolvePoll(jres(200, { ok: true, url: 'wss://slack.test/socket' }));
+    A.eq(await poll, [], 'aborted poll completes without opening a socket');
+    A.eq(sockets, 0, 'aborting an in-flight poll prevents a late socket');
+  }
+
+  // Slack events must reach durable intake before their socket envelope is acknowledged.
+  {
+    let claims = 0;
+    const adapter = makeSlackAdapter({
+      fetch: async () => jres(200, { ok: true, url: 'wss://slack.test/socket' }),
+      botToken: 'xoxb-1', appToken: 'xapp-2', WebSocketImpl: FakeWS, parkMs: 1,
+      clock: { now: () => 1 }, ownerUserId: 'U1', sleep: () => tick(),
+      onInbound: () => { claims++; if (claims === 1) throw new Error('inbox unavailable'); }
+    });
+    await adapter.connect();
+    for (let i = 0; i < 20 && (!FakeWS.last || FakeWS.last.closed); i++) await tick();
+    const sock = FakeWS.last;
+    const envelope = { envelope_id: 'durable-1', type: 'events_api', payload: { event: { type: 'message', channel: 'D1', channel_type: 'im', user: 'U1', text: 'work', ts: '9.1' } } };
+    sock.emit(envelope);
+    for (let i = 0; i < 30 && claims < 1; i++) await tick();
+    A.eq(claims, 1, 'event reached the intake seam');
+    A.eq(sock.sent, [], 'a failed durable claim leaves the envelope unacknowledged');
+    sock.emit(envelope);
+    for (let i = 0; i < 30 && sock.sent.length < 1; i++) await tick();
+    A.eq(claims, 2, 'redelivery retries the failed intake');
+    A.eq(sock.sent, [JSON.stringify({ envelope_id: 'durable-1' })], 'successful intake precedes acknowledgement');
+    await adapter.disconnect();
   }
 
   // ---- C2. reconnect truth: a DROPPED socket whose reopen fails must NOT poll as "up" ----

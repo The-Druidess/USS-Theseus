@@ -283,6 +283,13 @@
     // recovery is announced, never silent.
     function statusConflict(detail) { if (!down) { down = true; onStatus && onStatus({ state: 'error', detail: detail }); } }
 
+    function receiveInbound(message) {
+      const result = onInbound(message);
+      if (result && typeof result.catch === 'function') {
+        result.catch(e => { try { console.error('[' + name + '] accepted inbound processing failed:', (e && e.message) || e); } catch (_) {} });
+      }
+    }
+
     function dispatch(raw) {
       let n;
       try { n = normalize(raw); }
@@ -320,7 +327,7 @@
           const pairText = String(m.text || '');
           const pairCommand = /^\/pair(?:\s|$)/i.test(pairText) || /^pair\s+[A-Za-z0-9]{5}-?[A-Za-z0-9]{5}\s*$/i.test(pairText);
           if ((own.claimed && own.consume) || pairCommand) {
-            onInbound({
+            receiveInbound({
               channel: name, chatId: String(m.chatId), chatType: 'dm', userId: String(m.userId || ''),
               userName: m.userName, text: '', messageId: m.messageId == null ? '' : String(m.messageId),
               ts: clock.now(), directReply: own.reply || 'Owner is already paired. Send a normal message to run the agent.'
@@ -369,7 +376,7 @@
         // before a single model call. Additive — a platform that never observes sends the exact old shape.
         if (verdict === 'observe') im.observeOnly = true;
         if (Array.isArray(m.mentions) && m.mentions.length) im.mentions = m.mentions.slice();
-        onInbound(im);   // production hub durably claims synchronously; a failed claim throws before acknowledgement
+        receiveInbound(im);   // production hub durably claims synchronously; a failed claim throws before acknowledgement
         acknowledge();
       } else if (n.callback && onCallback) {
         /* Only the owner's taps act — and an UNCLAIMED owner is not a licence, it is the absence of one.
@@ -440,7 +447,10 @@
         let intakeFailed = null;
         for (let i = 0; i < updates.length; i++) {
           if (stopped) break;
-          try { dispatch(updates[i]); }
+          try {
+            dispatch(updates[i]);
+            if (typeof transport.acknowledgeUpdate === 'function') transport.acknowledgeUpdate(updates[i]);
+          }
           catch (e) { intakeFailed = e; break; }
         }
         if (intakeFailed && !stopped) {
@@ -498,6 +508,7 @@
                   // bot that is not running, and answering with nothing at all reads as a broken bot.
                   deferredOfflineNotice.add(String(m.chatId));
                 }
+                if (typeof transport.acknowledgeUpdate === 'function') transport.acknowledgeUpdate(ru);
               }
               // the next poll uses `offset` (= last backlog id + 1), which confirms+discards the backlog; we did NOT dispatch it.
               // Best-effort notice: never throw (a failed notice must not stop connect); the loop below still starts.
@@ -517,6 +528,10 @@
       async disconnect() {
         stopped = true;
         try { if (ac) ac.abort(); } catch (_) {}
+        if (name === 'slack' && typeof transport.disconnect === 'function') {
+          try { await transport.disconnect(); }
+          catch (e) { console.error('[slack] transport disconnect failed:', (e && e.message) || e); }
+        }
         try { await loopDone; } catch (_) {}
         started = false;
       },
@@ -526,12 +541,14 @@
       // and on a 429 we WAIT out the server's retry_after (capped) first, so the resend lands after the flood window
       // instead of bouncing instantly into it.
       async send(chatId, text, sendOpts) {
+        if (name === 'slack' && stopped) return { ok: false, error: 'Slack channel is disconnected', retryable: false };
         const t = text == null ? '' : String(text);
         let r = await transport.send(String(chatId), t, sendOpts || {});
         let attempts = 1;
-        if (r && r.ok === false && r.retryable) {
+        if (r && r.ok === false && r.retryable && !r.deliveryUnknown) {
           const waitMs = Math.min((Number(r.retryAfter) > 0 ? Number(r.retryAfter) : 1) * 1000, 30000);
           await sleep(waitMs);
+          if (name === 'slack' && stopped) return { ok: false, error: 'Slack channel is disconnected', retryable: false };
           r = await transport.send(String(chatId), t, sendOpts || {});
           attempts++;
         }

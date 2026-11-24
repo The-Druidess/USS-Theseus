@@ -9,6 +9,7 @@ const READ_TOOLS = new Set([
   'tool.search', 'station.inspect', 'station.status', 'station.layout', 'station.map',
   'station.settings', 'session.list', 'session.peek', 'team.subagents', 'team.config',
   'loop.list', 'notebook.read', 'fs.list',
+  'channel.targets',
   'treasury.status',
   'crew.directive',
 ]);
@@ -18,6 +19,8 @@ const LOCAL_POST_ROUTES = new Set([
   '/api/consent', '/api/consent/ack', '/api/consent/answer', '/api/save', '/api/save/recovery-ack',
   '/api/roster', '/api/routing', '/api/routing/sample/stop', '/api/budget/caps', '/api/budget/settle',
   '/api/halt', '/api/halt/resume', '/api/activity', '/api/autonomy/posture',
+  '/api/channels/slack/review',
+  '/api/channels/slack/authorization',
   '/api/lifecycle/quit', '/api/subagents/interrupt', '/api/loops/control', '/api/cron/arm', '/api/cron/update', '/api/remote/enable',
   '/api/auth/claude-cli/cancel',
   '/api/memory/turnin', '/api/memory/pin', '/api/memory/edit', '/api/memory/forget',
@@ -98,6 +101,14 @@ function makeStrictFinance(opts) {
   }
   function assertTool(call, tool) {
     if (!enabled()) return;
+    if (tool.provenance === 'host' && call.name === 'channel.send') {
+      let isSlack = false;
+      try { isSlack = typeof opts.isSlackTarget === 'function' && opts.isSlackTarget(call.args && call.args.target); }
+      catch (_) { deny('the Slack target could not be verified.', 'tool', call.name); }
+      if (!isSlack) deny('only an existing Slack target is admitted by the Slack exception.', 'tool', call.name);
+      assertSlackAuthorized('tool:channel.send');
+      return;
+    }
     if (tool.provenance === 'host' && call.name === 'quest.update' && LOCAL_QUEST_OPS.has(call.args?.op)) {
       if (issue && call.args.op !== 'read') deny('policy storage is unavailable or invalid.', 'tool', call.name);
       allow('tool', 'quest.update:' + call.args.op);
@@ -168,6 +179,44 @@ function makeStrictFinance(opts) {
     if (!body || body.on !== false) deny('only turning off remote access is approved.', 'route', 'remote control');
     audit('allowed', 'route', 'remote stop');
   }
+  function assertSlackReviewAction(action, revision) {
+    if (!enabled()) return;
+    if (issue) deny('policy storage is unavailable or invalid.', 'channel-review', action);
+    allow('channel-review', action + ':' + String(revision || '').slice(0, 16));
+  }
+  function assertSlackAuthorizationChange() {
+    if (!enabled()) return;
+    if (issue) deny('policy storage is unavailable or invalid.', 'slack', 'authorization');
+    allow('slack', 'authorize-connector');
+  }
+  function assertSlackAuthorized(operation) {
+    if (!enabled()) return;
+    if (issue) deny('policy storage is unavailable or invalid.', 'slack', operation);
+    let authorized = false;
+    try { authorized = typeof opts.slackAuthorized === 'function' && opts.slackAuthorized() === true; }
+    catch (_) { deny('Slack authorization storage is unavailable or invalid.', 'slack', operation); }
+    if (!authorized)
+      deny('Slack requires a standing local authorization.', 'slack', operation);
+    allow('slack', operation);
+  }
+  function assertSlackSocket(address) {
+    let url;
+    try { url = new URL(address); } catch (_) { throw refusal('invalid Slack socket address.'); }
+    if (url.protocol !== 'wss:' || !url.hostname.endsWith('.slack.com') || url.username || url.password || url.port)
+      throw refusal('Slack socket address is outside the approved boundary.');
+    assertSlackAuthorized('socket');
+  }
+  async function slackFetch(fetchImpl, input, init) {
+    const url = new URL(String(input));
+    const method = String(init && init.method || 'GET').toUpperCase();
+    if (url.origin !== 'https://slack.com' || url.username || url.password || url.search || url.hash
+        || method !== 'POST' || !['/api/apps.connections.open', '/api/chat.postMessage'].includes(url.pathname))
+      throw refusal('Slack request is outside the approved boundary.');
+    assertSlackAuthorized(url.pathname);
+    const response = await fetchImpl(input, { ...init, redirect: 'manual' });
+    if (response.status >= 300 && response.status < 400) throw refusal('Slack redirects are not permitted.');
+    return response;
+  }
   function routeRefusal(method, address) {
     if (!enabled()) return null;
     const url = new URL(address, 'http://localhost');
@@ -176,6 +225,11 @@ function makeStrictFinance(opts) {
     if (method === 'POST' && /^\/api\/routing\/steptest\/[A-Za-z0-9_-]{1,80}\/stop$/.test(url.pathname)) return null;
     if (method === 'POST' && /^\/api\/channels\/(?:telegram|discord|slack|matrix|signal)\/disconnect$/.test(url.pathname)) return null;
     if (method === 'POST' && /^\/api\/channels\/telegram\/bots\/\d+\/disconnect$/.test(url.pathname)) return null;
+    if (method === 'POST' && ['/api/channels/slack/connect', '/api/channels/slack/owner/pair'].includes(url.pathname)) {
+      try { assertSlackAuthorized('route:' + url.pathname); }
+      catch (error) { return error.message; }
+      return null;
+    }
     const blockedPrefix = /^\/(?:api\/(?:browser|computer|desktop|cua|plugins?|local-voice|tts|stt|realtime|credits|spotify|connectors\/oauth)|plugins|workshop-run)(?:\/|$)/;
     if (blockedPrefix.test(url.pathname)) {
       audit('blocked', 'route', method + ' ' + url.pathname.match(blockedPrefix)[0]);
@@ -216,12 +270,18 @@ function makeStrictFinance(opts) {
     return response;
   }
   function status(ledger, now) {
+    let slackException = false, slackExceptionError = null;
+    try { slackException = typeof opts.slackAuthorized === 'function' && opts.slackAuthorized() === true; }
+    catch (error) { slackExceptionError = 'Slack authorization storage is unavailable or invalid.'; }
     const result = {
       enabled: enabled(), mode: enabled() ? 'local-only' : 'off',
       policy: { ...POLICY }, localModels: config ? config.localModels.slice() : [],
-      positiveCostAdapters: 0, paidAdmission: enabled() ? 'blocked-no-guaranteed-maximum' : 'legacy-governor-only',
+      positiveCostAdapters: 0, slackException, slackExceptionError,
+      paidAdmission: enabled() ? 'blocked-no-guaranteed-maximum' : 'legacy-governor-only',
       reservations: { usd: enabled() ? 0 : null, explanation: enabled()
-        ? 'No positive-cost operation is admitted; verified local inference requires $0.'
+        ? (slackException
+          ? 'Verified local inference requires $0; the explicitly authorized Slack connector has unverified charges outside these reservations.'
+          : 'No positive-cost operation is admitted; verified local inference requires $0.')
         : 'Strict finance is not enabled; no strict reservations are maintained.' },
       error: issue, accountingKnown: false, periods: null,
       enforcement: { state: enabled() ? (issue ? 'LOCKED' : 'GUARDING') : 'DISABLED',
@@ -245,6 +305,6 @@ function makeStrictFinance(opts) {
     }
     return result;
   }
-  return { enabled, assertProvider, assertTool, assertProcess, assertAutonomyStandDown, assertLoopStop, assertCronDisarm, assertRoutinePause, assertChannelDisconnect, assertRemoteStop, routeRefusal, fetch: fetchGuard, status };
+  return { enabled, assertProvider, assertTool, assertProcess, assertAutonomyStandDown, assertLoopStop, assertCronDisarm, assertRoutinePause, assertChannelDisconnect, assertRemoteStop, assertSlackReviewAction, assertSlackAuthorizationChange, assertSlackAuthorized, assertSlackSocket, slackFetch, routeRefusal, fetch: fetchGuard, status };
 }
 module.exports = { POLICY, CODE, validateConfig, periodKeys, calendarTotals, makeStrictFinance };

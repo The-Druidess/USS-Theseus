@@ -677,7 +677,20 @@ if (!workspaceOwnerClaim.ok) {
 // cannot run handlers, so their valid PID-stamped claim is recovered by the next boot instead.
 process.once('exit', () => { try { workspaceOwner.release(); } catch (_) {} });
 const STRICT_FINANCE_FILE = path.join(WORKSPACES, 'strict-finance.json');
+const slackAuthorization = require('./channels/slack-authorization.js').makeSlackAuthorization({
+  fs, path, workspace: WORKSPACES, writeDurable: writeFileDurable
+});
 strictFinance = strictFinanceMod.makeStrictFinance({
+  slackAuthorized: () => slackAuthorization.authorized(),
+  isSlackTarget: target => {
+    const chats = channelStore.loadChatMap().chats || {};
+    const targets = Object.keys(chats).map(key => {
+      const rec = chats[key] || {};
+      return { target: key, channel: String(rec.channel || 'telegram'),
+        chatId: String(rec.chatId || key), agentId: String(rec.agentId || ''), connected: true };
+    });
+    return require('./tools/builtin/comms.js').makeCommsTools({})._resolveTarget(targets, target).channel === 'slack';
+  },
   audit: require('./finance-audit.js').makeFinanceAudit({
     fs, path, workspace: WORKSPACES, now: () => Date.now(),
     onError: error => console.error('[strict-finance] AUDIT UNAVAILABLE: ' + error.message)
@@ -4785,7 +4798,7 @@ const browserHandoffs = makeHandoffHost({
       for (const c of chats) {
         const ch = liveChannelFor(c.channel);
         if (!(ch && ch.adapter)) continue;
-        Promise.resolve(ch.adapter.send(c.chatId, redact(line)))
+        Promise.resolve(ch.adapter.send(c.chatId, redact(line), slackSendOptions(c.channel, ['handoff', v.id, c.chatId])))
           .then(r => { if (r && r.ok === false) console.warn('[step-in] nudge failed:', r.error); })
           .catch(e => console.warn('[step-in] nudge failed:', (e && e.message) || e));
       }
@@ -6090,10 +6103,17 @@ function channelLiveHealth(channel) {
   if (!channel || channel === 'telegram') return telegramStatus || { connected: false, state: 'down' };
   return genericStatus[channel] || { connected: false, state: 'down' };
 }
+function slackSendOptions(channel, identity, options) {
+  if (channel !== 'slack') return options;
+  if (!Array.isArray(identity) || identity.some(part => part == null || String(part) === '')) return options;
+  return Object.assign({}, options || {}, {
+    idempotencyKey: crypto.createHash('sha256').update(JSON.stringify(identity.map(String))).digest('hex')
+  });
+}
 const autoNotifier = makeAutoNotifier({
-  send: (chatId, text, channel) => {
+  send: (chatId, text, channel, runId, jobId) => {
     const ch = liveChannelFor(channel);
-    const p = (ch && ch.adapter) ? ch.adapter.send(chatId, redact(text)) : Promise.resolve({ ok: false, error: 'channel not connected' });
+    const p = (ch && ch.adapter) ? ch.adapter.send(chatId, redact(text), slackSendOptions(channel, ['cron-notification', jobId, runId, chatId])) : Promise.resolve({ ok: false, error: 'channel not connected' });
     // DELIVERY HONESTY (2026-07-15 audit): transports NEVER throw — a failure is a resolved { ok:false,
     // error } SendResult. Normalize that to a rejection so the notifier's per-send outcome reporting
     // (onDelivery below) sees a failed ping as a failure instead of a phantom success.
@@ -6267,7 +6287,8 @@ async function deliverCronResult(job, result) {
     const channel = String(rec.channel || 'telegram'), live = liveChannelFor(channel);
     if (!(live && live.adapter)) { failed++; firstError = firstError || channel + ' is not connected'; continue; }
     try {
-      const sent = await live.adapter.send(String(rec.chatId || target), redact(text), rec.threadId ? { threadId: rec.threadId } : undefined);
+      const sent = await live.adapter.send(String(rec.chatId || target), redact(text),
+        slackSendOptions(channel, ['cron-result', result.runId, target], rec.threadId ? { threadId: rec.threadId } : undefined));
       if (sent && sent.ok === false) throw new Error(sent.error || 'send failed');
       deliveredTargets.add(target);
       if (job.attachToSession) {
@@ -8722,7 +8743,7 @@ const loopDriver = makeLoopDriver({
           : (typeof c.channel === 'string' && c.channel.indexOf('telegram:') === 0) ? telegramBots.get(c.channel.slice('telegram:'.length))
           : (!c.channel || c.channel === 'telegram') ? telegram : genericChannels[c.channel];
         if (!(ch && ch.adapter)) continue;
-        Promise.resolve(ch.adapter.send(c.chatId, redact(line)))
+        Promise.resolve(ch.adapter.send(c.chatId, redact(line), slackSendOptions(c.channel, ['loop-stop', loop.id, loop.lastRunId, loop.state, c.chatId])))
           .then(r => { if (r && r.ok === false) console.warn('[loops] notify failed:', r.error); })
           .catch(e => console.warn('[loops] notify failed:', (e && e.message) || e));
       }
@@ -10309,9 +10330,17 @@ function channelPersona(label) {
 }
 const genericChannels = Object.create(null);   // id -> { adapter, hub } when connected
 const genericStatus = Object.create(null);     // id -> { connected, state, detail } (HTTP status truth)
+const retiredSlackHubs = new Set();
 for (const id of GENERIC_CHANNEL_IDS) genericStatus[id] = { connected: false, state: 'down', detail: '' };
+const slackHalt = require('./channels/slack-halt.js').makeSlackHalt({
+  fs, path, workspace: WORKSPACES, writeDurable: writeFileDurable,
+  initiallyHalted: cronHalted || loopsHalted || nightshift.isHalted(nightshiftState),
+  onError: error => console.error('[slack] halt state unavailable; connection blocked:', error.message)
+});
 
 function startGenericChannel(id, token, key, model, agentCfg) {
+  if (id === 'slack' && slackHalt.halted()) throw new Error('Slack is paused by E-STOP; explicitly resume the station before reconnecting.');
+  if (id === 'slack') strictFinance.assertSlackAuthorized('connect');
   stopGenericChannel(id);
   const desc = channelRegistry.get(id);
   if (!desc || typeof desc.makeAdapter !== 'function') throw new Error('unknown channel: ' + id);
@@ -10348,6 +10377,14 @@ function startGenericChannel(id, token, key, model, agentCfg) {
   if (id === 'slack') {
     adapterOpts.token = token;   // combined "xoxb-… xapp-…" — slack.js splits by prefix
     adapterOpts.WebSocketImpl = (typeof WebSocket !== 'undefined' ? WebSocket : undefined);
+    adapterOpts.fetch = (input, init) => {
+      if (slackHalt.halted()) throw new Error('Slack is paused by E-STOP.');
+      return strictFinance.slackFetch(nativeFetch, input, init);
+    };
+    adapterOpts.authorizeSocket = address => {
+      if (slackHalt.halted()) throw new Error('Slack is paused by E-STOP.');
+      strictFinance.assertSlackSocket(address);
+    };
   } else if (id === 'matrix') {
     adapterOpts.token = token;
     adapterOpts.homeserver = record.endpoint;
@@ -10369,6 +10406,7 @@ function startGenericChannel(id, token, key, model, agentCfg) {
       },
       persona: channelPersona(desc.label), classify: Classify.isTaskDirective, redact: redact, emit: chanEmit,
       newId: () => crypto.randomUUID(), now: () => Date.now(), maxMessageLength: desc.maxMessageLength,
+      directHash: text => crypto.createHash('sha256').update(text).digest('hex'),
       resolveAgent: (ctx) => router.resolveDock(ctx),   // { agentId, dockId }: the hub runs AT the dock the floor routed to (multi-bay)
       chain: chainRunner,
       lineOriginFor: (agentId, dockId) => router.lineOriginFor(agentId, dockId),   // work belongs to a line: which line does work ARRIVING at this dock belong to? (null = a direct order)
@@ -10393,9 +10431,21 @@ function startGenericChannel(id, token, key, model, agentCfg) {
 }
 function stopGenericChannel(id) {
   const w = genericChannels[id];
+  if (id === 'slack' && w && w.hub) {
+    retiredSlackHubs.add(w.hub);
+    try { w.hub.close(); } catch (e) { failNote('channels.slack.close', e); }
+  }
   if (w && w.adapter) { try { w.adapter.disconnect(); } catch (_) {} }
   delete genericChannels[id];
   genericStatus[id] = { connected: false, state: 'down', detail: '' };
+}
+function slackReviewReady() {
+  if (genericChannels.slack) return false;
+  for (const hub of retiredSlackHubs) {
+    if (typeof hub.quiescent !== 'function' || !hub.quiescent()) return false;
+  }
+  retiredSlackHubs.clear();
+  return true;
 }
 
 /* /v1/* — the OpenAI-compatible surface for EXTERNAL local clients / other harnesses (see openai-compat.js).
@@ -11198,6 +11248,9 @@ const ROUTES = [
   { m: 'POST', exact: '/api/dev/fault', h: handleDevFault },
   { m: 'GET', exact: '/api/channels/telegram/status', h: handleChannelStatus },
   { m: 'GET', exact: '/api/channels/status', h: handleChannelsStatusAll },   // one bulk poll paints the whole CHANNELS panel
+  { m: 'GET', exact: '/api/channels/slack/review', h: handleSlackReview },
+  { m: 'POST', exact: '/api/channels/slack/review', h: handleSlackReviewAction },
+  { m: 'POST', exact: '/api/channels/slack/authorization', h: handleSlackAuthorization },
   { m: 'POST', rx: GENERIC_CHANNEL_RX.connect, h: (req, res, gm) => handleGenericChannelConnect(req, res, gm[1]) },
   { m: 'POST', rx: GENERIC_CHANNEL_RX.sync, h: (req, res, gm) => handleGenericChannelSync(req, res, gm[1]) },
   { m: 'POST', rx: GENERIC_CHANNEL_RX.disconnect, h: (req, res, gm) => handleGenericChannelDisconnect(req, res, gm[1]) },
@@ -11829,6 +11882,7 @@ function quiesceForProcessFault() {
       const w = genericChannels[id];
       return (w && w.hub && w.hub._internals) ? w.hub._internals.inflight : null;
     });
+    stopGenericChannel('slack');
     const tgBotInflights = [...telegramBots.values()].map((w) => (w && w.hub && w.hub._internals) ? w.hub._internals.inflight : null);
     const devInflight = (devHub && devHub._internals) ? devHub._internals.inflight : null;
     killAll(runs, tgInflight, dcInflight, ...genericInflights, ...tgBotInflights, devInflight, stepTest ? stepTest.inflight : null);
@@ -19671,14 +19725,16 @@ async function runOnceCore(o) {
     // sendTo takes the TARGET KEY and resolves it back to its record, so the tool never has to know about the
     // '<botId>|<chatId>' namespacing. An unknown key answers ok:false rather than throwing — the tool reports
     // partial delivery honestly and transports never throw by contract.
-    sendTo: (target, text) => {
+    sendTo: (target, text, operation) => {
       let rec = null;
       try { rec = channelStore.getChatRecord(String(target)) || null; } catch (_) { rec = null; }
       if (!rec) return Promise.resolve({ ok: false, error: 'unknown chat target' });
+      strictFinance.assertTool({ name: 'channel.send', args: { target } }, { provenance: 'host' });
       const channel = String(rec.channel || 'telegram');
       const live = liveChannelFor(channel);
       if (!(live && live.adapter)) return Promise.resolve({ ok: false, error: channel + ' is not connected' });
-      return Promise.resolve(live.adapter.send(String(rec.chatId || target), text))
+      return Promise.resolve(live.adapter.send(String(rec.chatId || target), text,
+        slackSendOptions(channel, ['tool-send', operation && operation.runId, operation && operation.callId, operation && operation.part, target])))
         .catch(e => ({ ok: false, error: (e && e.message) || 'send failed' }));
     },
     // the platform's real message ceiling, straight off the channel descriptor that already declares it (a
@@ -19715,6 +19771,7 @@ async function runOnceCore(o) {
       let rec = null;
       try { rec = channelStore.getChatRecord(String(target)) || null; } catch (_) { rec = null; }
       if (!rec) return Promise.resolve({ ok: false, error: 'unknown chat target' });
+      strictFinance.assertTool({ name: 'channel.send', args: { target } }, { provenance: 'host' });
       const channel = String(rec.channel || 'telegram');
       const live = liveChannelFor(channel);
       if (!(live && live.adapter)) return Promise.resolve({ ok: false, error: channel + ' is not connected' });
@@ -23241,7 +23298,8 @@ function haltStatus() {
     cron: { halted: !!cronHalted },
     nightshift: { halted: nightshift.isHalted(nightshiftState) },
     loops: { halted: !!loopsHalted },
-    overseer: { halted: overseer.snapshot().paused, error: overseer.snapshot().error || '' }
+    overseer: { halted: overseer.snapshot().paused, error: overseer.snapshot().error || '' },
+    slack: { halted: slackHalt.halted() }
   };
   return { halted: Object.values(subsystems).some(s => s.halted), subsystems };
 }
@@ -23274,6 +23332,8 @@ async function handleHaltResume(req, res) {
   });
   attempt('overseer', () => { overseer.resumeReviews(); });
   attempt('plugins', () => { pluginRuntime.setJobsPaused(strictFinance.enabled()); reloadExtensions().catch((e) => failNote('plugins.resume', e)); });   // E-STOP paused their jobs
+  if (Object.keys(errors).length === 0 && !cronHalted && !loopsHalted && !nightshift.isHalted(nightshiftState) && !overseer.snapshot().paused)
+    attempt('slack', () => { slackHalt.resume(); });
   const state = haltStatus();
   const ok = !state.halted && Object.keys(errors).length === 0;
   haltJson(res, ok ? 200 : 503, { ok, ...state, errors });
@@ -23316,6 +23376,9 @@ function handleHalt(req, res) {
   const sampleInflight = (sampleHub && sampleHub._internals) ? sampleHub._internals.inflight : null;
   if (sampleInFlight) sampleInFlight.stopRequested = true;   // its record says STOPPED, never "did not finish cleanly — send it again"
   const halted = killAll(runs, tgInflight, dcInflight, ...genericInflights, ...tgBotInflights, devInflight, stepTest ? stepTest.inflight : null, ...triggerInflights, sampleInflight);   // browser runs + ALL channel hub runs, in one kill (see sidecar/halt.js)
+  let slackHaltPersisted = true;
+  try { slackHalt.halt(); }
+  catch (e) { slackHaltPersisted = false; console.warn('[slack] halt persist failed:', (e && e.message) || e); }
   // a phone task accepted a moment ago enters `runs` only on the next tick (host.send's setImmediate): stop it too, so an
   // E-STOP pressed in that gap never lets it start (QA 2026-10-02). Counted once — those not already inside `halted`.
   let phoneAborted = 0;
@@ -23374,7 +23437,7 @@ function handleHalt(req, res) {
   catch (e) { overseerHaltPersisted = false; console.warn('[overseer] stop could not persist:', e.message); }
   try { cronLock.release(); } catch (_) {}  // G4.3: drop any cron lock this process holds so an E-STOP mid-tick never wedges the next tick (standalone halt-block addition; G2 will add connectors.close here)
   res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ halted: halted + phoneAborted, cronAborted, beatAborted, loopAborted, terminalStops, nightshiftHaltPersisted, cronHaltPersisted, loopsHaltPersisted, overseerHaltPersisted, state: haltStatus() }));   // honest counts + per-subsystem restart-durability receipts
+  res.end(JSON.stringify({ halted: halted + phoneAborted, cronAborted, beatAborted, loopAborted, terminalStops, nightshiftHaltPersisted, cronHaltPersisted, loopsHaltPersisted, overseerHaltPersisted, slackHaltPersisted, state: haltStatus() }));   // honest counts + per-subsystem restart-durability receipts
 }
 
 // POST /api/channels/telegram/connect { token, key?, model, provider? } — the Messaging tab hands over the
@@ -23820,6 +23883,15 @@ function channelStatusPayload(id) {
   // them lets the panel prefill its fields for a one-click reconnect. Tokens/keys stay server-side, always.
   if (id === 'matrix' || id === 'signal') { out.endpoint = String(rec.endpoint || ''); }
   if (id === 'signal') { out.account = String(rec.account || ''); }
+  if (id === 'slack') {
+    try { out.financeAuthorized = slackAuthorization.authorized(); }
+    catch (e) { failNote('channels.slack.authorization', e); out.financeAuthorizationError = 'Slack authorization storage is unavailable.'; }
+    try { out.review = channelStore.slackReviewStatus(); }
+    catch (e) {
+      failNote('channels.slack.review', e);
+      out.review = { error: 'Slack journal unavailable; manual review required.' };
+    }
+  }
   // multi-bot telegram: every saved agent-bound bot, with LIVE per-instance transport truth. Additive — an old
   // frontend just ignores the field; the panel's bot list paints exclusively from this.
   if (id === 'telegram') out.bots = telegramBotsStatusList();
@@ -23840,12 +23912,91 @@ function handleGenericChannelStatus(req, res, id) {
   res.end(JSON.stringify(channelStatusPayload(id)));
 }
 
+function slackReviewRevision(item) {
+  return crypto.createHash('sha256').update(JSON.stringify(item)).digest('hex');
+}
+async function handleSlackAuthorization(req, res) {
+  const body = await readJsonBody(req, readBody, 4096, res);
+  if (!body || typeof body.authorized !== 'boolean' || body.confirm !== true
+      || Object.keys(body).some(key => !['authorized', 'confirm'].includes(key)))
+    return respondJson(res, 400, { error: 'An explicit authorization decision and confirmation are required.' });
+  if (!body.authorized) stopGenericChannel('slack');
+  try {
+    if (body.authorized) strictFinance.assertSlackAuthorizationChange();
+    slackAuthorization.set(body.authorized);
+    return respondJson(res, 200, { ok: true, authorized: body.authorized });
+  } catch (e) {
+    failNote('channels.slack.authorization', e);
+    return respondJson(res, e.code === strictFinanceMod.CODE ? 423 : 503,
+      { error: 'Slack authorization could not be saved; network access remains subject to the existing authorization.' });
+  }
+}
+function handleSlackReview(req, res) {
+  if (!slackReviewReady()) return respondJson(res, 409, { error: 'Disconnect Slack and wait for in-flight work to finish before review.' });
+  try {
+    channelStore.slackReviewStatus();
+    const inbox = channelStore.loadInbox('slack').filter(it => !it.completed).map(it => ({
+      id: it.id, revision: slackReviewRevision(it), chatId: it.message.chatId,
+      text: redact(String(it.message.text || '')), ts: it.ts
+    }));
+    const replies = channelStore.loadOutbox('slack').filter(it => it.paused).map(it => ({
+      id: it.id, revision: slackReviewRevision(it), chatId: it.chatId, text: redact(it.text),
+      attemptText: typeof it.attemptText === 'string' ? redact(it.attemptText) : null,
+      afterAttemptChars: typeof it.afterAttemptText === 'string' ? it.afterAttemptText.length : null,
+      ephemeral: it.reason === 'command' || it.reason === 'prompt', ts: it.ts
+    }));
+    return respondJson(res, 200, { ok: true, inbox, replies });
+  } catch (e) {
+    failNote('channels.slack.review-list', e);
+    return respondJson(res, 503, { error: 'Slack journal unavailable; manual recovery is required.' });
+  }
+}
+async function handleSlackReviewAction(req, res) {
+  const body = await readJsonBody(req, readBody, 4096, res);
+  if (!body || body.confirm !== true || typeof body.id !== 'string' || typeof body.revision !== 'string'
+      || !['dismiss-inbox', 'discard-reply', 'retry-reply', 'confirm-chunk'].includes(body.action)
+      || Object.keys(body).some(k => !['id', 'revision', 'action', 'confirm'].includes(k)))
+    return respondJson(res, 400, { error: 'An explicit review action and confirmation are required.' });
+  if (!slackReviewReady()) return respondJson(res, 409, { error: 'Disconnect Slack and wait for in-flight work to finish before review.' });
+  try {
+    channelStore.slackReviewStatus();
+    const isInbox = body.action === 'dismiss-inbox';
+    const items = isInbox ? channelStore.loadInbox('slack') : channelStore.loadOutbox('slack');
+    const it = items.find(item => item.id === body.id);
+    if (!it || (isInbox ? it.completed : !it.paused) || slackReviewRevision(it) !== body.revision)
+      return respondJson(res, 409, { error: 'The review item changed; reload it before deciding.' });
+    if (!isInbox && (body.action === 'retry-reply' || body.action === 'confirm-chunk')
+        && (it.reason === 'command' || it.reason === 'prompt'))
+      return respondJson(res, 409, { error: 'Expired command and permission prompts cannot be replayed.' });
+    if (body.action === 'confirm-chunk' && (typeof it.attemptText !== 'string' || typeof it.afterAttemptText !== 'string'))
+      return respondJson(res, 409, { error: 'This older item lacks an exact attempted chunk; do not assume a partial delivery.' });
+    try { strictFinance.assertSlackReviewAction(body.action, body.revision); }
+    catch (e) {
+      if (e.code !== strictFinanceMod.CODE) throw e;
+      return respondJson(res, 423, { code: e.code, error: e.message });
+    }
+    if (body.action === 'dismiss-inbox') channelStore.completeSlackInbox(it.id);
+    else if (body.action === 'discard-reply') channelStore.removeOutbox(it.id);
+    else if (body.action === 'retry-reply') channelStore.resumeOutbox(it.id, it.text);
+    else {
+      if (it.afterAttemptText) channelStore.resumeOutbox(it.id, it.afterAttemptText);
+      else if (it.operationKey) channelStore.finishSlackDirect(it.id, 'delivered');
+      else channelStore.removeOutbox(it.id);
+    }
+    return respondJson(res, 200, { ok: true });
+  } catch (e) {
+    failNote('channels.slack.review-action', e);
+    return respondJson(res, 503, { error: 'Review could not be saved; the item remains subject to manual verification.' });
+  }
+}
+
 // POST /api/channels/<id>/connect { token?, endpoint?, account?, key?, model, provider? } — mirrors the
 // telegram/discord connect: reuse saved values so reconnect is one click, validate the per-platform auth shape,
 // persist, start through the generic registry/wireChannel path.
 async function handleGenericChannelConnect(req, res, id) {
   const json = (code, obj) => { res.writeHead(code, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(obj)); };
   let body; try { body = JSON.parse(await readBody(req, 1 << 16)) || {}; } catch (e) { return json(400, { error: 'bad json' }); }
+  if (id === 'slack' && slackHalt.halted()) return json(409, { error: 'Slack is paused by E-STOP; explicitly resume the station before reconnecting.' });
   const saved = (channelSecrets && channelSecrets[id]) || {};
   const provider = normalizeProvider(body.provider || saved.provider);
   const token = channelToken(id, body.token, saved);   // keychain/runtime (desktop) or plaintext record (bare); fresh paste wins

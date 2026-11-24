@@ -195,11 +195,13 @@
         // Sequential, and it STOPS at the first failure. Firing the rest would leave the chat holding parts
         // 1,3,4 of a four-part message with no way to tell; `sent` below reports exactly what landed.
         let sent = 0, error = null;
-        for (const part of parts) {
+        for (let partIndex = 0; partIndex < parts.length; partIndex++) {
+          const part = parts[partIndex];
           let r;
           // Transports never throw — a failure is a resolved { ok:false, error }. Guard anyway: a host that
           // wires a throwing send must not take the whole run down with it.
-          try { r = await sendTo(t.target, part); } catch (e) { r = { ok: false, error: (e && e.message) || 'send threw' }; }
+          try { r = await sendTo(t.target, part, { runId: ctx && ctx.runId, callId: ctx && ctx.callId, part: String(partIndex) }); }
+          catch (e) { r = { ok: false, error: (e && e.message) || 'send threw' }; }
           if (r && r.ok === false) { error = String(r.error || 'send failed'); break; }
           sent++;
         }
@@ -240,7 +242,7 @@
           if (missed.length) {
             const note = 'Note: ' + (missed.length === 1 ? 'this file' : 'these files') + ' could not be attached here — '
               + missed.map(f => '"' + f + '"').join(', ') + '. ' + (missed.length === 1 ? 'It is' : 'They are') + ' saved in the workspace on the station.';
-            try { await sendTo(t.target, note); } catch (_) { /* the note is a courtesy; never fail the send over it */ }
+            try { await sendTo(t.target, note, { runId: ctx && ctx.runId, callId: ctx && ctx.callId, part: 'attachment-note' }); } catch (_) { /* the note is a courtesy; never fail the send over it */ }
           }
         }
 

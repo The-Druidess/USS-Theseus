@@ -2,8 +2,8 @@
 
    Slack differs from Telegram the same way Discord does: inbound messages arrive over a push socket, not an
    HTTP long-poll. Slack's local-first path is SOCKET MODE — no public webhook URL needed: an app-level token
-   (xapp-…) opens a WebSocket via apps.connections.open, event envelopes arrive over it (each must be ACKed by
-   envelope_id), and sends are plain REST chat.postMessage calls with the bot token (xoxb-…).
+   (xapp-…) opens a WebSocket via apps.connections.open, event envelopes arrive over it (acknowledged by
+   envelope_id after intake), and sends are plain REST chat.postMessage calls with the bot token (xoxb-…).
 
    We bridge that push to the adapter's getUpdates()/send() seam exactly like discord.transport.js: the socket
    fills an internal BUFFER, getUpdates() drains it (parking briefly when empty), and a dropped socket simply
@@ -44,23 +44,28 @@
     if (typeof WebSocketImpl !== 'function') throw new Error('makeSlackTransport: WebSocket is unavailable (Node >= 21, or inject WebSocketImpl)');
 
     const buffer = [];      // raw Slack event payloads (envelope.payload.event), oldest-first
+    const pendingAcks = new WeakMap();
     let ws = null;          // the live socket, if open
+    let socketOpen = false;
     let opening = false;    // an apps.connections.open round-trip is in flight
     let stopped = false;    // caller asked us to shut down for good
     let fatalError = null;  // a non-recoverable auth failure — thrown from the next getUpdates
     let everOpened = false; // has apps.connections.open EVER succeeded (real transport proof)? — honest connect gate
 
-    function closeSocket() { try { if (ws && typeof ws.close === 'function') ws.close(); } catch (_) {} ws = null; }
+    function closeSocket() { try { if (ws && typeof ws.close === 'function') ws.close(); } catch (_) {} ws = null; socketOpen = false; }
 
-    async function openGateway() {
-      if (ws || opening || stopped || fatalError) return;
+    async function openGateway(signal) {
+      if (ws || opening || stopped || fatalError || (signal && signal.aborted)) return;
       opening = true;
       try {
         const res = await fetchImpl(apiBase + '/apps.connections.open', {
-          method: 'POST', headers: { 'Authorization': 'Bearer ' + appToken, 'content-type': 'application/x-www-form-urlencoded' }
+          method: 'POST', headers: { 'Authorization': 'Bearer ' + appToken, 'content-type': 'application/x-www-form-urlencoded' },
+          signal
         });
+        if (stopped || (signal && signal.aborted)) return;
         let data = null;
         try { data = await res.json(); } catch (e) {}
+        if (stopped || (signal && signal.aborted)) return;
         if (!res || !res.ok || !data || data.ok !== true || !data.url) {
           const why = (data && data.error) || ('http ' + ((res && res.status) || 0));
           if (data && FATAL_OPEN_ERRORS.indexOf(String(data.error)) >= 0) {
@@ -70,22 +75,28 @@
           }
           return;   // transient open failure -> next poll retries (poll cadence is the backoff)
         }
+        if (typeof o.authorizeSocket === 'function') o.authorizeSocket(data.url);
         const sock = new WebSocketImpl(data.url);
-        everOpened = true;   // apps.connections.open succeeded with a real socket URL — the app-level token is proven
+        sock.onopen = () => { if (!stopped && ws === sock) { socketOpen = true; everOpened = true; } };
         sock.onmessage = (ev) => {
+          if (stopped || ws !== sock) return;
           let msg = null;
           try { msg = JSON.parse(String(ev && ev.data)); } catch (e) { return; }
           if (!msg) return;
-          // every envelope must be ACKed promptly or Slack redelivers, then drops the connection.
-          if (msg.envelope_id) { try { sock.send(JSON.stringify({ envelope_id: msg.envelope_id })); } catch (_) {} }
-          if (msg.type === 'events_api' && msg.payload && msg.payload.event) buffer.push(msg.payload.event);
-          else if (msg.type === 'disconnect') { try { sock.close(); } catch (_) {} }   // Slack asks us to refresh -> lazy reopen
+          const event = msg.type === 'events_api' && msg.payload && msg.payload.event;
+          if (event && typeof event === 'object') {
+            if (msg.envelope_id) pendingAcks.set(event, { socket: sock, id: msg.envelope_id });
+            buffer.push(event);
+          } else {
+            if (msg.envelope_id) { try { sock.send(JSON.stringify({ envelope_id: msg.envelope_id })); } catch (e) { console.error('[slack] envelope acknowledgement failed:', (e && e.message) || e); } }
+            if (msg.type === 'disconnect') { try { sock.close(); } catch (_) {} }
+          }
         };
-        sock.onclose = () => { if (ws === sock) ws = null; };
-        sock.onerror = () => { try { sock.close(); } catch (_) {} if (ws === sock) ws = null; };
+        sock.onclose = () => { if (ws === sock) { ws = null; socketOpen = false; } };
+        sock.onerror = () => { try { sock.close(); } catch (_) {} if (ws === sock) { ws = null; socketOpen = false; } };
         ws = sock;
       } catch (e) {
-        // network blip on the open call -> stay disconnected; the next poll retries
+        if (e && e.code === 'strict_finance_blocked') { e.fatal = true; fatalError = e; }
       } finally {
         opening = false;
       }
@@ -94,13 +105,20 @@
     return {
       connect() { return openGateway(); },
       disconnect() { stopped = true; closeSocket(); },
+      acknowledgeUpdate(event) {
+        const ack = event && pendingAcks.get(event);
+        if (!ack) return;
+        ack.socket.send(JSON.stringify({ envelope_id: ack.id }));
+        pendingAcks.delete(event);
+      },
 
       // drain the buffer the socket filled; open the socket lazily on the first poll (mirrors discord.transport).
       async getUpdates(args) {
         const signal = args && args.signal;
         if (signal && signal.aborted) { stopped = true; closeSocket(); return []; }
         if (fatalError) throw fatalError;
-        await openGateway();
+        await openGateway(signal);
+        if (signal && signal.aborted) { stopped = true; closeSocket(); return []; }
         if (fatalError) throw fatalError;
         // Events the socket buffered before dropping still get delivered — never stranded behind a reconnect.
         if (buffer.length) return buffer.splice(0, buffer.length);
@@ -110,7 +128,9 @@
         // "successful" [] return, so the adapter kept the panel CONNECTED on a dead socket forever. Surface a
         // transient (non-fatal) error instead: the adapter reports down/connecting and backs off, and the next
         // poll's openGateway() keeps retrying until the socket is genuinely back.
-        if (!ws) throw new Error(everOpened ? 'slack socket lost — reconnecting' : 'slack socket not open yet — retrying');
+        if (ws && !socketOpen) await sleep(parkMs);
+        if (signal && signal.aborted) { stopped = true; closeSocket(); return []; }
+        if (!ws || !socketOpen) throw new Error(everOpened ? 'slack socket lost — reconnecting' : 'slack socket not open yet — retrying');
         if (!buffer.length) { await sleep(parkMs); }
         if (signal && signal.aborted) { stopped = true; closeSocket(); return []; }
         return buffer.splice(0, buffer.length);
@@ -131,11 +151,13 @@
           const status = res ? res.status : 0;
           const slackErr = (data && data.error) || '';
           let retryAfter; try { retryAfter = Number(res.headers && res.headers.get && res.headers.get('retry-after')) || undefined; } catch (_) {}
-          const retryable = status === 429 || status >= 500 || slackErr === 'ratelimited';
-          return { ok: false, error: slackErr || ('slack http ' + status), retryable, retryAfter };
+          const deliveryUnknown = status === 0 || status === 408 || status >= 500
+            || !data || typeof data.ok !== 'boolean' || slackErr === 'internal_error' || slackErr === 'fatal_error';
+          const retryable = !deliveryUnknown && (status === 429 || slackErr === 'ratelimited');
+          return { ok: false, error: slackErr || ('slack http ' + status), retryable, retryAfter, deliveryUnknown };
         } catch (e) {
-          if (e && (e.name === 'AbortError')) return { ok: false, error: 'aborted', retryable: false };
-          return { ok: false, error: String((e && e.message) || e), retryable: true };   // network blip -> resend
+          if (e && (e.name === 'AbortError')) return { ok: false, error: 'aborted', retryable: false, deliveryUnknown: true };
+          return { ok: false, error: String((e && e.message) || e), retryable: false, deliveryUnknown: true };
         }
       },
 

@@ -789,8 +789,9 @@
     // reads, and Telegram would otherwise render one set of buttons per chunk of a long reply. Returns the final
     // chunk's messageId too, which is what a keyboard needs in order to be edited/stripped once it is tapped.
     async function deliver(chatId, text, runId, reason, agentId, sendOpts, seedId) {
+      if (channel === 'slack') return deliverSlack(chatId, text, runId, reason, agentId, sendOpts, seedId);
       const chunks = chunkText(text, maxMessageLength);
-      let ok = true, failedAt = -1, messageId = '';
+      let ok = true, failedAt = -1, messageId = '', deliveryUnknown = false;
       // A message the stream already put in the chat. Chunk 0 REPLACES it rather than being sent again — that
       // replacement is the whole difference between "streamed" and "streamed, then repeated".
       let seed = (seedId && editMessage) ? String(seedId) : '';
@@ -814,15 +815,19 @@
                best-effort — if it fails too, delivering the reply still matters more than the duplicate. */
             try { await deleteMessage(chatId, seed); } catch (_) {}
             seed = '';
-            try { r = await send(chatId, chunks[0], opts); } catch (e) { r = { ok: false, error: (e && e.message) || 'send threw' }; }
+            try { r = await send(chatId, chunks[0], opts); } catch (e) { r = { ok: false, error: (e && e.message) || 'send threw', deliveryUnknown: channel === 'slack' }; }
           } else if (!r.messageId) {
             r = { ok: true, messageId: seed };   // an edit answers with no id of its own; it is still that message
           }
         } else {
-          try { r = await send(chatId, chunks[i], opts); } catch (e) { r = { ok: false, error: (e && e.message) || 'send threw' }; }
+          try { r = await send(chatId, chunks[i], opts); } catch (e) { r = { ok: false, error: (e && e.message) || 'send threw', deliveryUnknown: channel === 'slack' }; }
         }
         if (r && r.threadGone) forgetThread(chatId);   // the topic is gone; stop aiming at it
-        if (!r || r.ok === false) { ok = false; failedAt = i; break; }
+        if (!r || r.ok === false || (channel === 'slack' && r.ok !== true)) {
+          ok = false; failedAt = i;
+          deliveryUnknown = channel === 'slack' && (!r || typeof r.ok !== 'boolean') ? true : !!(r && r.deliveryUnknown);
+          break;
+        }
         if (last && r.messageId) messageId = String(r.messageId);
       }
       // DURABLE OUTBOX: a reply that failed to send used to be recorded (channel.delivery ok:false) and then
@@ -850,13 +855,15 @@
       let failurePersistError = null;
       if (mustPersistFailure) {
         try {
-          const remainder = '⌛ delayed reply — the channel was unreachable when this was first sent:\n' + chunks.slice(failedAt).join('');
-          store.pushOutbox({ channel: channel, chatId: String(chatId), text: remainder, runId: runId || '', agentId: agentId ? String(agentId) : '', reason: reason || '' });
+          const label = deliveryUnknown ? '⌛ delivery outcome unknown — review before resending:\n' : '⌛ delayed reply — the channel was unreachable when this was first sent:\n';
+          const remainder = label + chunks.slice(failedAt).join('');
+          store.pushOutbox({ channel: channel, chatId: String(chatId), text: remainder, runId: runId || '', agentId: agentId ? String(agentId) : '', reason: reason || '', paused: deliveryUnknown });
           failurePersisted = true;
-          scheduleOutboxRetry();
+          if (!deliveryUnknown) scheduleOutboxRetry();
         } catch (e) { failurePersistError = e; }
       }
       const ev = { channel, chatId: String(chatId), runId: runId || '', ok, chunks: chunks.length, reason: reason || '' };
+      if (deliveryUnknown) ev.reason = 'delivery-unknown';
       if (agentId) ev.agentId = String(agentId);   // additive/optional — attribute the dish to the acting agent
       try { emit('channel.delivery', ev); } catch (_) {}
       if (ok) { try { kickOutbox(); } catch (_) {} }   // a proven-healthy send is the cue to drain any backlog
@@ -878,13 +885,23 @@
     let flushing = false;
     let outboxTimer = null;
     let closed = false;
+    let slackSendsInProgress = 0;
+    const locallyPausedOutbox = new Set();
+    function retryableOutbox(items) {
+      return items.filter(it => !it.paused && !locallyPausedOutbox.has(it.id));
+    }
     function pendingOutbox() {
-      try { return typeof store.loadOutbox === 'function' ? (store.loadOutbox(channel) || []) : []; }
-      catch (_) { return []; }
+      try {
+        if (channel === 'slack') {
+          if (typeof store.assertSlackOutboxSafe !== 'function') throw new Error('Slack outbox validation is unavailable');
+          store.assertSlackOutboxSafe();
+        }
+        return typeof store.loadOutbox === 'function' ? (store.loadOutbox(channel) || []) : [];
+      } catch (e) { failNote('channels.hub.outbox.load', e); return []; }
     }
     function scheduleOutboxRetry() {
       if (closed || outboxTimer || typeof store.loadOutbox !== 'function') return;
-      const items = pendingOutbox();
+      const items = retryableOutbox(pendingOutbox());
       if (!items.length) return;
       const tries = Math.max(0, Number(items[0] && items[0].tries) || 0);
       const delay = Math.min(outboxRetryMs * Math.pow(2, Math.min(tries, 8)), outboxRetryMaxMs);
@@ -900,26 +917,155 @@
       const p = flushOutbox();
       if (p && typeof p.catch === 'function') p.catch(function () {});
     }
+    async function deliverSlack(chatId, text, runId, reason, agentId, sendOpts, seedId, operation) {
+      if (closed) throw new Error('Slack delivery is unavailable after the channel is closed');
+      const parts = chunkTextParts(text, maxMessageLength);
+      if (!parts.send.length) return { ok: true, messageId: '', text: '' };
+      if (seedId) throw new Error('Slack streamed replies cannot be journaled safely');
+      if (typeof store.pushOutbox !== 'function' || typeof store.pauseOutbox !== 'function' || typeof store.resumeOutbox !== 'function'
+        || typeof store.assertSlackOutboxSafe !== 'function')
+        throw new Error('Slack delivery requires a durable outbox');
+      let item;
+      try {
+        store.assertSlackOutboxSafe();
+        const entry = {
+          channel, chatId: String(chatId), text: String(text), runId: runId || '',
+          agentId: agentId ? String(agentId) : '', reason: reason || '', paused: true, requireComplete: true
+        };
+        if (operation) { entry.operationKey = operation.key; entry.operationHash = operation.hash; }
+        item = store.pushOutbox(entry);
+      } catch (e) {
+        try { emit('channel.delivery', { channel, chatId: String(chatId), runId: runId || '', ok: false, chunks: parts.send.length, reason: 'delivery-journal-failed' }); } catch (_) {}
+        throw new Error('Slack reply could not be recorded before sending: ' + ((e && e.message) || 'outbox unavailable'));
+      }
+      const result = await flushSlackItem(item, { reason: reason || '', sendOpts });
+      if (!result.ok && !result.unknown && reason !== 'command' && reason !== 'prompt') scheduleOutboxRetry();
+      const ev = { channel, chatId: String(chatId), runId: runId || '', ok: result.ok, chunks: parts.send.length, reason: result.unknown ? 'delivery-unknown' : (reason || '') };
+      if (agentId) ev.agentId = String(agentId);
+      try { emit('channel.delivery', ev); } catch (_) {}
+      if (result.ok) kickOutbox();
+      return { ok: result.ok, messageId: result.messageId || '', text: parts.send[parts.send.length - 1],
+        deliveryUnknown: !!result.unknown,
+        error: result.ok ? undefined : 'Slack delivery is queued or awaiting review; do not resend this operation.' };
+    }
+
+    async function sendDirect(chatId, text, options) {
+      if (closed) return { ok: false, error: 'Slack channel is disconnected' };
+      const opts = options || {}, key = opts.idempotencyKey;
+      if (typeof key !== 'string' || !/^[a-f0-9]{64}$/.test(key)
+          || typeof o.directHash !== 'function' || typeof store.findSlackDirect !== 'function'
+          || typeof store.finishSlackDirect !== 'function')
+        return { ok: false, error: 'Slack direct delivery requires a durable operation identity.' };
+      const sendOpts = Object.assign({}, opts);
+      delete sendOpts.idempotencyKey;
+      const hash = o.directHash(JSON.stringify([String(chatId), String(text), sendOpts]));
+      if (!/^[a-f0-9]{64}$/.test(hash)) throw new Error('invalid Slack direct operation fingerprint');
+      store.assertSlackOutboxSafe();
+      const previous = store.findSlackDirect(key);
+      if (previous) {
+        if (previous.operationHash !== hash) return { ok: false, error: 'Slack operation identity was reused with different content.' };
+        if (previous.operationState === 'delivered') return { ok: true, alreadyDelivered: true };
+        if (previous.operationState === 'discarded') return { ok: false, error: 'Slack operation was discarded during review.' };
+        return { ok: false, deliveryUnknown: !!previous.paused, error: 'Slack operation is queued or awaiting review; do not resend.' };
+      }
+      return deliverSlack(chatId, text, '', 'direct', '', sendOpts, '', { key, hash });
+    }
+
+    async function flushSlackItem(it, initial) {
+      const parts = chunkTextParts(it.text, maxMessageLength);
+      if (typeof store.pauseOutbox !== 'function' || typeof store.resumeOutbox !== 'function') {
+        locallyPausedOutbox.add(it.id);
+        failNote('channels.hub.outbox.pause', new Error('store cannot record Slack delivery attempts'));
+        return { ok: false };
+      }
+      if (!parts.send.length) {
+        try {
+          store.assertSlackOutboxSafe();
+          if (it.operationKey) store.finishSlackDirect(it.id, 'delivered');
+          else if (!store.removeOutbox(it.id)) throw new Error('empty Slack outbox item is missing');
+        } catch (e) { locallyPausedOutbox.add(it.id); failNote('channels.hub.outbox.remove', e); return { ok: false }; }
+      }
+      let messageId = '';
+      for (let ci = 0; ci < parts.send.length; ci++) {
+        if (closed) return { ok: false };
+        const remainder = parts.raw.slice(ci).join('');
+        try { store.assertSlackOutboxSafe(); store.pauseOutbox(it.id, remainder, parts.send[ci], parts.raw.slice(ci + 1).join('')); }
+        catch (e) { locallyPausedOutbox.add(it.id); failNote('channels.hub.outbox.pause', e); return { ok: false }; }
+        let r;
+        const rt = routeOpts(it.chatId, !!initial && ci === 0);
+        const terminal = initial && ci === parts.send.length - 1 ? initial.sendOpts : null;
+        const opts = (rt || terminal) ? Object.assign({}, terminal || {}, rt || {}) : undefined;
+        slackSendsInProgress++;
+        try { r = await send(it.chatId, parts.send[ci], opts); }
+        catch (e) { r = { ok: false, deliveryUnknown: true }; }
+        finally { slackSendsInProgress--; }
+        if (!r || r.ok !== true) {
+          if (!r || typeof r.ok !== 'boolean' || r.deliveryUnknown) {
+            if (!initial) { try { emit('channel.delivery', { channel, chatId: String(it.chatId), runId: it.runId || '', ok: false, chunks: parts.send.length, reason: 'delivery-unknown' }); } catch (_) {} }
+          } else {
+            try {
+              store.assertSlackOutboxSafe();
+              if (initial && (initial.reason === 'command' || initial.reason === 'prompt')) {
+                if (!store.removeOutbox(it.id)) throw new Error('Slack outbox item is missing');
+              } else store.resumeOutbox(it.id, remainder);
+              const bumped = !initial && ci === 0 && typeof store.bumpOutboxTry === 'function' ? store.bumpOutboxTry(it.id) : null;
+              if (bumped && bumped.tries === OUTBOX_ESCALATE_TRIES) {
+                try { emit('channel.delivery', { channel, chatId: String(it.chatId), runId: it.runId || '', ok: false, chunks: 0, reason: 'redelivery-delayed' }); } catch (_) {}
+                try { console.error('[' + channel + '] outbox item for chat ' + it.chatId + ' still delayed after ' + OUTBOX_ESCALATE_TRIES + ' attempts; retained for retry'); } catch (_) {}
+              }
+            }
+            catch (e) { locallyPausedOutbox.add(it.id); failNote('channels.hub.outbox.progress', e); }
+          }
+          return { ok: false, unknown: !r || typeof r.ok !== 'boolean' || !!r.deliveryUnknown };
+        }
+        if (ci === parts.send.length - 1 && r.messageId) messageId = String(r.messageId);
+        try {
+          store.assertSlackOutboxSafe();
+          if (ci === parts.send.length - 1) {
+            if (it.operationKey) store.finishSlackDirect(it.id, 'delivered');
+            else if (!store.removeOutbox(it.id)) throw new Error('completed Slack outbox item is missing');
+          } else {
+            store.resumeOutbox(it.id, parts.raw.slice(ci + 1).join(''));
+          }
+        } catch (e) { locallyPausedOutbox.add(it.id); failNote('channels.hub.outbox.progress', e); return { ok: false, unknown: true }; }
+      }
+      if (!initial) {
+        const ev = { channel, chatId: String(it.chatId), runId: it.runId || '', ok: true, chunks: parts.send.length, reason: 'redelivered' };
+        if (it.agentId) ev.agentId = String(it.agentId);
+        try { emit('channel.delivery', ev); } catch (_) {}
+      }
+      return { ok: true, messageId };
+    }
     async function flushOutbox() {
       if (closed || flushing || typeof store.loadOutbox !== 'function') return;
       flushing = true;
       try {
+        if (channel === 'slack') {
+          if (typeof store.assertSlackOutboxSafe !== 'function') throw new Error('Slack outbox validation is unavailable');
+          store.assertSlackOutboxSafe();
+        }
         const items = store.loadOutbox(channel);
         for (const it of items) {
+          if (closed) break;
+          if (it.paused || locallyPausedOutbox.has(it.id)) continue;
           // A chat that blocked us cannot be redelivered to. onMembership already drops its backlog, but a flush
           // racing that drop would otherwise spend a failed send per item and then stop the whole pass.
           let dead = false;
           try { const r0 = typeof store.getChatRecord === 'function' ? store.getChatRecord(String(it.chatId)) : null; dead = !!(r0 && r0.unreachable); } catch (_) {}
           if (dead) { try { store.removeOutbox(it.id); } catch (e) { failNote('channels.hub.outbox.remove', e); } continue; }
+          if (channel === 'slack') {
+            if (!(await flushSlackItem(it)).ok) break;
+            continue;
+          }
           const parts = chunkTextParts(it.text, maxMessageLength);
           const chunks = parts.send;
-          let ok = true, sentUpTo = 0;
+          let ok = true, sentUpTo = 0, deliveryUnknown = false;
           for (let ci = 0; ci < chunks.length; ci++) {
             let r;
             // Thread only, never the quote: a delayed reply still belongs in its topic, but the message it was
             // answering is hours old and quoting it now would read as a bot talking to the past.
-            try { r = await send(it.chatId, chunks[ci], routeOpts(it.chatId, false) || undefined); } catch (e) { r = { ok: false }; }
-            if (!r || r.ok === false) { ok = false; break; }
+            try { r = await send(it.chatId, chunks[ci], routeOpts(it.chatId, false) || undefined); } catch (e) { r = { ok: false, deliveryUnknown: channel === 'slack' }; }
+            if (!r || r.ok === false) { ok = false; deliveryUnknown = !r ? channel === 'slack' : !!r.deliveryUnknown; break; }
             sentUpTo = ci + 1;
           }
           if (ok) {
@@ -934,6 +1080,15 @@
           // the RAW (undecorated) splits: joining the fence-doctored send chunks baked reopenFences's
           // synthetic ``` markers into the stored text, which the next pass re-fenced — stray fence lines
           // growing per retry on every long code-bearing reply.
+          if (deliveryUnknown) {
+            locallyPausedOutbox.add(it.id);
+            try {
+              if (typeof store.pauseOutbox !== 'function') throw new Error('store cannot persist a paused outbox item');
+              store.pauseOutbox(it.id, parts.raw.slice(sentUpTo).join(''));
+            } catch (e) { failNote('channels.hub.outbox.pause', e); }
+            try { emit('channel.delivery', { channel, chatId: String(it.chatId), runId: it.runId || '', ok: false, chunks: chunks.length, reason: 'delivery-unknown' }); } catch (_) {}
+            break;
+          }
           if (sentUpTo > 0 && typeof store.replaceOutboxText === 'function') {
             try { store.replaceOutboxText(it.id, parts.raw.slice(sentUpTo).join('')); } catch (e) { failNote('channels.hub.outbox.progress', e); }
           }
@@ -949,10 +1104,14 @@
           }
           break;   // transport still unhealthy — end this pass; the next healthy cue retries
         }
+      } catch (e) {
+        if (channel === 'slack') failNote('channels.hub.outbox.flush', e);
+        throw e;
       } finally {
         flushing = false;
-        if (pendingOutbox().length) scheduleOutboxRetry();
-        else {
+        const remaining = pendingOutbox();
+        if (retryableOutbox(remaining).length) scheduleOutboxRetry();
+        else if (!remaining.length) {
           // Capacity is back. Replay intake deliberately held when a saturated outbox could not accept its reply.
           try { const p = recoverInbox(); if (p && typeof p.catch === 'function') p.catch(function () {}); } catch (_) {}
         }
@@ -1333,7 +1492,13 @@
       return channel + '|' + String(msg.chatId) + '|' + String(msg.messageId) + (msg.edited ? '|edited' : '');
     }
     function onInbound(msg, intake) {
+      if (channel === 'slack' && closed) throw new Error('Slack intake is unavailable after the channel is closed');
       const id = inboxId(msg);
+      if (channel === 'slack' && (!id || typeof store.pushInbox !== 'function'
+        || typeof store.removeInbox !== 'function' || typeof store.loadInbox !== 'function'
+        || typeof store.completeSlackInbox !== 'function' || typeof store.assertSlackInboxSafe !== 'function'))
+        throw new Error('Slack intake requires a message id and durable inbox');
+      if (channel === 'slack') store.assertSlackInboxSafe();
       // Older/test stores retain the original behavior. Production's store claim is synchronous and durable,
       // so returning from this function is the exact point the adapter may safely advance Telegram's offset.
       if (!id || typeof store.pushInbox !== 'function' || typeof store.removeInbox !== 'function') return routeInbound(msg, intake);
@@ -1342,10 +1507,25 @@
         if (intake && typeof intake.onAccepted === 'function') { try { intake.onAccepted({ id, durable: true, duplicate: true }); } catch (_) {} }
         return live;
       }
-      store.pushInbox({ id: id, channel: channel, message: msg });   // throws synchronously -> adapter does NOT ack
+      const prior = typeof store.loadInbox === 'function'
+        ? (store.loadInbox(channel) || []).find(it => it.id === id) : null;
+      if (prior && (channel === 'slack' || prior.recoveryHeld)) {
+        if (!prior.completed) { try { emit('channel.delivery', { channel, chatId: String(msg.chatId), runId: '', ok: false, chunks: 0, reason: 'inbox-reconciliation-required' }); } catch (_) {} }
+        if (intake && typeof intake.onAccepted === 'function') { try { intake.onAccepted({ id, durable: true, duplicate: true }); } catch (_) {} }
+        return Promise.resolve();
+      }
+      const admitted = store.pushInbox({ id: id, channel: channel, message: msg });   // throws synchronously -> adapter does NOT ack
+      if (admitted && admitted.recoveryHeld) {
+        if (intake && typeof intake.onAccepted === 'function') { try { intake.onAccepted({ id, durable: true, duplicate: true }); } catch (_) {} }
+        return Promise.resolve();
+      }
       if (intake && typeof intake.onAccepted === 'function') { try { intake.onAccepted({ id, durable: true }); } catch (_) {} }
-      const running = Promise.resolve().then(() => routeInbound(msg, intake)).then((value) => {
-        store.removeInbox(id);   // reply delivered OR its undelivered remainder is now durable in the outbox
+      const running = Promise.resolve().then(() => {
+        if (channel === 'slack' && closed) throw new Error('Slack intake was halted before processing');
+        return routeInbound(msg, intake);
+      }).then((value) => {
+        if (channel === 'slack') { store.assertSlackInboxSafe(); store.completeSlackInbox(id); }
+        else store.removeInbox(id);   // reply delivered OR its undelivered remainder is now durable in the outbox
         return value;
       }).finally(() => { activeInbox.delete(id); });
       activeInbox.set(id, running);
@@ -1365,12 +1545,27 @@
       if (closed || recoveringInbox || typeof store.loadInbox !== 'function') return;
       recoveringInbox = true;
       try {
+        if (channel === 'slack') {
+          if (typeof store.assertSlackInboxSafe !== 'function') throw new Error('Slack inbox validation is unavailable');
+          store.assertSlackInboxSafe();
+        }
         const items = store.loadInbox(channel) || [];
+        if (channel === 'slack') {
+          for (const it of items) {
+            if (!it || !it.message || it.completed || activeInbox.has(it.id)) continue;
+            try { emit('channel.delivery', { channel, chatId: String(it.message.chatId), runId: '', ok: false, chunks: 0, reason: 'inbox-reconciliation-required' }); } catch (_) {}
+          }
+          return;
+        }
         for (const it of items) {
           if (closed || !it || !it.message) break;
+          if (it.recoveryHeld) continue;
           try { await onInbound(it.message, { recovered: true }); }
           catch (e) { try { console.error('[' + channel + '] durable inbox recovery failed for ' + String(it.id || '') + ':', (e && e.message) || e); } catch (_) {} break; }
         }
+      } catch (e) {
+        if (channel === 'slack') failNote('channels.hub.inbox.recover', e);
+        throw e;
       } finally { recoveringInbox = false; }
     }
 
@@ -2151,13 +2346,15 @@
       try { items = store.loadOutbox(channel) || []; } catch (_) { items = []; }
       for (const it of items) {
         if (String(it.chatId) !== chatId) continue;
+        if (it.recoveryHeld) continue;
         try { store.removeOutbox(it.id); } catch (e) { failNote('channels.hub.outbox.remove', e); }
         try { emit('channel.delivery', { channel, chatId: chatId, runId: it.runId || '', ok: false, chunks: 0, reason: 'redelivery-gave-up' }); } catch (_) {}
       }
     }
 
     return {
-      onInbound, onCallback, onStatus, onMembership, close,
+      onInbound, onCallback, onStatus, onMembership, close, sendDirect,
+      quiescent: () => closed && !flushing && slackSendsInProgress === 0 && activeInbox.size === 0,
       _internals: { agentIdFor, chunkText, endNote, deliver, inflight, handleCommand, currentBoundAgent, isSupersedeRaceRefusal, flushOutbox, scheduleOutboxRetry, recoverInbox, activeInbox, inboxId, OUTBOX_ESCALATE_TRIES, TASK_SUFFIX, DEFAULT_PERSONA, keyboardFor, btnLabel, sendConsentPrompt, buttonsOk, replyPreamble, MAX_REPLY_MEDIA, noteRoute, routeOpts, routes, MAX_ROUTES, editIsCurrent, startAck, ACK_EMOJI, observeTurn, startStream, streamOk, notModified }
     };
   }

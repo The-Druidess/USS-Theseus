@@ -7,6 +7,8 @@ const A = require('./_assert.js');
 const pathMod = require('path');
 const { makeChannelStore } = require('../sidecar/channels/store.js');
 const { makeChannelHub } = require('../sidecar/channels/hub.js');
+const crypto = require('node:crypto');
+const digest = value => crypto.createHash('sha256').update(value).digest('hex');
 
 function memFs() {
   const files = new Map();
@@ -39,6 +41,63 @@ function mkHub(store, sendImpl, events) {
 }
 
 (async () => {
+  {
+    const fs = memFs(), store = mkStore(fs), sent = [];
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const makeHub = s => makeChannelHub({
+      channel: 'slack', store: s, runOnce: async () => {}, emit: () => {}, directHash: digest,
+      send: async (_chat, text) => { sent.push(text); return pending; }
+    });
+    const hub = makeHub(store), options = { idempotencyKey: digest('operation-1') };
+    const first = hub.sendDirect('D', 'message', options);
+    A.ok((await hub.sendDirect('D', 'message', options)).ok === false, 'concurrent direct retry cannot send again');
+    A.eq(sent, ['message'], 'one request is in flight');
+    finish({ ok: true, messageId: '1' });
+    A.ok((await first).ok, 'direct send reports confirmed success');
+    hub.close();
+    const restarted = makeHub(mkStore(fs));
+    A.ok((await restarted.sendDirect('D', 'message', options)).alreadyDelivered, 'a successful direct send is deduplicated after restart');
+    A.ok(!(await restarted.sendDirect('D', 'different', options)).ok, 'an operation key cannot be reused with different text');
+    A.eq(sent, ['message'], 'completed direct send is never repeated');
+    restarted.close();
+  }
+  {
+    const store = mkStore(), sent = [];
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, directHash: digest,
+      send: async (_chat, text) => { sent.push(text); return { ok: false, deliveryUnknown: true }; }
+    });
+    const options = { idempotencyKey: digest('operation-unknown') };
+    A.ok((await hub.sendDirect('D', 'uncertain', options)).deliveryUnknown, 'uncertain direct send is reported');
+    A.ok((await hub.sendDirect('D', 'uncertain', options)).deliveryUnknown, 'uncertain retry remains held');
+    const item = store.loadOutbox('slack')[0];
+    store.removeOutbox(item.id);
+    A.ok(!(await hub.sendDirect('D', 'uncertain', options)).ok, 'discarding preserves the operation tombstone');
+    A.eq(sent, ['uncertain'], 'discarded or uncertain operations cannot send again');
+    hub.close();
+  }
+  {
+    const store = mkStore(), sent = [];
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, directHash: digest,
+      outboxRetryMs: 60000,
+      send: async (_chat, text) => {
+        sent.push(text);
+        return sent.length === 1 ? { ok: false, deliveryUnknown: false } : { ok: true, messageId: '1' };
+      }
+    });
+    const options = { idempotencyKey: digest('operation-queued') };
+    const first = await hub.sendDirect('D', 'queued', options);
+    A.ok(!first.ok && /queued/.test(first.error), 'a known failure is reported as queued, not sent');
+    A.ok(!(await hub.sendDirect('D', 'queued', options)).ok, 'caller retry does not duplicate a queued operation');
+    A.eq(sent, ['queued'], 'only the outbox may retry the queued send');
+    await hub._internals.flushOutbox();
+    A.ok((await hub.sendDirect('D', 'queued', options)).alreadyDelivered, 'caller retry sees confirmed outbox completion');
+    A.eq(sent, ['queued', 'queued'], 'outbox performs the only retry');
+    hub.close();
+  }
+
   // ---- A. store outbox CRUD: push/load/remove/bump round-trip; missing/corrupt -> [] ----
   {
     const s = mkStore();
@@ -57,6 +116,40 @@ function mkHub(store, sendImpl, events) {
   }
 
   // ---- A2. durable ids remain unique when a restarted process sees the same clock tick ----
+  {
+    const store = mkStore(), sent = [];
+    const text = '```js\n' + 'x'.repeat(45) + '\n```';
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, maxMessageLength: 20,
+      send: async (chatId, chunk) => {
+        sent.push(chunk);
+        return sent.length === 1 ? { ok: true } : { ok: false, deliveryUnknown: true };
+      }
+    });
+    await hub._internals.deliver('D1', text, 'fenced', 'done');
+    const item = store.loadOutbox('slack')[0];
+    A.eq(item.attemptText, sent[1], 'review retains the exact fenced chunk sent on the wire');
+    A.ok(item.afterAttemptText.length > 0 && item.text.endsWith(item.afterAttemptText), 'review preserves the following unsent raw text');
+    hub.close();
+  }
+
+  {
+    const store = mkStore();
+    let runs = 0;
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => { runs++; }, emit: () => {},
+      send: async () => ({ ok: true }), secrets: () => ({ key: 'k', model: 'm', configured: true })
+    });
+    const processing = hub.onInbound({ chatId: 'D0', chatType: 'dm', userId: 'U', text: 'work', messageId: '1' });
+    hub.close();
+    let stopped = false;
+    try { await processing; } catch (_) { stopped = true; }
+    A.ok(stopped, 'closing Slack prevents accepted intake from starting on a later microtask');
+    A.eq(runs, 0, 'no agent run begins after the hub closes');
+    A.eq(store.loadInbox('slack').length, 1, 'halted intake stays held for review');
+    A.ok(hub.quiescent(), 'halted intake becomes quiescent after it settles');
+  }
+
   {
     const fs = memFs();
     clk = 2100;
@@ -310,6 +403,401 @@ function mkHub(store, sendImpl, events) {
     const fenceLines = (sends.join('\n').match(/^[ \t]{0,3}```/gm) || []).length;
     const perfectLines = (chunkTextParts(fencedText, 24).send.join('\n') + '\n' + chunkTextParts(parts.raw.slice(1).join(''), 24).send.join('\n')).match(/^[ \t]{0,3}```/gm).length;
     A.ok(fenceLines <= perfectLines, 'no fence duplication accumulates across retries (' + fenceLines + ' <= ' + perfectLines + ')');
+    hub.close();
+  }
+
+  // An ambiguous result must stay paused even after reconnect and store reconstruction.
+  {
+    const fs = memFs(), store = mkStore(fs), events = [];
+    const msg = { chatId: 'D0', chatType: 'dm', userId: 'U1', text: 'work', messageId: '1.2' };
+    store.pushInbox({ id: 'slack|D0|1.2', channel: 'slack', message: msg });
+    let runs = 0, sends = 0;
+    const hub = makeChannelHub({
+      channel: 'slack', store: mkStore(fs), runOnce: async () => { runs++; },
+      send: async () => { sends++; return { ok: true }; }, emit: (name, payload) => events.push([name, payload])
+    });
+    await hub._internals.recoverInbox();
+    await hub.onInbound(msg);
+    A.eq(runs, 0, 'unfinished Slack work is not replayed after a restart or redelivery');
+    A.eq(sends, 0, 'unfinished Slack work cannot generate a duplicate reply');
+    A.eq(store.loadInbox('slack').length, 1, 'unfinished intake remains available for reconciliation');
+    A.eq(store.slackReviewStatus().heldInbox, 1, 'review status counts held inbox work');
+    A.ok(events.some(e => e[0] === 'channel.delivery' && e[1].reason === 'inbox-reconciliation-required'), 'held intake is reported');
+    A.throws(() => hub.onInbound(Object.assign({}, msg, { messageId: '' })), 'Slack intake without a stable message id is rejected');
+    hub.close();
+  }
+
+  {
+    const fs = memFs();
+    const store = makeChannelStore({ fs, pathMod, root: ROOT, clock });
+    const items = Array.from({ length: 10000 }, (_, i) => ({
+      id: 'slack|D|' + i, channel: 'slack', message: { chatId: 'D' }, completed: true, ts: 1
+    }));
+    fs.files.set(store._internals.inboxFile(), JSON.stringify({ version: 1, items }));
+    const entry = { id: 'slack|D|10000', channel: 'slack', message: { chatId: 'D', text: 'new work' } };
+    store.pushInbox(entry);
+    const restarted = makeChannelStore({ fs, pathMod, root: ROOT, clock });
+    A.eq(restarted.loadInbox('slack').length, 10001, 'default retention admits work past the old 10,000-receipt limit');
+    A.eq(restarted.pushInbox({ ...entry, id: 'slack|D|0' }).completed, true, 'old receipts still deduplicate after restart');
+    A.eq(restarted.slackReviewStatus().receiptLimit, null, 'status reports no fixed receipt limit');
+    A.throws(() => makeChannelStore({ fs, pathMod, root: ROOT, clock, inboxLimits: { maxSlackReceipts: 0 } }),
+      'invalid explicit receipt limits are rejected');
+  }
+
+  {
+    const fs = memFs(), events = [];
+    const store = makeChannelStore({ fs, pathMod, root: ROOT, clock, inboxLimits: { maxInbox: 1, maxSlackReceipts: 2 } });
+    let runs = 0, sends = 0;
+    const makeHub = s => makeChannelHub({
+      channel: 'slack', store: s, emit: (name, payload) => events.push([name, payload]),
+      runOnce: async o => { runs++; o.emit('agent.token', { delta: 'answer' }); o.emit('agent.run.end', { reason: 'done' }); },
+      send: async () => { sends++; return { ok: true }; },
+      secrets: () => ({ key: 'k', model: 'm', configured: true })
+    });
+    const msg = id => ({ chatId: 'D6', chatType: 'dm', userId: 'U1', text: 'work', messageId: id });
+    const hub = makeHub(store);
+    await hub.onInbound(msg('1'));
+    A.eq(store.loadInbox('slack')[0].message, { chatId: 'D6' }, 'completed receipt removes message content');
+    A.eq(store.slackReviewStatus(), { heldInbox: 0, pausedReplies: 0, receipts: 1, receiptLimit: 2 }, 'review status counts completed receipts without exposing content');
+    hub.close();
+    const restarted = makeHub(makeChannelStore({ fs, pathMod, root: ROOT, clock, inboxLimits: { maxInbox: 1, maxSlackReceipts: 2 } }));
+    await restarted.onInbound(msg('1'));
+    A.eq([runs, sends], [1, 1], 'completed Slack redelivery does not repeat work or a reply');
+    await restarted.onInbound(msg('2'));
+    A.eq([runs, sends], [2, 2], 'completed receipts do not consume pending inbox capacity');
+    A.throws(() => restarted.onInbound(msg('3')), 'a full receipt journal backpressures instead of evicting deduplication');
+    restarted.close();
+  }
+
+  {
+    const store = mkStore(), sent = [];
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, maxMessageLength: 4,
+      send: async (chatId, text) => { sent.push(text); return pending; }
+    });
+    const delivery = hub._internals.deliver('D1', 'AAAABBBB', 'r0', 'done');
+    A.eq(sent, ['AAAA'], 'the first Slack chunk is in flight');
+    hub.close();
+    finish({ ok: true });
+    const result = await delivery;
+    A.eq(result.ok, false, 'closing the hub interrupts a multi-chunk delivery');
+    A.eq(sent, ['AAAA'], 'no further chunk is sent after close');
+    A.eq(store.loadOutbox('slack').map(it => ({ text: it.text, paused: it.paused })),
+      [{ text: 'BBBB', paused: false }], 'confirmed progress and unsent remainder survive close');
+    let refused = false;
+    try { await hub._internals.deliver('D1', 'new', 'r1', 'done'); } catch (_) { refused = true; }
+    A.ok(refused, 'a closed Slack hub refuses new delivery');
+    const restarted = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, maxMessageLength: 4,
+      send: async (chatId, text) => { sent.push(text); return { ok: true }; }
+    });
+    await restarted._internals.flushOutbox();
+    A.eq(sent, ['AAAA', 'BBBB'], 'a new hub sends only the unsent remainder');
+    A.eq(store.loadOutbox('slack'), [], 'confirmed remainder is removed after reconnect');
+    restarted.close();
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs), sent = [];
+    let finish;
+    const pending = new Promise(resolve => { finish = resolve; });
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {}, maxMessageLength: 4,
+      send: async (chatId, text) => { sent.push(text); return sent.length === 1 ? { ok: true } : pending; }
+    });
+    const delivery = hub._internals.deliver('D1', 'AAAABBBB', 'r0', 'done');
+    for (let i = 0; i < 10 && sent.length < 2; i++) await new Promise(r => setTimeout(r, 0));
+    const saved = mkStore(fs).loadOutbox('slack')[0];
+    A.eq({ text: saved.text, paused: saved.paused }, { text: 'BBBB', paused: true }, 'initial delivery records its in-flight chunk after confirmed progress');
+    A.eq({ attempt: saved.attemptText, tail: saved.afterAttemptText }, { attempt: 'BBBB', tail: '' }, 'the exact attempted chunk and following remainder are durable');
+    const restarted = makeChannelHub({
+      channel: 'slack', store: mkStore(fs), runOnce: async () => {}, emit: () => {},
+      send: async (chatId, text) => { sent.push(text); return { ok: true }; }
+    });
+    await restarted._internals.flushOutbox();
+    A.eq(sent, ['AAAA', 'BBBB'], 'initial in-flight delivery cannot be resent by a restarted hub');
+    restarted.close();
+    hub.close();
+    A.eq(hub.quiescent(), false, 'a closed hub is not quiescent while a Slack send is in flight');
+    finish({ ok: false, deliveryUnknown: true });
+    await delivery;
+    A.eq(hub.quiescent(), true, 'the hub becomes quiescent after the send settles');
+  }
+
+  {
+    const store = mkStore(memFs(), { maxOutbox: 1, maxOutboxChars: 4 });
+    let sends = 0;
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {},
+      send: async () => { sends++; return { ok: true }; }
+    });
+    let tooLong = false;
+    try { await hub._internals.deliver('D1', '12345', 'r', 'done'); } catch (_) { tooLong = true; }
+    A.ok(tooLong, 'a reply too large to journal is refused rather than truncated');
+    store.pushOutbox({ channel: 'slack', chatId: 'old', text: 'old' });
+    let full = false;
+    try { await hub._internals.deliver('D1', '1234', 'r', 'done'); } catch (_) { full = true; }
+    A.ok(full, 'a full outbox refuses an unjournaled initial send');
+    A.eq(sends, 0, 'journal failures cannot send a Slack message');
+    hub.close();
+  }
+
+  {
+    const fs = memFs();
+    const store = mkStore(fs);
+    const events = [], sent = [];
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {},
+      send: async (chatId, text) => { sent.push(text); return { ok: false, deliveryUnknown: true }; },
+      emit: (name, payload) => events.push([name, payload]), maxMessageLength: 100
+    });
+    await hub._internals.deliver('D1', 'uncertain reply', 'r1', 'done');
+    A.eq(store.loadOutbox('slack')[0].paused, true, 'unknown initial delivery is stored paused');
+    A.ok(events.some(e => e[0] === 'channel.delivery' && e[1].reason === 'delivery-unknown'), 'unknown delivery is reported');
+    hub.close();
+    const restarted = makeChannelHub({
+      channel: 'slack', store: mkStore(fs), runOnce: async () => {},
+      send: async (chatId, text) => { sent.push(text); return { ok: true }; }, emit: () => {}
+    });
+    await restarted._internals.flushOutbox();
+    A.eq(sent, ['uncertain reply'], 'restarted flush does not resend a paused delivery');
+    restarted.close();
+  }
+
+  {
+    const store = mkStore(), hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {},
+      send: async () => { throw new Error('transport exception'); }, emit: () => {}
+    });
+    await hub._internals.deliver('D1', 'reply', 'r2', 'done');
+    A.eq(store.loadOutbox('slack')[0].paused, true, 'unexpected Slack send exceptions also pause delivery');
+    hub.close();
+  }
+
+  {
+    const store = mkStore(), hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {},
+      send: async () => ({}), emit: () => {}
+    });
+    await hub._internals.deliver('D1', 'reply', 'r3', 'done');
+    A.eq(store.loadOutbox('slack')[0].paused, true, 'a malformed Slack result is not mistaken for success');
+    hub.close();
+  }
+
+  // A queued reply can become uncertain after some chunks were confirmed.
+  {
+    const fs = memFs(), store = mkStore(fs), sent = [], events = [];
+    store.pushOutbox({ channel: 'slack', chatId: 'D2', text: 'AAAABBBBCCCC' });
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, maxMessageLength: 4,
+      send: async (chatId, text) => {
+        sent.push(text);
+        return sent.length === 2 ? { ok: false, deliveryUnknown: true } : { ok: true };
+      },
+      emit: (name, payload) => events.push([name, payload])
+    });
+    await hub._internals.flushOutbox();
+    const item = mkStore(fs).loadOutbox('slack')[0];
+    A.eq(item.text, 'BBBBCCCC', 'paused remainder excludes confirmed chunks');
+    A.eq(item.paused, true, 'uncertain queued delivery is durably paused');
+    A.eq(store.slackReviewStatus().pausedReplies, 1, 'review status counts paused replies');
+    await hub._internals.flushOutbox();
+    A.eq(sent, ['AAAA', 'BBBB'], 'another flush cannot resend the uncertain chunk');
+    A.ok(events.some(e => e[0] === 'channel.delivery' && e[1].reason === 'delivery-unknown'), 'paused retry emits a delivery warning');
+    hub.close();
+  }
+
+  // A crash during a retry must leave the currently attempted chunk paused on disk.
+  {
+    const fs = memFs(), store = mkStore(fs), sent = [];
+    store.pushOutbox({ channel: 'slack', chatId: 'D3', text: 'AAAABBBB' });
+    let finish;
+    const inFlight = new Promise(resolve => { finish = resolve; });
+    const options = {
+      channel: 'slack', store, runOnce: async () => {}, maxMessageLength: 4, emit: () => {},
+      send: async (chatId, text) => { sent.push(text); return sent.length === 1 ? { ok: true } : inFlight; }
+    };
+    const hub = makeChannelHub(options);
+    const flushing = hub._internals.flushOutbox();
+    for (let i = 0; i < 10 && sent.length < 2; i++) await new Promise(r => setTimeout(r, 0));
+    const persisted = mkStore(fs).loadOutbox('slack')[0];
+    A.eq(sent, ['AAAA', 'BBBB'], 'the second chunk is in flight after the first is confirmed');
+    A.eq({ text: persisted.text, paused: persisted.paused }, { text: 'BBBB', paused: true }, 'attempt and confirmed progress were saved before sending');
+    const restarted = makeChannelHub(Object.assign({}, options, {
+      store: mkStore(fs),
+      send: async (chatId, text) => { sent.push(text); return { ok: true }; }
+    }));
+    await restarted._internals.flushOutbox();
+    A.eq(sent, ['AAAA', 'BBBB'], 'a reconstructed hub cannot resend an in-flight chunk');
+    restarted.close();
+    finish({ ok: false, deliveryUnknown: true });
+    await flushing;
+    hub.close();
+  }
+
+  {
+    const store = mkStore();
+    store.pushOutbox({ channel: 'slack', chatId: 'D4', text: 'reply' });
+    store.pauseOutbox = () => { throw new Error('disk unavailable'); };
+    let sends = 0;
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {},
+      send: async () => { sends++; return { ok: true }; }
+    });
+    await hub._internals.flushOutbox();
+    await hub._internals.flushOutbox();
+    A.eq(sends, 0, 'a failed attempt journal write prevents Slack sends');
+    hub.close();
+  }
+
+  {
+    const store = mkStore(), sent = [];
+    store.pushOutbox({ channel: 'slack', chatId: 'D5', text: 'AAAABBBB' });
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, maxMessageLength: 4, emit: () => {},
+      send: async (chatId, text) => {
+        sent.push(text);
+        return sent.length === 2 ? { ok: false, error: 'ratelimited' } : { ok: true };
+      }
+    });
+    await hub._internals.flushOutbox();
+    A.eq({ text: store.loadOutbox('slack')[0].text, paused: store.loadOutbox('slack')[0].paused },
+      { text: 'BBBB', paused: false }, 'a definite rejection leaves only the remaining chunk retryable');
+    await hub._internals.flushOutbox();
+    A.eq(sent, ['AAAA', 'BBBB', 'BBBB'], 'a definite failure retries without repeating confirmed chunks');
+    A.eq(store.loadOutbox('slack'), [], 'a confirmed retry clears the queued reply');
+    hub.close();
+  }
+
+  {
+    for (const kind of ['inbox', 'outbox']) {
+      const fs = memFs(), store = mkStore(fs);
+      const file = kind === 'inbox' ? store._internals.inboxFile() : store._internals.outboxFile();
+      if (kind === 'inbox') {
+        store.pushInbox({ id: 'slack|D|1', channel: 'slack', message: { chatId: 'D', text: 'work' } });
+        store.completeSlackInbox('slack|D|1');
+      } else {
+        const it = store.pushOutbox({ channel: 'slack', chatId: 'D', text: 'answer' });
+        store.pauseOutbox(it.id, 'answer');
+      }
+      const backup = fs.files.get(file + '.bak');
+      fs.files.set(file, '{corrupt');
+      const otherWrite = () => kind === 'inbox'
+        ? store.pushInbox({ id: 'telegram|T|1', channel: 'telegram', message: { chatId: 'T' } })
+        : store.pushOutbox({ channel: 'telegram', chatId: 'T', text: 'other' });
+      A.throws(otherWrite, kind + ': another channel cannot rewrite a stale Slack backup');
+      A.eq(fs.files.get(file), '{corrupt', kind + ': corrupt main is preserved for reconciliation');
+      A.eq(fs.files.get(file + '.bak'), backup, kind + ': stale backup is not modified');
+      fs.files.delete(file);
+      fs.files.delete(file + '.bak');
+      A.throws(otherWrite, kind + ': guard blocks writes when both journal copies are missing');
+      A.ok(!fs.files.has(file), kind + ': missing journal is not recreated by another channel');
+    }
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const file = store._internals.outboxFile();
+    const slack = { id: 'old', channel: 'slack', chatId: 'D', text: 'old reply', paused: true };
+    fs.files.set(file, JSON.stringify({ version: 1, items: [slack] }));
+    A.eq(store.loadOutbox('telegram'), [], 'a legacy shared journal remains readable');
+    A.ok(fs.files.has(file + '.slack-guard'), 'reading legacy Slack data creates a durable guard');
+    fs.files.set(file, '{corrupt');
+    A.throws(() => store.loadOutbox('telegram'), 'the migrated guard blocks other channels from stale recovery');
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const file = store._internals.outboxFile();
+    fs.files.set(file, '{corrupt');
+    fs.files.set(file + '.bak', JSON.stringify({ version: 1, items: [{ id: 'old', channel: 'slack', chatId: 'D', text: 'old' }] }));
+    A.throws(() => store.pushOutbox({ channel: 'telegram', chatId: 'T', text: 'other' }),
+      'a legacy backup containing Slack cannot be recovered over a corrupt main');
+    A.eq(fs.files.get(file), '{corrupt', 'legacy corrupt main remains untouched');
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const file = store._internals.outboxFile();
+    const item = store.pushOutbox({ channel: 'telegram', chatId: 'T', text: 'reply' });
+    store.bumpOutboxTry(item.id);
+    fs.files.set(file, '{corrupt');
+    A.eq(store.loadOutbox('telegram')[0].tries, 0, 'a Telegram-only journal retains its existing backup recovery');
+    A.ok(!fs.files.has(file + '.slack-guard'), 'Telegram-only recovery does not create a Slack guard');
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const originalWrite = fs.writeFileSync;
+    fs.writeFileSync = (p, value) => {
+      if (p.indexOf('.slack-guard.') !== -1) throw new Error('guard storage unavailable');
+      originalWrite(p, value);
+    };
+    A.throws(() => store.pushOutbox({ channel: 'slack', chatId: 'D', text: 'reply' }),
+      'Slack refuses to journal if its guard cannot be persisted');
+    A.ok(!fs.files.has(store._internals.outboxFile()), 'failed guard creation does not create a journal');
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const file = store._internals.inboxFile();
+    const originalWrite = fs.writeFileSync;
+    fs.writeFileSync = (p, value) => {
+      if (p.indexOf(file + '.') === 0 && p.indexOf('.slack-guard.') === -1) throw new Error('journal storage unavailable');
+      originalWrite(p, value);
+    };
+    A.throws(() => store.pushInbox({ id: 'slack|D|1', channel: 'slack', message: { chatId: 'D' } }),
+      'interrupted first Slack journal initialization fails');
+    fs.writeFileSync = originalWrite;
+    A.ok(fs.files.has(file + '.slack-guard'), 'guard survives interrupted initialization');
+    A.throws(() => mkStore(fs).pushInbox({ id: 'telegram|T|1', channel: 'telegram', message: { chatId: 'T' } }),
+      'another channel cannot initialize over the interrupted journal after restart');
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const item = store.pushOutbox({ channel: 'slack', chatId: 'D7', text: 'reply' });
+    store.pauseOutbox(item.id, 'reply');
+    fs.files.set(store._internals.outboxFile(), '{corrupt');
+    A.throws(() => store.slackReviewStatus(), 'review status refuses corrupt journal rather than reporting stale counts');
+    let sends = 0, rejected = false;
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: () => {},
+      send: async () => { sends++; return { ok: true }; }
+    });
+    try { await hub._internals.flushOutbox(); } catch (_) { rejected = true; }
+    A.ok(rejected, 'corrupt Slack outbox refuses to use its stale backup');
+    A.eq(sends, 0, 'corrupt outbox cannot resend from stale state');
+    hub.close();
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs), events = [];
+    let sends = 0;
+    const hub = makeChannelHub({
+      channel: 'slack', store, runOnce: async () => {}, emit: (name, payload) => events.push([name, payload]),
+      send: async () => { sends++; fs.files.set(store._internals.outboxFile(), '{corrupt'); return { ok: true }; }
+    });
+    const result = await hub._internals.deliver('D7', 'reply', 'r7', 'done');
+    A.eq(result.ok, false, 'confirmed delivery is not reported as durable when its journal became corrupt');
+    A.ok(events.some(e => e[0] === 'channel.delivery' && e[1].reason === 'delivery-unknown'), 'journal corruption after a send is visible');
+    let rejected = false;
+    try { await hub._internals.flushOutbox(); } catch (_) { rejected = true; }
+    A.ok(rejected, 'corrupt journal blocks further automatic delivery');
+    A.eq(sends, 1, 'a successful send is not repeated using an old backup');
+    hub.close();
+  }
+
+  {
+    const fs = memFs(), store = mkStore(fs);
+    const msg = { chatId: 'D8', chatType: 'dm', userId: 'U1', text: 'work', messageId: '8' };
+    store.pushInbox({ id: 'slack|D8|8', channel: 'slack', message: msg });
+    store.completeSlackInbox('slack|D8|8');
+    fs.files.delete(store._internals.inboxFile());
+    const hub = makeChannelHub({ channel: 'slack', store, runOnce: async () => {}, send: async () => ({ ok: true }), emit: () => {} });
+    A.throws(() => hub.onInbound(msg), 'missing Slack inbox with a backup refuses a stale deduplication state');
     hub.close();
   }
 

@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const source = fs.readFileSync('frontend/app/emergency-control.js', 'utf8');
 const tick = () => new Promise(r => setImmediate(r));
 function element() { return { textContent: '', hidden: false, disabled: false, style: {}, listeners: {}, addEventListener(k, fn) { this.listeners[k] = fn; }, setAttribute(k, v) { this.tip = v; } }; }
-function snapshot(halted) { return { halted, subsystems: Object.fromEntries(['cron', 'nightshift', 'loops'].map(k => [k, { halted }])) }; }
+function snapshot(halted) { return { halted, subsystems: Object.fromEntries(['cron', 'nightshift', 'loops', 'slack'].map(k => [k, { halted }])) }; }
 (async () => {
   const recovery = element();
   const nodes = { 'automation-resume': recovery };

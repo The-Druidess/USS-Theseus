@@ -81,10 +81,11 @@
     const makeHub = deps.makeHub || makeChannelHubDefault;
     if (typeof makeHub !== 'function') throw new Error('wireChannel: makeChannelHub unavailable');
     let adapterRef = null;
+    let sendRef = null;
     const hub = makeHub(Object.assign({
       channel: descriptor.id,
       maxMessageLength: descriptor.maxMessageLength,
-      send: (chatId, text, o) => adapterRef ? adapterRef.send(chatId, text, o) : Promise.resolve({ ok: false, error: 'no adapter' }),
+      send: (chatId, text, o) => sendRef ? sendRef(chatId, text, o) : Promise.resolve({ ok: false, error: 'no adapter' }),
       // typing indicator (adapter-optional): a transport without sendChatAction answers ok:false non-retryable,
       // so the hub probes once per run and shows no bubble — exactly the old behavior on those channels.
       chatAction: (chatId) => (adapterRef && typeof adapterRef.chatAction === 'function') ? adapterRef.chatAction(chatId) : Promise.resolve({ ok: false, error: 'no adapter', retryable: false }),
@@ -102,6 +103,10 @@
     });
     const adapter = descriptor.makeAdapter(adapterOpts);
     adapterRef = adapter;
+    sendRef = adapter.send.bind(adapter);
+    if (descriptor.id === 'slack') {
+      adapter.send = (chatId, text, options) => hub.sendDirect(chatId, text, options);
+    }
     return { hub, adapter };
   }
 

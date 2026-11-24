@@ -12,12 +12,25 @@ const fs = require('fs');
 const path = require('path');
 const A = require('./_assert.js');
 const { makeChannelRegistry, wireChannel } = require('../sidecar/channels/registry.js');
+const { makeChannelStore } = require('../sidecar/channels/store.js');
+const crypto = require('node:crypto');
+const digest = value => crypto.createHash('sha256').update(value).digest('hex');
 
 function fakeStore() {
   const hist = new Map();
   return { loadHistory(a) { return (hist.get(a) || []).slice(); },
            appendTurn(a, r, c) { const arr = hist.get(a) || []; arr.push({ role: r, content: c }); hist.set(a, arr); return arr; },
            getChatRecord() { return null; } };
+}
+function journalStore() {
+  const files = new Map();
+  const memFs = {
+    readFileSync(p) { if (!files.has(p)) { const e = new Error('not found'); e.code = 'ENOENT'; throw e; } return files.get(p); },
+    writeFileSync(p, data) { files.set(p, String(data)); },
+    renameSync(a, b) { files.set(b, files.get(a)); files.delete(a); },
+    mkdirSync() {}
+  };
+  return makeChannelStore({ fs: memFs, pathMod: path, root: 'channel-test', clock: { now: () => 1 } });
 }
 const ids = () => { let i = 0; return () => 'r' + (++i); };
 
@@ -35,6 +48,8 @@ const ids = () => { let i = 0; return () => 'r' + (++i); };
 
   // lifecycle: connect starts through the ONE generic path; disconnect stops it; boot auto-starts saved configs.
   A.ok(/function startGenericChannel/.test(idx) && /function stopGenericChannel/.test(idx), 'generic start/stop lifecycle present');
+  const stopBody = (idx.split('function stopGenericChannel')[1] || '').split('\n}')[0];
+  A.ok(/id === 'slack'[\s\S]*w\.hub\.close\(\)/.test(stopBody), 'stopping Slack closes its hub as well as its adapter');
   const connBody = (idx.split('async function handleGenericChannelConnect')[1] || '').split('async function ')[0];
   A.ok(/startGenericChannel\(id, token/.test(connBody), 'generic connect starts the adapter via startGenericChannel');
   A.ok(/parseSlackTokens/.test(connBody), 'slack connect validates BOTH tokens (xoxb + xapp) before starting');
@@ -89,17 +104,30 @@ const ids = () => { let i = 0; return () => 'r' + (++i); };
       send: async (chatId, text) => { sent.push({ chatId, text }); return { ok: true, messageId: 'm' }; }
     };
     const { hub, adapter } = wireChannel(reg.get(c.id), {
-      hub: { runOnce, store: fakeStore(), secrets: () => ({ key: 'k', model: 'm' }), classify: () => false, newId: ids() },
+      hub: { runOnce, store: c.id === 'slack' ? journalStore() : fakeStore(), directHash: digest, secrets: () => ({ key: 'k', model: 'm' }), classify: () => false, newId: ids() },
       adapter: { transport, clock: { now: () => 1 }, sleep: () => Promise.resolve() }
     });
     A.ok(hub && typeof hub.onInbound === 'function', c.id + ': a real makeChannelHub backs the channel');
+    if (c.id === 'slack') {
+      const direct = await adapter.send(c.chatId, 'unjournaled notification');
+      A.eq(direct.ok, false, 'direct Slack sends fail explicitly instead of bypassing the journal');
+      A.ok(/operation identity/.test(direct.error), 'direct Slack refusal explains the safety restriction');
+      A.eq(sent.length, 0, 'direct Slack sends never reach the transport');
+    }
     await adapter.connect();
     for (let i = 0; i < 40 && sent.length < 1; i++) await new Promise(r => setTimeout(r, 0));
-    await adapter.disconnect();
     A.eq(ran.length, 1, c.id + ': the inbound drove the SAME runOnce');
     A.eq(sent.length, 1, c.id + ': the reply went back out through the wired adapter.send');
     A.eq(sent[0].chatId, c.chatId, c.id + ': reply targeted the source chat');
     A.ok(new RegExp('reply for ' + c.id).test(sent[0].text), c.id + ': reply text assembled from runOnce tokens');
+    if (c.id === 'slack') {
+      const options = { idempotencyKey: digest('direct-operation') };
+      A.ok((await adapter.send(c.chatId, 'direct message', options)).ok, 'identified direct send reaches the Slack adapter');
+      A.ok((await adapter.send(c.chatId, 'direct message', options)).alreadyDelivered, 'direct retry uses the durable receipt');
+      A.eq(sent.filter(x => x.text === 'direct message').length, 1, 'direct retry never reaches the transport');
+    }
+    await adapter.disconnect();
+    hub.close();
   }
 
   A.report('channels.generic-wire');
